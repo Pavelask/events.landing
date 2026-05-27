@@ -2,7 +2,7 @@
 use Illuminate\Support\Facades\Storage;
 @endphp
 <section id="keynote" class="keynote-grid mx-auto max-w-6xl px-4 py-20 text-zinc-950 bg-white">
-    <h2 class="mb-12 text-center text-3xl font-bold text-white">Приглашённые гости</h2>
+    <h2 class="mb-12 text-center text-3xl font-bold text-gray-900">Приглашённые гости</h2>
 
     <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
         @forelse ($guests as $guest)
