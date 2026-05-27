@@ -33,7 +33,11 @@ class GuestResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('photo_url')->label('Фото')->disk('public')->circular(),
+                ImageColumn::make('photo')
+                    ->label('Фото')
+                    ->disk('public')
+                    ->circular()
+                    ->defaultImageUrl(asset('storage/img/Simpleicons_Interface_user-black-close-up-shape.svg.png')),
                 TextColumn::make('name')->label('Имя')->searchable()->sortable(),
                 TextColumn::make('position')->label('Должность')->searchable(),
                 TextColumn::make('organization')->label('Организация')->searchable(),
