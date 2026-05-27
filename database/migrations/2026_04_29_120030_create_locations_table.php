@@ -1,0 +1,3 @@
+<?php
+use Illuminate\Database\Migrations\Migration;use Illuminate\Database\Schema\Blueprint;use Illuminate\Support\Facades\Schema;
+return new class extends Migration{public function up(): void{Schema::create('locations',function(Blueprint $table):void{$table->id();$table->foreignId('event_id')->constrained()->cascadeOnDelete();$table->string('name');$table->text('description')->nullable();$table->unsignedInteger('capacity')->nullable();$table->string('floor')->nullable();$table->string('map_image')->nullable();$table->timestamps();});}public function down(): void{Schema::dropIfExists('locations');}};

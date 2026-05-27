@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+@import 'swiper/swiper-bundle.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Превью-миниатюры hero-слайдера */
+.hero-thumbs .swiper-slide {
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.hero-thumbs .swiper-slide:hover {
+    opacity: 0.8;
+}
+
+/* Активная миниатюра — полная непрозрачность */
+.hero-thumbs .swiper-slide-thumb-active {
+    opacity: 1 !important;
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+}
+
+/* Галерея Masonry */
+.gallery-masonry {
+    display: block;
+}
+
+.gallery-item {
+    overflow: hidden;
+    border-radius: 1rem;
+}
+
+.gallery-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: none; /* отключаем CSS transitions, управляет GSAP */
+}
+
+/* Полноэкранная галерея */
+.gallery-fullscreen {
+    width: 100%;
+    overflow-x: hidden;
+}
+
