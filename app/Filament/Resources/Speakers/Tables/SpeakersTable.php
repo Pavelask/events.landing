@@ -15,7 +15,7 @@ class SpeakersTable
     {
         return $table
             ->columns([
-                ImageColumn::make('photo')->label('Фото')->disk('public')->circular(),
+                ImageColumn::make('photo_url')->label('Фото')->disk('public')->circular(),
                 TextColumn::make('name')->label('Имя')->searchable()->sortable(),
                 TextColumn::make('position')->label('Должность')->searchable(),
                 TextColumn::make('organization')->label('Организация')->searchable(),

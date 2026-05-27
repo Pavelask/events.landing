@@ -1,14 +1,14 @@
 @php
 use Illuminate\Support\Facades\Storage;
 @endphp
-<section id="keynote" class="keynote-grid mx-auto max-w-6xl px-4 py-20 text-zinc-950">
+<section id="keynote" class="keynote-grid mx-auto max-w-6xl px-4 py-20 text-zinc-950 bg-white">
     <h2 class="mb-12 text-center text-3xl font-bold text-white">Приглашённые гости</h2>
 
     <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
         @forelse ($guests as $guest)
             <div class="keynote-card rounded-2xl border-2 border-yellow-400 bg-white p-4 text-center shadow-lg">
                 <img
-                    src="{{ $guest->photo ? Storage::url($guest->photo) : asset('storage/img/Simpleicons_Interface_user-black-close-up-shape.svg.png') }}"
+                    src="{{ $guest->photo_url ?? Storage::url('img/Simpleicons_Interface_user-black-close-up-shape.svg.png') }}"
                     alt="{{ $guest->name }}"
                     class="mx-auto h-32 w-32 rounded-full object-cover shadow-lg"
                 />

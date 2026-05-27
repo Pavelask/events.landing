@@ -10,7 +10,7 @@ use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -29,7 +29,7 @@ class FaqResource extends Resource
     {
         return $schema->components([
             TextInput::make('question')->label('Вопрос')->required()->columnSpanFull(),
-            Textarea::make('answer')->label('Ответ')->rows(3)->columnSpanFull(),
+            RichEditor::make('answer')->label('Ответ')->toolbarButtons(['bold', 'italic', 'link', 'bulletList', 'orderedList', 'redo', 'undo'])->fileAttachmentsDisk('public')->columnSpanFull(),
         ]);
     }
 
@@ -38,7 +38,7 @@ class FaqResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('question')->label('Вопрос')->searchable()->sortable(),
-                TextColumn::make('answer')->label('Ответ')->limit(50)->searchable(),
+                TextColumn::make('answer')->label('Ответ')->html()->limit(100)->searchable(),
             ])
             ->recordActions([EditAction::make()])
             ->bulkActions([

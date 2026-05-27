@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Speaker extends Model
 {
@@ -28,5 +29,13 @@ class Speaker extends Model
     public function scheduleEvents(): HasMany
     {
         return $this->hasMany(ScheduleEvent::class);
+    }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if ($this->photo) {
+            return Storage::url($this->photo);
+        }
+        return Storage::url('img/Simpleicons_Interface_user-black-close-up-shape.svg.png');
     }
 }
