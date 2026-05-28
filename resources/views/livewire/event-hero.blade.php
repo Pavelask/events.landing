@@ -4,7 +4,7 @@
 @php
 use Illuminate\Support\Facades\Storage;
 @endphp
-<section id="hero" class="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
+<section id="hero" class="relative min-h-screen overflow-hidden bg-black text-white">
     @if($event)
         {{-- Основной слайдер --}}
         <div class="swiper hero-swiper h-screen">
@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\Storage;
                                 {{-- Кнопка — появляется последней --}}
                                 @if($slide->is_button_visible)
                                     <a href="{{ $slide->button_url ?: '#' }}"
-                                       class="mt-6 inline-flex rounded-full bg-amber-400 px-8 py-4 font-bold text-black transition hover:bg-white"
+                                       class="mt-6 inline-flex rounded-full bg-white px-8 py-4 font-bold text-black transition hover:bg-gray-200"
                                        data-swiper-parallax-x="-200"
                                        data-swiper-parallax-duration="2000"
                                        data-swiper-parallax-opacity="0">
@@ -53,7 +53,7 @@ use Illuminate\Support\Facades\Storage;
                     </div>
                 @empty
                     {{-- Fallback-слайд, если слайдов нет --}}
-                    <div class="swiper-slide relative h-screen bg-gradient-to-br from-orange-500 via-rose-600 to-cyan-600">
+                    <div class="swiper-slide relative h-screen bg-gradient-to-br from-black via-zinc-800 to-zinc-600">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div class="absolute bottom-16 left-0 z-10 w-full px-6 md:bottom-24">
                             <div class="mx-auto max-w-7xl">

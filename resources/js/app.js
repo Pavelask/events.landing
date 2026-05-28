@@ -152,6 +152,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Анимация секции Медиа-контент
+    const mediaSection = document.querySelector('.media-section');
+    if (mediaSection) {
+        const mediaPhoto = mediaSection.querySelector('.media-photo');
+        const mediaText = mediaSection.querySelector('.media-text');
+
+        if (mediaPhoto) {
+            gsap.from(mediaPhoto, {
+                scrollTrigger: {
+                    trigger: mediaSection,
+                    start: 'top 80%'
+                },
+                x: -120,
+                opacity: 0,
+                duration: 1,
+                ease: 'power3.out'
+            });
+        }
+
+        if (mediaText) {
+            gsap.from(mediaText, {
+                scrollTrigger: {
+                    trigger: mediaSection,
+                    start: 'top 80%'
+                },
+                x: 120,
+                opacity: 0,
+                duration: 1,
+                ease: 'power3.out',
+                delay: 0.2
+            });
+        }
+    }
+
     // Таймер обратного отсчета с GSAP анимацией
     const countdownEl = document.getElementById('countdown');
     if (countdownEl) {

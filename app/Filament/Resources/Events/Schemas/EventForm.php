@@ -163,6 +163,31 @@ class EventForm
                                             ->validationAttribute('телефон'),
                                     ]),
                                 ]),
+
+                            Section::make('Политика конфиденциальности')
+                                ->schema([
+                                    Toggle::make('show_privacy_section')
+                                        ->label('Показывать на сайте')
+                                        ->default(false)
+                                        ->live()
+                                        ->columnSpanFull(),
+                                    RichEditor::make('privacy_policy')
+                                        ->label('Политика конфиденциальности')
+                                        ->fileAttachmentsDisk('public')
+                                        ->fileAttachmentsDirectory('events/privacy')
+                                        ->extraInputAttributes(['style' => 'min-height: 150px;'])
+                                        ->visible(fn (callable $get) => $get('show_privacy_section'))
+                                        ->columnSpanFull(),
+                                    RichEditor::make('personal_data_consent')
+                                        ->label('Согласие на обработку персональных данных')
+                                        ->fileAttachmentsDisk('public')
+                                        ->fileAttachmentsDirectory('events/privacy')
+                                        ->extraInputAttributes(['style' => 'min-height: 150px;'])
+                                        ->visible(fn (callable $get) => $get('show_privacy_section'))
+                                        ->columnSpanFull(),
+                                ])
+                                ->collapsible()
+                                ->collapsed(),
                         ]),
 
                     Tab::make('Медиа')
