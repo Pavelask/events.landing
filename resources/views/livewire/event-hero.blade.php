@@ -4,7 +4,7 @@
 @php
 use Illuminate\Support\Facades\Storage;
 @endphp
-<section id="hero" class="relative min-h-screen overflow-hidden bg-black text-white">
+<section id="hero" class="relative min-h-screen overflow-hidden bg-white text-[var(--color-text)]">
     @if($event)
         {{-- Основной слайдер --}}
         <div class="swiper hero-swiper h-screen">
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
                 @forelse($slides as $slide)
                     {{-- Слайд: контент прижат к левому нижнему углу --}}
                     <div class="swiper-slide relative h-screen"
-                         style="background-color: {{ $slide->background_color ?? '#0f172a' }}">
+                         style="background-color: {{ $slide->background_color ?? '#f7f7f7' }}">
                         @if($slide->image)
                             {{-- Фоновое изображение 100% площади с параллаксом справа налево --}}
                             <div class="absolute inset-0 bg-center"
@@ -20,19 +20,19 @@ use Illuminate\Support\Facades\Storage;
                                  data-swiper-parallax-x="-25%"></div>
                         @endif
                         {{-- Градиент-затемнение поверх изображения --}}
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-[var(--color-text)]/80 via-black/30 to-transparent"></div>
                         {{-- Блок контента: левый нижний угол, отступ снизу для пагинации --}}
                         <div class="absolute bottom-16 left-0 z-10 w-full px-6 md:bottom-24">
                             <div class="mx-auto max-w-7xl">
                                 {{-- Заголовок — появляется вторым --}}
-                                <h1 class="max-w-4xl text-4xl font-black uppercase leading-tight md:text-6xl lg:text-7xl"
+                                <h1 class="max-w-4xl text-4xl font-bold uppercase leading-tight md:text-6xl lg:text-7xl text-white"
                                     data-swiper-parallax-x="-400"
                                     data-swiper-parallax-duration="600"
                                     data-swiper-parallax-opacity="0">
                                     {{ $slide->title ?: $event->title }}
                                 </h1>
                                 {{-- Подзаголовок — появляется третьим --}}
-                                <p class="mt-4 max-w-2xl text-lg text-zinc-200 md:text-xl lg:text-2xl"
+                                <p class="mt-4 max-w-2xl text-lg text-white/90 md:text-xl lg:text-2xl"
                                    data-swiper-parallax-x="-300"
                                    data-swiper-parallax-duration="1800"
                                    data-swiper-parallax-opacity="0">
@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\Storage;
                                 {{-- Кнопка — появляется последней --}}
                                 @if($slide->is_button_visible)
                                     <a href="{{ $slide->button_url ?: '#' }}"
-                                       class="mt-6 inline-flex rounded-full bg-white px-8 py-4 font-bold text-black transition hover:bg-gray-200"
+                                       class="mt-6 inline-flex rounded-[var(--radius-btn)] bg-[var(--color-primary)] px-8 py-4 font-semibold text-white transition hover:bg-[var(--color-primary-hover)]"
                                        data-swiper-parallax-x="-200"
                                        data-swiper-parallax-duration="2000"
                                        data-swiper-parallax-opacity="0">
@@ -53,11 +53,11 @@ use Illuminate\Support\Facades\Storage;
                     </div>
                 @empty
                     {{-- Fallback-слайд, если слайдов нет --}}
-                    <div class="swiper-slide relative h-screen bg-gradient-to-br from-black via-zinc-800 to-zinc-600">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                    <div class="swiper-slide relative h-screen bg-gradient-to-br from-[var(--color-text)] via-gray-800 to-gray-600">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[var(--color-text)]/80 via-black/40 to-transparent"></div>
                         <div class="absolute bottom-16 left-0 z-10 w-full px-6 md:bottom-24">
                             <div class="mx-auto max-w-7xl">
-                                <h1 class="max-w-4xl text-4xl font-black uppercase leading-tight md:text-6xl lg:text-7xl">{{ $event->title }}</h1>
+                                <h1 class="max-w-4xl text-4xl font-bold uppercase leading-tight md:text-6xl lg:text-7xl text-white">{{ $event->title }}</h1>
                                 <p class="mt-4 max-w-2xl text-lg text-white/90 md:text-xl lg:text-2xl">{{ $event->description }}</p>
                             </div>
                         </div>
@@ -65,18 +65,18 @@ use Illuminate\Support\Facades\Storage;
                 @endforelse
             </div>
 
-            {{-- Пагинация (точки) - белый цвет --}}
-            <div class="swiper-pagination !text-white"></div>
-            {{-- Стрелки навигации --}}
-            <div class="swiper-button-prev !text-white"></div>
-            <div class="swiper-button-next !text-white"></div>
+            {{-- Пагинация (точки) - цвет primary --}}
+            <div class="swiper-pagination !text-[var(--color-primary)]"></div>
+            {{-- Стрелки навигации — круглые --}}
+            <div class="swiper-button-prev !text-white rounded-[var(--radius-round)] bg-black/30 backdrop-blur-sm w-10 h-10 flex items-center justify-center"></div>
+            <div class="swiper-button-next !text-white rounded-[var(--radius-round)] bg-black/30 backdrop-blur-sm w-10 h-10 flex items-center justify-center"></div>
         </div>
     @else
         {{-- Заглушка, если нет активного мероприятия --}}
         <div class="flex min-h-screen items-center justify-center px-6 text-center">
             <div>
-                <p class="text-amber-300">События ещё не опубликованы</p>
-                <h1 class="mt-3 text-5xl font-black">Платформа мероприятий</h1>
+                <p class="text-[var(--color-primary)]">События ещё не опубликованы</p>
+                <h1 class="mt-3 text-5xl font-bold text-[var(--color-text)]">Платформа мероприятий</h1>
             </div>
         </div>
     @endif

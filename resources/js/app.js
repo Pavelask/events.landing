@@ -24,14 +24,101 @@ window.Alpine = Alpine;
 window.Swiper = Swiper;
 window.Plyr = Plyr;
 
-// Альтернатива: используем window scroll
+// Альтернатива: используем window scroll с GSAP
+let navbarScrollTimeout;
 window.addEventListener('scroll', () => {
     const navbar = document.getElementById('main-navbar');
-    if (navbar) {
-        if (window.scrollY > 80) {
+    if (!navbar) return;
+    
+    const scrollY = window.scrollY;
+    
+    // Clear previous timeout
+    clearTimeout(navbarScrollTimeout);
+    
+    if (scrollY > 80) {
+        if (!navbar.classList.contains('navbar-scrolled')) {
             navbar.classList.add('navbar-scrolled');
-        } else {
-            navbar.classList.remove('navbar-scrolled');
+            
+            // GSAP анимация появления - фон
+            gsap.to(navbar, { 
+                backgroundColor: 'rgba(255,255,255,0.85)', 
+                backdropFilter: 'blur(16px)',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+                duration: 0.3, 
+                ease: 'power2.out' 
+            });
+            
+            // Логотип и текст - появляются
+            const logoText = navbar.querySelector('.flex.items-center.gap-3');
+            if (logoText) {
+                gsap.fromTo(logoText, 
+                    { opacity: 0, y: -20 },
+                    { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
+                );
+            }
+            
+            // Навигационные ссылки (desktop) - появляются
+            const navLinks = navbar.querySelectorAll('.hidden.md\\:flex a');
+            if (navLinks.length > 0) {
+                gsap.fromTo(navLinks,
+                    { opacity: 0, y: -15 },
+                    { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out', stagger: 0.05 }
+                );
+            }
+            
+            // Кнопка меню (mobile) - появляется
+            const menuBtn = navbar.querySelector('#menuToggle');
+            if (menuBtn) {
+                gsap.fromTo(menuBtn,
+                    { opacity: 0, scale: 0.7 },
+                    { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.7)' }
+                );
+            }
+            
+            // Мобильное меню (выпадающее) - закрываем и скрываем
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (mobileMenu) {
+                mobileMenu.style.display = 'none';
+            }
+        }
+    } else {
+        if (navbar.classList.contains('navbar-scrolled')) {
+            navbarScrollTimeout = setTimeout(() => {
+                navbar.classList.remove('navbar-scrolled');
+                
+                // GSAP анимация исчезновения - фон
+                gsap.to(navbar, { 
+                    backgroundColor: 'rgba(255,255,255,0)', 
+                    backdropFilter: 'none',
+                    boxShadow: 'none',
+                    duration: 0.3, 
+                    ease: 'power2.out' 
+                });
+                
+                // Логотип и текст - исчезают
+                const logoText = navbar.querySelector('.flex.items-center.gap-3');
+                if (logoText) {
+                    gsap.to(logoText, { opacity: 0, y: -20, duration: 0.25, ease: 'power2.in' });
+                }
+                
+                // Навигационные ссылки (desktop) - исчезают
+                const navLinks = navbar.querySelectorAll('.hidden.md\\:flex a');
+                if (navLinks.length > 0) {
+                    gsap.to(navLinks, { opacity: 0, y: -15, duration: 0.25, ease: 'power2.in', stagger: 0.02 });
+                }
+                
+                // Кнопка меню (mobile) - исчезает
+                const menuBtn = navbar.querySelector('#menuToggle');
+                if (menuBtn) {
+                    gsap.to(menuBtn, { opacity: 0, scale: 0.7, duration: 0.25, ease: 'power2.in' });
+                }
+                
+                // Мобильное меню (выпадающее) - гарантированно скрываем
+                const mobileMenu = document.getElementById('mobileMenu');
+                if (mobileMenu) {
+                    mobileMenu.style.display = 'none';
+                }
+            }, 50);
         }
     }
 }, { passive: true });
@@ -82,6 +169,39 @@ function initSwiper() {
 // Анимация элементов при скролле и таймер обратного отсчета
 document.addEventListener('DOMContentLoaded', () => {
     initSwiper();
+
+    // GSAP инициализация хедера
+    const navbar = document.getElementById('main-navbar');
+    if (navbar) {
+        // Начальное состояние - прозрачный фон и невидимые элементы
+        gsap.set(navbar, { 
+            backgroundColor: 'rgba(255,255,255,0)',
+            backdropFilter: 'none',
+            boxShadow: 'none'
+        });
+        
+        // Все элементы навбара изначально невидимы
+        const logoText = navbar.querySelector('.flex.items-center.gap-3');
+        if (logoText) {
+            gsap.set(logoText, { opacity: 0, y: -20 });
+        }
+        
+        const navLinks = navbar.querySelectorAll('.hidden.md\\:flex a');
+        if (navLinks.length > 0) {
+            gsap.set(navLinks, { opacity: 0, y: -15 });
+        }
+        
+        const menuBtn = navbar.querySelector('#menuToggle');
+        if (menuBtn) {
+            gsap.set(menuBtn, { opacity: 0, scale: 0.7 });
+        }
+        
+        // Мобильное меню изначально скрыто
+        const mobileMenu = document.getElementById('mobileMenu');
+        if (mobileMenu) {
+            mobileMenu.style.display = 'none';
+        }
+    }
 
     const animatedElements = gsap.utils.toArray('.about-event,.speaker-card,.keynote-card,.timeline-item,.faq-item,.archive-banner');
 

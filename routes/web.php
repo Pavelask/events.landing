@@ -1,8 +1,8 @@
 <?php
-use App\Http\Controllers\IcalController;use App\Livewire\EventArchive;use App\Livewire\EventRegistration;use App\Models\Event;use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\IcalController;use App\Livewire\EventRegistration;use App\Models\Event;use Illuminate\Support\Facades\Route;
 Route::get('/',function(){$activeEvent=Event::active()->with(['heroSlides','faqs','speakers','keynoteSpeakers','days.events.speaker'])->first() ?? Event::upcoming()->with(['heroSlides','faqs','speakers','keynoteSpeakers','days.events.speaker'])->orderBy('start_date')->first();return view('home',compact('activeEvent'));})->name('home');
 Route::get('/registration',function(){$event=Event::published()->where(function($q){$today=now()->startOfDay();$q->where('start_date','>=',$today)->orWhere(function($q2)use($today){$q2->where('start_date','<=',$today)->where('end_date','>=',$today);});})->orderBy('start_date')->first();return view('registration',compact('event'));})->name('registration');
 Route::get('/events/{event:slug}',fn(Event $event)=>view('event.show',compact('event')))->name('event.show');
-Route::get('/archive',EventArchive::class)->name('archive');
+Route::get('/archive',function(){$lastCompletedEvent=\App\Models\Event::completed()->with('heroSlides')->orderByDesc('end_date')->first();return view('archive',compact('lastCompletedEvent'));})->name('archive');
 Route::get('/events/{event:slug}/register',EventRegistration::class)->name('event.register');
 Route::prefix('ical')->name('ical.')->group(function():void{Route::get('/event/{scheduleEvent}',[IcalController::class,'singleEvent'])->name('single');Route::get('/day/{day}',[IcalController::class,'fullDay'])->name('day');Route::get('/full/{event:slug}',[IcalController::class,'fullEvent'])->name('full');Route::get('/qr/event/{scheduleEvent}',[IcalController::class,'qrSingle'])->name('qr.single');Route::get('/qr/day/{day}',[IcalController::class,'qrDay'])->name('qr.day');});

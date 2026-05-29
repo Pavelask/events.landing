@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import 'tailwindcss';
 @import 'swiper/swiper-bundle.css';
 
@@ -7,8 +8,30 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    /* Design System — Airbnb-inspired */
+    --color-primary: #ff385c; /* Rausch Coral */
+    --color-primary-hover: #e02f50;
+    --color-vip: #92174d; /* Plus Magenta */
+    --color-text: #222222; /* Ink Black */
+    --color-text-secondary: #6b7280;
+    --color-border: #dddddd; /* Hairline */
+    --color-surface: #ffffff;
+    --color-background: #f7f7f7; /* Soft Cloud */
+    --color-muted: #9ca3af;
+    --color-success: #16A34A;
+    
+    /* Border Radius */
+    --radius-card: 14px;
+    --radius-btn: 8px;
+    --radius-round: 50%;
+}
+
+body {
+    background-color: var(--color-surface);
+    color: var(--color-text);
 }
 
 /* Превью-миниатюры hero-слайдера */
@@ -25,9 +48,9 @@
 /* Активная миниатюра — полная непрозрачность */
 .hero-thumbs .swiper-slide-thumb-active {
     opacity: 1 !important;
-    outline: 2px solid #f59e0b;
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-card);
 }
 
 /* Галерея Masonry */
@@ -37,14 +60,14 @@
 
 .gallery-item {
     overflow: hidden;
-    border-radius: 1rem;
+    border-radius: var(--radius-card);
 }
 
 .gallery-image {
     width: 100%;
     height: auto;
     display: block;
-    transition: none; /* отключаем CSS transitions, управляет GSAP */
+    transition: none;
 }
 
 /* Полноэкранная галерея */

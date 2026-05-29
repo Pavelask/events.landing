@@ -1,38 +1,39 @@
 @php
 use Illuminate\Support\Facades\Storage;
 @endphp
-<section id="speakers" class="speakers-grid mx-auto max-w-6xl px-4 py-20 text-black bg-white">
-    <h2 class="mb-12 text-center text-3xl font-bold text-black">Спикеры</h2>
+<section id="speakers" class="speakers-grid mx-auto max-w-6xl px-4 py-20 text-[var(--color-text)] bg-white">
+    <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">Спикеры</p>
+    <h2 class="mt-3 text-4xl font-bold text-[var(--color-text)]">Наши спикеры</h2>
 
-    <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
+    <div class="mt-12 grid grid-cols-2 gap-8 md:grid-cols-4">
         @forelse ($speakers as $speaker)
-            <div class="speaker-card text-center">
+            <div class="speaker-card rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white p-4 text-center shadow-sm hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all">
                 @if($speaker->photo_url)
                     <img
                         src="{{ $speaker->photo_url }}"
                         alt="{{ $speaker->name }}"
-                        class="mx-auto w-full aspect-[3/4] rounded-lg object-cover shadow-lg"
+                        class="mx-auto h-32 w-32 rounded-[var(--radius-round)] object-cover shadow-md"
                     />
                 @else
                     <img
                         src="{{ Storage::url('img/Simpleicons_Interface_user-black-close-up-shape.svg.png') }}"
                         alt="{{ $speaker->name }}"
-                        class="mx-auto w-full aspect-[3/4] rounded-lg object-cover bg-white p-2 border-4 border-white"
+                        class="mx-auto h-32 w-32 rounded-[var(--radius-round)] object-cover bg-white p-2 border border-[var(--color-border)]"
                     />
                 @endif
-                <h3 class="mt-4 font-semibold">{{ $speaker->name }}</h3>
+                <h3 class="mt-4 font-semibold text-[var(--color-text)]">{{ $speaker->name }}</h3>
                 @if ($speaker->position)
-                    <p class="text-sm text-gray-600">{{ $speaker->position }}</p>
+                    <p class="text-sm text-[var(--color-text-secondary)]">{{ $speaker->position }}</p>
                 @endif
                 @if ($speaker->organization)
-                    <p class="text-sm text-gray-500">{{ $speaker->organization }}</p>
+                    <p class="text-sm text-[var(--color-muted)]">{{ $speaker->organization }}</p>
                 @endif
                 @if ($speaker->description)
-                    <div class="mt-3 text-xs text-gray-500 text-left">{!! $speaker->description !!}</div>
+                    <div class="mt-2 text-xs text-[var(--color-muted)] text-left">{!! $speaker->description !!}</div>
                 @endif
             </div>
         @empty
-            <p class="col-span-full text-center text-gray-400">Спикеры пока не добавлены.</p>
+            <p class="col-span-full text-center text-[var(--color-muted)]">Спикеры пока не добавлены.</p>
         @endforelse
     </div>
 </section>
