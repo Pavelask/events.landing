@@ -2,6 +2,11 @@
 
 namespace App\Filament\Resources\Events\Schemas;
 
+use App\Models\Event;
+use App\Models\Faq;
+use App\Models\Guest;
+use App\Models\Speaker;
+use App\Models\Testimonial;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -13,12 +18,11 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
-use App\Models\Event;
-use App\Models\Faq;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 
@@ -26,7 +30,7 @@ class EventForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components([
+        return $schema->schema([
             Tabs::make('Мероприятие')
                 ->tabs([
                     Tab::make('Основное')
@@ -305,22 +309,28 @@ class EventForm
                                 ->label('')
                                 ->addActionLabel('Добавить спикера')
                                 ->schema([
-                                    TextInput::make('id')->hidden(),
-                                    Grid::make(3)->schema([
+                                    Grid::make(4)->schema([
                                         Select::make('speaker_id')
                                             ->label('Спикер')
                                             ->relationship('speaker', 'name')
                                             ->searchable()
-                                            ->preload(),
-                                        Toggle::make('is_keynote')->label('Ключевой спикер (VIP)'),
-                                        TextInput::make('sort_order')->label('Порядок')->numeric()->default(0),
+                                            ->preload()
+                                            ->required(),
+                                        TextInput::make('sort_order')
+                                            ->label('Порядок')
+                                            ->numeric()
+                                            ->default(0),
+                                        Toggle::make('is_visible')
+                                            ->label('Показывать на сайте')
+                                            ->default(true),
+                                        Toggle::make('is_keynote')
+                                            ->label('Ключевой спикер (VIP)')
+                                            ->default(false),
                                     ]),
                                 ])
-                                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): ?array => filled($data['speaker_id'] ?? null) ? $data : null)
-                                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): ?array => filled($data['speaker_id'] ?? null) ? $data : null)
                                 ->orderColumn('sort_order')
                                 ->collapsible()
-                                ->itemLabel(fn (array $state): string => 'Новый спикер')
+                                ->itemLabel(fn (array $state): string => Speaker::find($state['speaker_id'] ?? null)?->name ?? 'Новый спикер')
                                 ->columnSpanFull(),
                         ]),
 
@@ -332,21 +342,60 @@ class EventForm
                                 ->label('')
                                 ->addActionLabel('Добавить гостя')
                                 ->schema([
-                                    TextInput::make('id')->hidden(),
-                                    Grid::make(2)->schema([
+                                    Grid::make(4)->schema([
                                         Select::make('guest_id')
                                             ->label('Гость')
                                             ->relationship('guest', 'name')
                                             ->searchable()
-                                            ->preload(),
-                                        TextInput::make('sort_order')->label('Порядок')->numeric()->default(0),
+                                            ->preload()
+                                            ->required()
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                                        TextInput::make('sort_order')
+                                            ->label('Порядок')
+                                            ->numeric()
+                                            ->default(0),
+                                        Toggle::make('is_visible')
+                                            ->label('Показывать на сайте')
+                                            ->default(true),
+                                        Toggle::make('is_keynote')
+                                            ->label('Ключевой гость (VIP)')
+                                            ->default(false),
                                     ]),
                                 ])
-                                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): ?array => filled($data['guest_id'] ?? null) ? $data : null)
-                                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): ?array => filled($data['guest_id'] ?? null) ? $data : null)
                                 ->orderColumn('sort_order')
                                 ->collapsible()
-                                ->itemLabel(fn (array $state): string => 'Новый гость')
+                                ->itemLabel(fn (array $state): string => Guest::find($state['guest_id'] ?? null)?->name ?? 'Новый гость')
+                                ->columnSpanFull(),
+                        ]),
+
+                    Tab::make('Отзывы')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->schema([
+                            Repeater::make('eventTestimonials')
+                                ->relationship('eventTestimonials')
+                                ->label('')
+                                ->addActionLabel('Добавить отзыв')
+                                ->schema([
+                                    Grid::make(3)->schema([
+                                        Select::make('testimonial_id')
+                                            ->label('Отзыв')
+                                            ->relationship('testimonial', 'author_name')
+                                            ->searchable()
+                                            ->preload()
+                                            ->required()
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                                        TextInput::make('sort_order')
+                                            ->label('Порядок')
+                                            ->numeric()
+                                            ->default(0),
+                                        Toggle::make('is_visible')
+                                            ->label('Показывать на сайте')
+                                            ->default(true),
+                                    ]),
+                                ])
+                                ->orderColumn('sort_order')
+                                ->collapsible()
+                                ->itemLabel(fn (array $state): string => Testimonial::find($state['testimonial_id'] ?? null)?->author_name ?? 'Новый отзыв')
                                 ->columnSpanFull(),
                         ]),
 

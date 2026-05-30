@@ -321,11 +321,15 @@
     </section>
 @endif
 
+@if($activeEvent)
+    @livewire(\App\Livewire\Testimonials::class, ['event' => $activeEvent])
+@endif
+
 @if($activeEvent && $activeEvent->gallery && is_array($activeEvent->gallery) && count(array_filter($activeEvent->gallery)) > 0)
     @php
         $galleryImages = array_values(array_filter(array_map(fn($img) => $img ? asset('storage/'.$img) : null, $activeEvent->gallery)));
     @endphp
-    <section id="gallery" class="bg-[var(--color-background)] py-20 text-[var(--color-text)]"
+    <section id="gallery" class="bg-[#f0f0f0] py-20 text-[var(--color-text)]"
              x-data="{ open: false, index: 0, images: {{ json_encode($galleryImages) }}, next() { this.index = (this.index + 1) % this.images.length }, prev() { this.index = (this.index - 1 + this.images.length) % this.images.length }, close() { this.open = false } }">
         <div class="mx-auto max-w-7xl px-6">
             <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2 text-center">Галерея мероприятия</p>
@@ -337,7 +341,7 @@
                         <img
                             src="{{ $image }}"
                             alt="{{ $activeEvent->title }}"
-                            class="w-full h-auto object-cover shadow-md gallery-image cursor-pointer"
+                            class="w-full h-auto object-cover shadow-md gallery-image cursor-pointer brightness-90 hover:brightness-100 transition-all"
                             loading="lazy"
                             @click="index = {{ $idx }}; open = true"
                         />

@@ -15,7 +15,11 @@ class EventSpeakers extends Component
     public function mount(Event|string|null $event = null, ?string $eventSlug = null): void
     {
         $this->event = $this->resolveEvent($event, $eventSlug);
-        $this->speakers = $this->event?->speakers()->get() ?? collect();
+        $this->speakers = $this->event?->eventSpeakers()
+            ->where('is_visible', true)
+            ->with('speaker')
+            ->orderBy('sort_order')
+            ->get() ?? collect();
     }
 
     public function render()

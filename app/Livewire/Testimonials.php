@@ -3,28 +3,35 @@
 namespace App\Livewire;
 
 use App\Models\Event;
-use Illuminate\Support\Collection;
+use App\Models\Testimonial;
 use Livewire\Component;
 
-class EventKeynoteSpeakers extends Component
+class Testimonials extends Component
 {
     public ?Event $event = null;
-
-    public Collection $guests;
 
     public function mount(Event|string|null $event = null, ?string $eventSlug = null): void
     {
         $this->event = $this->resolveEvent($event, $eventSlug);
-        $this->guests = $this->event?->eventGuests()
-            ->where('is_visible', true)
-            ->with('guest')
-            ->orderBy('sort_order')
-            ->get() ?? collect();
     }
 
     public function render()
     {
-        return view('livewire.event-keynote-speakers');
+        if (!$this->event) {
+            return view('livewire.testimonials', ['testimonials' => collect()]);
+        }
+
+        $testimonials = $this->event->eventTestimonials()
+            ->where('is_visible', true)
+            ->with('testimonial')
+            ->orderBy('sort_order')
+            ->get()
+            ->pluck('testimonial')
+            ->filter();
+
+        return view('livewire.testimonials', [
+            'testimonials' => $testimonials,
+        ]);
     }
 
     private function resolveEvent(Event|string|null $event, ?string $eventSlug): ?Event
@@ -36,7 +43,7 @@ class EventKeynoteSpeakers extends Component
         $slug = $eventSlug ?? (is_string($event) ? $event : null);
 
         if ($slug) {
-            return Event::where('slug', $slug)->firstOrFail();
+            return Event::where('slug', $slug)->first();
         }
 
         return Event::active()->first() ?? Event::upcoming()->orderBy('start_date')->first();

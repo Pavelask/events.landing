@@ -6,13 +6,15 @@ use Illuminate\Support\Facades\Storage;
     <h2 class="mt-3 text-4xl font-bold text-[var(--color-text)]">Наши спикеры</h2>
 
     <div class="mt-12 grid grid-cols-2 gap-8 md:grid-cols-4">
-        @forelse ($speakers as $speaker)
-            <div class="speaker-card rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white p-4 text-center shadow-sm hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all">
+        @forelse ($speakers as $eventSpeaker)
+            @php $speaker = $eventSpeaker->speaker; @endphp
+            @if ($speaker)
+            <div class="speaker-card rounded-[var(--radius-card)] border {{ $eventSpeaker->is_keynote ? 'border-2 border-[var(--color-primary)] bg-slate-50' : 'border-[var(--color-border)] bg-white' }} p-4 text-center shadow-sm hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 transition-all">
                 @if($speaker->photo_url)
                     <img
                         src="{{ $speaker->photo_url }}"
                         alt="{{ $speaker->name }}"
-                        class="mx-auto h-32 w-32 rounded-[var(--radius-round)] object-cover shadow-md"
+                        class="mx-auto h-32 w-32 rounded-[var(--radius-round)] object-cover shadow-md {{ $eventSpeaker->is_keynote ? 'ring-2 ring-[var(--color-primary)] ring-offset-2' : '' }}"
                     />
                 @else
                     <img
@@ -28,10 +30,14 @@ use Illuminate\Support\Facades\Storage;
                 @if ($speaker->organization)
                     <p class="text-sm text-[var(--color-muted)]">{{ $speaker->organization }}</p>
                 @endif
+                @if ($eventSpeaker->is_keynote)
+                    <span class="mt-2 inline-block rounded-[var(--radius-btn)] bg-[var(--color-primary)] px-3 py-1 text-xs font-semibold text-white">VIP</span>
+                @endif
                 @if ($speaker->description)
                     <div class="mt-2 text-xs text-[var(--color-muted)] text-left">{!! $speaker->description !!}</div>
                 @endif
             </div>
+            @endif
         @empty
             <p class="col-span-full text-center text-[var(--color-muted)]">Спикеры пока не добавлены.</p>
         @endforelse

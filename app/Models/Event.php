@@ -34,7 +34,9 @@ class Event extends Model
     public function speakers(): BelongsToMany { return $this->belongsToMany(Speaker::class)->withPivot(['is_keynote','sort_order'])->withTimestamps()->orderByPivot('sort_order'); }
     public function keynoteSpeakers(): BelongsToMany { return $this->speakers()->wherePivot('is_keynote', true); }
     public function eventGuests(): HasMany { return $this->hasMany(EventGuest::class)->orderBy('sort_order'); }
-    public function guests(): BelongsToMany { return $this->belongsToMany(Guest::class)->withPivot('sort_order')->withTimestamps()->orderByPivot('sort_order'); }
+    public function guests(): BelongsToMany { return $this->belongsToMany(Guest::class)->withPivot(['is_visible','sort_order'])->withTimestamps()->orderByPivot('sort_order'); }
+    public function eventTestimonials(): HasMany { return $this->hasMany(EventTestimonial::class)->orderBy('sort_order'); }
+    public function testimonials(): BelongsToMany { return $this->belongsToMany(Testimonial::class, 'event_testimonial')->withPivot(['sort_order','is_visible'])->withTimestamps()->orderByPivot('sort_order'); }
     public function scheduleEvents(): HasManyThrough { return $this->hasManyThrough(ScheduleEvent::class, EventDay::class); }
 
     public function getIsActiveAttribute(): bool
