@@ -393,11 +393,13 @@
                 <h2 class="mt-3 text-4xl font-bold">{{ $activeEvent->venue_name }}</h2>
                 <p class="mt-4 text-[var(--color-text-secondary)]">{{ $activeEvent->venue_address }}</p>
                 <p class="mt-6 text-[var(--color-text-secondary)]">{!! $activeEvent->venue_how_to_get !!}</p>
-            </div cla>@if($activeEvent->venue_lat && $activeEvent->venue_lng)
-                <iframe class="h-96 w-full rounded-[var(--radius-card)] border border-[var(--color-border)]"
+            </div>
+            @if($activeEvent->venue_lat && $activeEvent->venue_lng)
+                <iframe class="h-96 w-full rounded-[var(--radius-card)] border-2 border-[var(--color-primary)]/30"
                         src="https://yandex.ru/map-widget/v1/?ll={{ $activeEvent->venue_lng }}%2C{{ $activeEvent->venue_lat }}&z=15&pt={{ $activeEvent->venue_lng }},{{ $activeEvent->venue_lat }},pm2rdm"
                         loading="lazy"></iframe>
-            @endif</div>
+            @endif
+        </div>
     </section>
 @endif
 

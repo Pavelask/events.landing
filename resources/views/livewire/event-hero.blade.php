@@ -20,12 +20,12 @@ use Illuminate\Support\Facades\Storage;
                                  data-swiper-parallax-x="-25%"></div>
                         @endif
                         {{-- Градиент-затемнение поверх изображения --}}
-                        <div class="absolute inset-0 bg-gradient-to-t from-[var(--color-text)]/80 via-black/30 to-transparent"></div>
+                        <div class="absolute inset-0 bg-black/40"></div>
                         {{-- Блок контента: левый нижний угол, отступ снизу для пагинации --}}
                         <div class="absolute bottom-16 left-0 z-10 w-full px-6 md:bottom-24">
                             <div class="mx-auto max-w-7xl">
                                 {{-- Заголовок — появляется вторым --}}
-                                <h1 class="max-w-4xl text-4xl font-bold uppercase leading-tight md:text-6xl lg:text-7xl text-white"
+                                <h1 class="max-w-4xl text-4xl font-bold uppercase leading-tight md:text-4xl lg:text-4xl text-white"
                                     data-swiper-parallax-x="-400"
                                     data-swiper-parallax-duration="600"
                                     data-swiper-parallax-opacity="0">
@@ -67,9 +67,13 @@ use Illuminate\Support\Facades\Storage;
 
             {{-- Пагинация (точки) - цвет primary --}}
             <div class="swiper-pagination !text-[var(--color-primary)]"></div>
-            {{-- Стрелки навигации — круглые --}}
-            <div class="swiper-button-prev !text-white rounded-[var(--radius-round)] bg-black/30 backdrop-blur-sm w-10 h-10 flex items-center justify-center"></div>
-            <div class="swiper-button-next !text-white rounded-[var(--radius-round)] bg-black/30 backdrop-blur-sm w-10 h-10 flex items-center justify-center"></div>
+            {{-- Стрелки навигации — иконки --}}
+            <div class="swiper-button-prev !text-white">
+                <x-heroicon-o-chevron-left class="h-6 w-6" />
+            </div>
+            <div class="swiper-button-next !text-white">
+                <x-heroicon-o-chevron-right class="h-6 w-6" />
+            </div>
         </div>
     @else
         {{-- Заглушка, если нет активного мероприятия --}}

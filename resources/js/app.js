@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const animatedElements = gsap.utils.toArray('.about-event,.speaker-card,.keynote-card,.timeline-item,.faq-item,.archive-banner');
+    const animatedElements = gsap.utils.toArray('.about-event,.speaker-card,.keynote-card,.timeline-item,.faq-item,.archive-banner,.schedule-card');
 
     animatedElements.forEach(el => {
         gsap.from(el, {
