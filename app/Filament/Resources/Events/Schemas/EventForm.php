@@ -347,7 +347,6 @@ class EventForm
                                             ->relationship('guest', 'name')
                                             ->searchable()
                                             ->preload()
-                                            ->required()
                                             ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
                                         TextInput::make('sort_order')
                                             ->label('Порядок')
