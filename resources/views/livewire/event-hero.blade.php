@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Storage;
                          style="background-color: {{ $slide->background_color ?? '#f7f7f7' }}">
                         @if($slide->image)
                             {{-- Фоновое изображение 100% площади с параллаксом справа налево --}}
-                            <div class="absolute inset-0 bg-center"
-                                 style="background-image:url('{{ Storage::url($slide->image) }}'); background-size: 130% 130%;"
+                            <div class="absolute inset-0 bg-cover bg-center"
+                                 style="background-image:url('{{ Storage::url($slide->image) }}');"
                                  data-swiper-parallax-x="-25%"></div>
                         @endif
                         {{-- Градиент-затемнение поверх изображения --}}
@@ -25,19 +25,19 @@ use Illuminate\Support\Facades\Storage;
                         <div class="absolute bottom-16 left-0 z-10 w-full px-6 md:bottom-24">
                             <div class="mx-auto max-w-7xl">
                                 {{-- Заголовок — появляется вторым --}}
-                                <h1 class="max-w-4xl text-4xl font-bold uppercase leading-tight md:text-4xl lg:text-4xl text-white"
+                                <h1 class="max-w-4xl text-xl font-bold uppercase leading-tight md:text-3xl lg:text-3xl text-white"
                                     data-swiper-parallax-x="-400"
                                     data-swiper-parallax-duration="600"
                                     data-swiper-parallax-opacity="0">
                                     {!! $slide->title ?: $event->title !!}
                                 </h1>
                                 {{-- Подзаголовок — появляется третьим --}}
-                                <p class="mt-4 max-w-2xl text-lg text-white/90 md:text-xl lg:text-2xl"
+                                <div class="mt-4 max-w-2xl text-base text-white/70 md:text-lg lg:text-xl [&>p]:text-white/90"
                                    data-swiper-parallax-x="-300"
                                    data-swiper-parallax-duration="1800"
                                    data-swiper-parallax-opacity="0">
                                     {!! $slide->subtitle ?: $event->description !!}
-                                </p>
+                                </div>
                                 {{-- Кнопка — появляется последней --}}
                                 @if($slide->is_button_visible)
                                     <a href="{{ $slide->button_url ?: '#' }}"
@@ -57,8 +57,8 @@ use Illuminate\Support\Facades\Storage;
                         <div class="absolute inset-0 bg-gradient-to-t from-[var(--color-text)]/80 via-black/40 to-transparent"></div>
                         <div class="absolute bottom-16 left-0 z-10 w-full px-6 md:bottom-24">
                             <div class="mx-auto max-w-7xl">
-                                <h1 class="max-w-4xl text-4xl font-bold uppercase leading-tight md:text-6xl lg:text-7xl text-white">{!! $event->title !!}</h1>
-                                <p class="mt-4 max-w-2xl text-lg text-white/90 md:text-xl lg:text-2xl">{!! $event->description !!}</p>
+                                <h1 class="max-w-4xl text-xl font-bold uppercase leading-tight md:text-3xl lg:text-3xl text-white">{!! $event->title !!}</h1>
+                                <div class="mt-4 max-w-2xl text-base text-white/90 md:text-lg lg:text-xl [&>p]:text-white/90">{!! $event->description !!}</div>
                             </div>
                         </div>
                     </div>
