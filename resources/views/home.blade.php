@@ -304,7 +304,7 @@
     <section id="faq" class="faq-section bg-white py-20 text-[var(--color-text)]">
         <div class="mx-auto max-w-4xl px-6">
             <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">Часто задаваемые вопросы</p>
-            <h2 class="mt-3 text-4xl font-bold text-[var(--color-text)]">FAQ</h2>
+            <!-- <h2 class="mt-3 text-4xl font-bold text-[var(--color-text)]">FAQ</h2> -->
 
             <div class="mt-12 space-y-4">
                 @foreach($activeEvent->faqs as $faq)
