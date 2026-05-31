@@ -285,14 +285,13 @@ class EventForm
                                 ->addActionLabel('Добавить документ')
                                 ->schema([
                                     TextInput::make('id')->hidden(),
-                                    TextInput::make('title')->label('Название документа')->required()->columnSpanFull(),
+                                    TextInput::make('title')->label('Название документа')->columnSpanFull(),
                                     FileUpload::make('file_path')
                                         ->label('Файл')
                                         ->disk('public')
                                         ->visibility('public')
                                         ->directory('events/documents')
-                                        ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
-                                        ->required(),
+                                        ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']),
                                     TextInput::make('sort_order')->label('Порядок')->numeric()->default(0),
                                 ])
                                 ->orderColumn('sort_order')
