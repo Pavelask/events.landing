@@ -34,7 +34,7 @@ class EventSeeder extends Seeder
             'venue_lat' => 55.753215,
             'venue_lng' => 37.542565,
             'venue_how_to_get' => 'Метро: Выставочная, Деловой центр. Автобусы: м2, м27, м29, 12ц. Парковка: подземный паркинг на 2000 мест.',
-            'registration_type' => 'form',
+            'registration_type' => 'yandex',
             'is_registration_open' => true,
             'contact_email' => 'info@landing.test',
             'contact_phone' => '+7 (495) 123-45-67',

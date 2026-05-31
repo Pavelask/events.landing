@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('event_guest', function (Blueprint $table) {
-            $table->boolean('is_keynote')->default(false)->after('is_visible');
-        });
+        if (!Schema::hasColumn('event_guest', 'is_keynote')) {
+            Schema::table('event_guest', function (Blueprint $table) {
+                $table->boolean('is_keynote')->default(false)->after('is_visible');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('event_guest', function (Blueprint $table) {
-            $table->dropColumn('is_keynote');
-        });
+        if (Schema::hasColumn('event_guest', 'is_keynote')) {
+            Schema::table('event_guest', function (Blueprint $table) {
+                $table->dropColumn('is_keynote');
+            });
+        }
     }
 };
