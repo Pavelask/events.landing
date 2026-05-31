@@ -3,11 +3,12 @@
 namespace App\Filament\Resources\Testimonials\Tables;
 
 use App\Models\Testimonial;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Support\Enums\MaxWidth;
-use Filament\Tables\Actions\BulkAction;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -51,11 +52,9 @@ class TestimonialsTable
                     ->offIcon('heroicon-o-x-circle')
                     ->onColor('success')
                     ->offColor('gray')
-                    ->helperText('Показывать отзыв на сайте')
                     ->afterStateUpdated(function (Testimonial $record, $state) {
                         $record->update(['is_active' => $state]);
-                    })
-                    ->visibleInModal(false),
+                    }),
 
                 TextColumn::make('sort_order')
                     ->label('Сортировка')
@@ -87,7 +86,7 @@ class TestimonialsTable
                         ->color('success')
                         ->modalHeading('Активировать отзывы')
                         ->modalDescription('Вы действительно хотите активировать выбранные отзывы?')
-                        ->modalWidth(MaxWidth::Large)
+                        ->modalWidth(Width::Large)
                         ->requiresConfirmation()
                         ->action(function ($records) {
                             $records->each(fn ($record) => $record->update(['is_active' => true]));
@@ -99,7 +98,7 @@ class TestimonialsTable
                         ->color('warning')
                         ->modalHeading('Скрыть отзывы')
                         ->modalDescription('Вы действительно хотите скрыть выбранные отзывы?')
-                        ->modalWidth(MaxWidth::Large)
+                        ->modalWidth(Width::Large)
                         ->requiresConfirmation()
                         ->action(function ($records) {
                             $records->each(fn ($record) => $record->update(['is_active' => false]));
