@@ -185,7 +185,7 @@
             @if($activeEvent?->logo)
                 <img src="{{ asset('storage/'.$activeEvent->logo) }}" class="h-10 w-10 rounded-full object-cover" alt="Logo">
             @endif
-            <span>{{ $activeEvent?->title ?? 'Fifth Event' }}</span>
+            <span class="text-sm md:block hidden">{{ $activeEvent?->title ?? 'Fifth Event' }}</span>
         </a>
         <div class="hidden items-center gap-6 text-sm font-medium md:flex">
             <a href="#speakers" class="hover:text-[var(--color-primary)] transition-colors">СПИКЕРЫ</a>
