@@ -1,4 +1,5 @@
-import Alpine from 'alpinejs';
+// Alpine.js управляется Livewire автоматически
+// Импорты библиотек
 import Swiper from 'swiper';
 import { Navigation, Pagination, Parallax } from 'swiper/modules';
 import Plyr from 'plyr';
@@ -16,9 +17,7 @@ gsap.registerPlugin(ScrollTrigger);
 // Регистрация модулей Swiper
 Swiper.use([Navigation, Pagination, Parallax]);
 
-// Инициализация Alpine.js - отключено, Livewire управляет Alpine
-window.Alpine = Alpine;
-// Alpine.start(); // Livewire запустит Alpine автоматически
+// Alpine.js будет доступен глобально после запуска Livewire
 
 // Экспорт библиотек для использования в Blade-шаблонах
 window.Swiper = Swiper;
