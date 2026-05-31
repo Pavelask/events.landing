@@ -314,7 +314,7 @@ class EventForm
                                             ->relationship('speaker', 'name')
                                             ->searchable()
                                             ->preload()
-                                            ->required(),
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
                                         TextInput::make('sort_order')
                                             ->label('Порядок')
                                             ->numeric()
