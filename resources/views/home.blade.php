@@ -217,7 +217,7 @@
         <div class="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-2">
             <div>
                 <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">О мероприятии</p>
-                <h2 class="mt-3 text-4xl md:text-5xl font-bold text-[var(--color-text)] leading-tight">{{ $activeEvent->title }}</h2>
+                <h2 class="mt-3 text-2xl md:text-3xl font-bold text-[var(--color-text)] leading-tight">{{ $activeEvent->title }}</h2>
                 <p class="mt-8 text-lg text-[var(--color-text-secondary)] leading-relaxed">{!! $activeEvent->description !!}</p>
                 <div class="mt-10 grid gap-6 sm:grid-cols-6">
                     <div class="event-card p-8 sm:col-span-5 text-center">
@@ -395,7 +395,7 @@
     <section id="venue" class="bg-[var(--color-background)] pt-20 pb-20 text-[var(--color-text)]" style="background-color: #e5e5e5;">
         <div class="mx-auto grid max-w-7xl gap-8 px-6 lg:grid-cols-2">
             <div><p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs">Место проведения</p>
-                <h2 class="mt-3 text-4xl font-bold">{{ $activeEvent->venue_name }}</h2>
+                <h2 class="mt-3 text-2xl font-bold">{{ $activeEvent->venue_name }}</h2>
                 <p class="mt-4 text-[var(--color-text-secondary)]">{{ $activeEvent->venue_address }}</p>
                 <p class="mt-6 text-[var(--color-text-secondary)]">{!! $activeEvent->venue_how_to_get !!}</p>
             </div>

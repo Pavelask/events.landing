@@ -29,14 +29,14 @@ use Illuminate\Support\Facades\Storage;
                                     data-swiper-parallax-x="-400"
                                     data-swiper-parallax-duration="600"
                                     data-swiper-parallax-opacity="0">
-                                    {{ $slide->title ?: $event->title }}
+                                    {!! $slide->title ?: $event->title !!}
                                 </h1>
                                 {{-- Подзаголовок — появляется третьим --}}
                                 <p class="mt-4 max-w-2xl text-lg text-white/90 md:text-xl lg:text-2xl"
                                    data-swiper-parallax-x="-300"
                                    data-swiper-parallax-duration="1800"
                                    data-swiper-parallax-opacity="0">
-                                    {{ $slide->subtitle ?: $event->description }}
+                                    {!! $slide->subtitle ?: $event->description !!}
                                 </p>
                                 {{-- Кнопка — появляется последней --}}
                                 @if($slide->is_button_visible)
@@ -57,8 +57,8 @@ use Illuminate\Support\Facades\Storage;
                         <div class="absolute inset-0 bg-gradient-to-t from-[var(--color-text)]/80 via-black/40 to-transparent"></div>
                         <div class="absolute bottom-16 left-0 z-10 w-full px-6 md:bottom-24">
                             <div class="mx-auto max-w-7xl">
-                                <h1 class="max-w-4xl text-4xl font-bold uppercase leading-tight md:text-6xl lg:text-7xl text-white">{{ $event->title }}</h1>
-                                <p class="mt-4 max-w-2xl text-lg text-white/90 md:text-xl lg:text-2xl">{{ $event->description }}</p>
+                                <h1 class="max-w-4xl text-4xl font-bold uppercase leading-tight md:text-6xl lg:text-7xl text-white">{!! $event->title !!}</h1>
+                                <p class="mt-4 max-w-2xl text-lg text-white/90 md:text-xl lg:text-2xl">{!! $event->description !!}</p>
                             </div>
                         </div>
                     </div>
