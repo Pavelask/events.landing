@@ -18,7 +18,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -158,7 +157,20 @@ class EventForm
                                         TextInput::make('venue_lat')->label('Широта')->numeric()->minValue(-90)->maxValue(90)->step(0.000001),
                                         TextInput::make('venue_lng')->label('Долгота')->numeric()->minValue(-180)->maxValue(180)->step(0.000001),
                                     ]),
-                                    Textarea::make('venue_how_to_get')->label('Как добраться')->rows(3)->columnSpanFull(),
+                                    RichEditor::make('venue_how_to_get')
+                                        ->label('Как добраться')
+                                        ->toolbarButtons([
+                                            'bold',
+                                            'bulletList',
+                                            'italic',
+                                            'link',
+                                            'orderedList',
+                                            'redo',
+                                            'strike',
+                                            'underline',
+                                            'undo',
+                                        ])
+                                        ->columnSpanFull(),
                                     Grid::make(2)->schema([
                                         TextInput::make('contact_email')->label('Email')->email(),
                                         TextInput::make('contact_phone')
