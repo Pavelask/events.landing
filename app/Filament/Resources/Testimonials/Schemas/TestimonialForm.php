@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\Testimonials\Schemas;
 
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -54,22 +54,21 @@ class TestimonialForm
                 ->maxSize(5000)
                 ->helperText('Круглое фото, рекомендуется 300x300px'),
 
-            Grid::make([
-                Radio::make('is_active')
-                    ->label('Статус')
-                    ->options([
-                        true => 'Активен',
-                        false => 'Скрыт',
-                    ])
-                    ->inline()
-                    ->default(true),
+            Grid::make(2)
+                ->schema([
+                    Toggle::make('is_active')
+                        ->label('Статус')
+                        ->onIcon('heroicon-m-check-circle')
+                        ->offIcon('heroicon-m-x-circle')
+                        ->default(true)
+                        ->helperText('Показывать отзыв на сайте'),
 
-                TextInput::make('sort_order')
-                    ->label('Порядок отображения')
-                    ->numeric()
-                    ->default(0)
-                    ->helperText('Меньшие значения отображаются первыми'),
-            ])->columns(2),
+                    TextInput::make('sort_order')
+                        ->label('Порядок отображения')
+                        ->numeric()
+                        ->default(0)
+                        ->helperText('Меньшие значения отображаются первыми'),
+                ]),
         ]);
     }
 }

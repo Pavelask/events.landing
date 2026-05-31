@@ -3,7 +3,7 @@ use Illuminate\Support\Facades\Storage;
 @endphp
 <section id="speakers" class="speakers-grid mx-auto max-w-6xl px-4 py-20 text-[var(--color-text)] bg-white">
     <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">Спикеры</p>
-    <h2 class="mt-3 text-4xl font-bold text-[var(--color-text)]">Наши спикеры</h2>
+    <!-- <h2 class="mt-3 text-4xl font-bold text-[var(--color-text)]">Наши спикеры</h2> -->
 
     <div class="mt-12 grid grid-cols-2 gap-8 md:grid-cols-4">
         @forelse ($speakers as $eventSpeaker)
@@ -29,9 +29,6 @@ use Illuminate\Support\Facades\Storage;
                 @endif
                 @if ($speaker->organization)
                     <p class="text-sm text-[var(--color-muted)]">{{ $speaker->organization }}</p>
-                @endif
-                @if ($eventSpeaker->is_keynote)
-                    <span class="mt-2 inline-block rounded-[var(--radius-btn)] bg-[var(--color-primary)] px-3 py-1 text-xs font-semibold text-white">VIP</span>
                 @endif
                 @if ($speaker->description)
                     <div class="mt-2 text-xs text-[var(--color-muted)] text-left">{!! $speaker->description !!}</div>

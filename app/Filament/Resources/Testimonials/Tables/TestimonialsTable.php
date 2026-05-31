@@ -6,8 +6,11 @@ use App\Models\Testimonial;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Support\Enums\MaxWidth;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
@@ -42,6 +45,18 @@ class TestimonialsTable
                     ->formatStateUsing(fn ($state) => $state ? 'Активен' : 'Скрыт')
                     ->color(fn ($state) => $state ? 'success' : 'gray'),
 
+                ToggleColumn::make('is_active')
+                    ->label('Включен')
+                    ->onIcon('heroicon-o-check-circle')
+                    ->offIcon('heroicon-o-x-circle')
+                    ->onColor('success')
+                    ->offColor('gray')
+                    ->helperText('Показывать отзыв на сайте')
+                    ->afterStateUpdated(function (Testimonial $record, $state) {
+                        $record->update(['is_active' => $state]);
+                    })
+                    ->visibleInModal(false),
+
                 TextColumn::make('sort_order')
                     ->label('Сортировка')
                     ->sortable(),
@@ -66,6 +81,30 @@ class TestimonialsTable
             ])
             ->bulkActions([
                 BulkActionGroup::make([
+                    BulkAction::make('activate')
+                        ->label('Активировать выбранные')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->modalHeading('Активировать отзывы')
+                        ->modalDescription('Вы действительно хотите активировать выбранные отзывы?')
+                        ->modalWidth(MaxWidth::Large)
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $records->each(fn ($record) => $record->update(['is_active' => true]));
+                        }),
+
+                    BulkAction::make('deactivate')
+                        ->label('Скрыть выбранные')
+                        ->icon('heroicon-o-eye-slash')
+                        ->color('warning')
+                        ->modalHeading('Скрыть отзывы')
+                        ->modalDescription('Вы действительно хотите скрыть выбранные отзывы?')
+                        ->modalWidth(MaxWidth::Large)
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $records->each(fn ($record) => $record->update(['is_active' => false]));
+                        }),
+
                     DeleteBulkAction::make(),
                 ]),
             ]);

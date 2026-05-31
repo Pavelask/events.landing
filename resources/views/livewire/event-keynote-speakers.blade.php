@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Storage;
 <section id="keynote" class="keynote-section py-20 text-[var(--color-text)] bg-[var(--color-background)]">
     <div class="mx-auto max-w-6xl px-4">
         <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">Приглашённые гости</p>
-        <h2 class="mt-3 text-4xl font-bold text-[var(--color-text)]">VIP-гости</h2>
+        <!-- <h2 class="mt-3 text-4xl font-bold text-[var(--color-text)]">Гости</h2> -->
 
         <div class="mt-12 grid grid-cols-2 gap-8 md:grid-cols-4">
         @forelse ($guests as $eventGuest)
@@ -22,9 +22,6 @@ use Illuminate\Support\Facades\Storage;
                 @endif
                 @if ($guest->organization)
                     <p class="text-sm text-[var(--color-muted)]">{{ $guest->organization }}</p>
-                @endif
-                @if ($eventGuest->is_keynote)
-                    <span class="mt-2 inline-block rounded-[var(--radius-btn)] bg-[var(--color-primary)] px-3 py-1 text-xs font-semibold text-white">VIP</span>
                 @endif
                 @if ($guest->description)
                     <div class="mt-2 text-xs text-[var(--color-muted)] text-left">{!! $guest->description !!}</div>

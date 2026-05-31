@@ -2,7 +2,7 @@
     <section id="documents" class="bg-[var(--color-background)] py-20 text-[var(--color-text)]">
         <div class="mx-auto max-w-6xl px-4">
             <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">Документы</p>
-            <h2 class="mt-3 text-4xl font-bold text-[var(--color-text)]">Документы мероприятия</h2>
+            <!-- <h2 class="mt-3 text-4xl font-bold text-[var(--color-text)]">Документы мероприятия</h2> -->
 
             <div class="mt-12 grid gap-6 sm:grid-cols-2">
                 @foreach($documents as $doc)

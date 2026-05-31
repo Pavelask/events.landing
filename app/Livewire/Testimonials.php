@@ -23,7 +23,9 @@ class Testimonials extends Component
 
         $testimonials = $this->event->eventTestimonials()
             ->where('is_visible', true)
-            ->with('testimonial')
+            ->with(['testimonial' => function ($query) {
+                $query->where('is_active', true);
+            }])
             ->orderBy('sort_order')
             ->get()
             ->pluck('testimonial')
