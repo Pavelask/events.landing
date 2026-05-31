@@ -465,7 +465,7 @@ class EventForm
                                                     ->imageEditor(),
                                                 ColorPicker::make('color')->label('Цвет точки'),
                                             ]),
-                                            TextInput::make('title')->label('Название')->required()->columnSpanFull(),
+                                            TextInput::make('title')->label('Название')->columnSpanFull(),
                                             Textarea::make('description')->label('Описание')->rows(2)->columnSpanFull(),
                                             Grid::make(4)->schema([
                                                 Select::make('speaker_id')->label('Спикер')->relationship('speaker', 'name')->searchable()->preload(),
