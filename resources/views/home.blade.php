@@ -333,8 +333,8 @@
     <section id="gallery" class="bg-[#f0f0f0] py-20 text-[var(--color-text)]"
              x-data="{ open: false, index: 0, images: {{ json_encode($galleryImages) }}, next() { this.index = (this.index + 1) % this.images.length }, prev() { this.index = (this.index - 1 + this.images.length) % this.images.length }, close() { this.open = false } }">
         <div class="mx-auto max-w-7xl px-6">
-            <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2 text-center">Галерея мероприятия</p>
-            <h2 class="mt-3 text-center text-4xl font-bold text-[var(--color-text)]">Фотогалерея</h2>
+            <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2 text-center">Фотографии с предыдущих мероприятий</p>
+            <!-- <h2 class="mt-3 text-center text-4xl font-bold text-[var(--color-text)]">Фотогалерея</h2> -->
 
             <div class="mt-12 columns-2 gap-4 space-y-4 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6">
                 @foreach($galleryImages as $idx => $image)
