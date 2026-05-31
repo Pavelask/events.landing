@@ -2,13 +2,14 @@
 
 namespace App\Livewire;
 
+use App\Models\Event;
 use Livewire\Component;
 
 class EventRegistration extends Component
 {
-    public ?\App\Models\Event $event = null;
+    public ?Event $event = null;
 
-    public function mount(\App\Models\Event $event = null): void
+    public function mount(?Event $event = null): void
     {
         $this->event = $event;
     }
