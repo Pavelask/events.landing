@@ -1,7 +1,7 @@
 // Alpine.js управляется Livewire автоматически
 // Импорты библиотек
 import Swiper from 'swiper';
-import { Navigation, Pagination, Parallax } from 'swiper/modules';
+import { Navigation, Pagination, Parallax, Autoplay } from 'swiper/modules';
 import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
 import gsap from 'gsap';
@@ -15,7 +15,7 @@ window.ScrollTrigger = ScrollTrigger;
 gsap.registerPlugin(ScrollTrigger);
 
 // Регистрация модулей Swiper
-Swiper.use([Navigation, Pagination, Parallax]);
+Swiper.use([Navigation, Pagination, Parallax, Autoplay]);
 
 // Alpine.js будет доступен глобально после запуска Livewire
 
@@ -124,50 +124,61 @@ window.addEventListener('scroll', () => {
 
 // Инициализация Swiper
 function initSwiper() {
-    if (document.querySelector('.hero-swiper')) {
-        new Swiper('.hero-swiper', {
-            loop: true,                          // Бесконечная прокрутка
-            speed: 900,                           // Скорость перехода между слайдами (мс)
-            parallax: true,                       // Эффект параллакса для фоновых изображений
-            autoplay: {                            // Автоматическая смена слайдов
-                delay: 3000,                       // Интервал 3 секунды
-                disableOnInteraction: false,       // Продолжать автоплей после взаимодействия
+    const heroSwiperEl = document.querySelector('.hero-swiper');
+    
+    if (heroSwiperEl) {
+        console.log('Hero swiper found, initializing...');
+        
+        // Проверяем, что слайды есть
+        const slides = heroSwiperEl.querySelectorAll('.swiper-slide');
+        console.log('Slides count:', slides.length);
+        
+        if (slides.length < 2) {
+            console.log('Less than 2 slides, autoplay not needed');
+            return;
+        }
+        
+        const swiper = new Swiper('.hero-swiper', {
+            loop: false,
+            speed: 900,
+            parallax: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+                enabled: true,
             },
-            pagination: {                         // Точки пагинации с превью
+            pagination: {
                 el: '.swiper-pagination',
-                clickable: true,                  // Клик по точке переключает слайд
-                type: 'bullets',                   // Тип пагинации — точки-превью
+                clickable: true,
+                type: 'bullets',
             },
-            navigation: {                         // Стрелки навигации
+            navigation: {
                 nextEl: '.swiper-button-next',
                 prevEl: '.swiper-button-prev',
             },
-            thumbs: {                              // Превью слайдов (миниатюры)
-                swiper: null,                      // Инициализируется отдельно, если есть .hero-thumbs
+            on: {
+                init: function() {
+                    console.log('Swiper initialized with', this.slides.length, 'slides');
+                    console.log('Autoplay enabled:', this.params.autoplay.enabled);
+                }
             },
         });
-
-        // Превью-слайдер (миниатюры под основным)
-        const thumbsEl = document.querySelector('.hero-thumbs');
-        if (thumbsEl) {
-            const thumbsSwiper = new Swiper('.hero-thumbs', {
-                loop: true,
-                spaceBetween: 10,                  // Отступ между миниатюрами
-                slidesPerView: 4,                  // Количество видимых миниатюр
-                watchSlidesProgress: true,         // Отслеживание прогресса для синхронизации
-                freeMode: true,                    // Свободная прокрутка миниатюр
-            });
-
-            // Привязываем основной слайдер к превью
-            document.querySelector('.hero-swiper').swiper.controller.control = thumbsSwiper;
-            thumbsSwiper.controller.control = document.querySelector('.hero-swiper').swiper;
-        }
+        console.log('Hero swiper initialized');
     }
 }
 
 // Анимация элементов при скролле и таймер обратного отсчета
 document.addEventListener('DOMContentLoaded', () => {
     initSwiper();
+
+    // Повторная инициализация Swiper после Livewire обновления
+    if (window.Livewire) {
+        window.Livewire.on('refreshSwiper', () => {
+            console.log('Refreshing Swiper...');
+            setTimeout(() => initSwiper(), 100);
+        });
+    }
 
     // GSAP инициализация хедера
     const navbar = document.getElementById('main-navbar');

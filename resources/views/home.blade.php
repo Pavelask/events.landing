@@ -218,7 +218,7 @@
             <div>
                 <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">О мероприятии</p>
                 <h2 class="mt-3 text-2xl md:text-3xl font-bold text-[var(--color-text)] leading-tight">{{ $activeEvent->title }}</h2>
-                <p class="mt-8 text-lg text-[var(--color-text-secondary)] leading-relaxed">{!! $activeEvent->description !!}</p>
+                <p class="mt-8 text-xl md:text-2xl text-[var(--color-text-secondary)] leading-relaxed">{{ strip_tags($activeEvent->description) }}</p>
                 <div class="mt-10 grid gap-6 sm:grid-cols-6">
                     <div class="event-card p-8 sm:col-span-5 text-center">
                         <div class="text-xs font-semibold uppercase tracking-wide text-[var(--color-muted)]">Даты проведения мероприятия</div>
