@@ -467,7 +467,7 @@
                                             'rutube' => 'rutube',
                                             'ok', 'odnoklassniki' => 'ok',
                                             'max' => 'max',
-                                            'default' => 'default',
+                                            default => 'default',
                                         };
                                     @endphp
                                     <a href="{{ $url }}" target="_blank" class="text-gray-400 hover:text-white transition-colors" title="{{ $platform }}">
@@ -484,7 +484,7 @@
                                         @elseif($platformLower === 'max')
                                             <x-social-icons.max class="w-6 h-6 social-icon {{ $iconClass }}" />
                                         @else
-                                            <x-heroicon-o-link class="w-6 h-6 social-icon {{ $iconClass }}" />
+                                            <x-heroicon-o-link class="w-6 h-6 social-icon social-icon-default" />
                                         @endif
                                     </a>
                                 @endif

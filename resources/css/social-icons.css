@@ -11,6 +11,17 @@
     filter: brightness(1.2);
 }
 
+/* Generic link icon as fallback */
+.social-icon-default {
+    color: #9CA3AF;
+}
+
+.social-icon-default:hover {
+    color: #6B7280;
+    background: rgba(156, 163, 175, 0.1);
+    border-radius: 50%;
+}
+
 /* Telegram */
 .social-icon.telegram {
     color: #229ED9;
@@ -74,16 +85,5 @@
 .social-icon.max:hover {
     color: #6d28d9;
     background: rgba(124, 58, 237, 0.1);
-    border-radius: 50%;
-}
-
-/* Generic link icon as fallback */
-.social-icon.default {
-    color: #9CA3AF;
-}
-
-.social-icon.default:hover {
-    color: #6B7280;
-    background: rgba(156, 163, 175, 0.1);
     border-radius: 50%;
 }
