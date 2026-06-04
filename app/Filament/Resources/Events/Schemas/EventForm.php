@@ -304,7 +304,7 @@ class EventForm
                                         ->visibility('public')
                                         ->directory('events/documents')
                                         ->acceptedFileTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])
-                                        ->useOriginalFileName(),
+                                        ->preserveFilenames(),
                                     TextInput::make('sort_order')->label('Порядок')->numeric()->default(0),
                                 ])
                                 ->orderColumn('sort_order')
