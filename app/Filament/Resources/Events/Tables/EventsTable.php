@@ -26,6 +26,7 @@ class EventsTable
                     ->label('Название')
                     ->searchable()
                     ->sortable()
+                    ->wrap()
                     ->description(fn (Event $record): string => $record->start_date->format('d M Y') . ' - ' . $record->end_date->format('d M Y')),
                 TextColumn::make('status')
                     ->label('Статус')

@@ -37,8 +37,8 @@ class FaqResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('question')->label('Вопрос')->searchable()->sortable(),
-                TextColumn::make('answer')->label('Ответ')->html()->limit(100)->searchable(),
+                TextColumn::make('question')->label('Вопрос')->searchable()->sortable()->wrap(),
+                TextColumn::make('answer')->label('Ответ')->html()->limit(100)->searchable()->wrap(),
             ])
             ->recordActions([EditAction::make()])
             ->bulkActions([
