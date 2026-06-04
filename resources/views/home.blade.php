@@ -458,7 +458,35 @@
                         <div class="flex flex-wrap gap-3 mt-3">
                             @foreach($activeEvent->social_links as $platform => $url)
                                 @if($url)
-                                    <a href="{{ $url }}" target="_blank" class="text-gray-400 hover:text-white transition-colors" title="{{ $platform }}">{{ $platform }}</a>
+                                    @php
+                                        $platformLower = strtolower($platform);
+                                        $iconClass = match($platformLower) {
+                                            'telegram', 'tg' => 'telegram',
+                                            'vk', 'vkontakte' => 'vk',
+                                            'youtube', 'yt' => 'youtube',
+                                            'rutube' => 'rutube',
+                                            'ok', 'odnoklassniki' => 'ok',
+                                            'max' => 'max',
+                                            'default' => 'default',
+                                        };
+                                    @endphp
+                                    <a href="{{ $url }}" target="_blank" class="text-gray-400 hover:text-white transition-colors" title="{{ $platform }}">
+                                        @if($platformLower === 'telegram' || $platformLower === 'tg')
+                                            <x-social-icons.telegram class="w-6 h-6 social-icon {{ $iconClass }}" />
+                                        @elseif($platformLower === 'vk' || $platformLower === 'vkontakte')
+                                            <x-social-icons.vk class="w-6 h-6 social-icon {{ $iconClass }}" />
+                                        @elseif($platformLower === 'youtube' || $platformLower === 'yt')
+                                            <x-social-icons.youtube class="w-6 h-6 social-icon {{ $iconClass }}" />
+                                        @elseif($platformLower === 'rutube')
+                                            <x-social-icons.rutube class="w-6 h-6 social-icon {{ $iconClass }}" />
+                                        @elseif($platformLower === 'ok' || $platformLower === 'odnoklassniki')
+                                            <x-social-icons.ok class="w-6 h-6 social-icon {{ $iconClass }}" />
+                                        @elseif($platformLower === 'max')
+                                            <x-social-icons.max class="w-6 h-6 social-icon {{ $iconClass }}" />
+                                        @else
+                                            <x-heroicon-o-link class="w-6 h-6 social-icon {{ $iconClass }}" />
+                                        @endif
+                                    </a>
                                 @endif
                             @endforeach
                         </div>

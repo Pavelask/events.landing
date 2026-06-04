@@ -1,0 +1,89 @@
+/* Social Icons Custom Styles */
+.social-icon {
+    width: 32px;
+    height: 32px;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.social-icon:hover {
+    transform: scale(1.15);
+    filter: brightness(1.2);
+}
+
+/* Telegram */
+.social-icon.telegram {
+    color: #229ED9;
+}
+
+.social-icon.telegram:hover {
+    color: #1a8bc4;
+    background: rgba(34, 158, 217, 0.1);
+    border-radius: 50%;
+}
+
+/* VK */
+.social-icon.vk {
+    color: #0077FF;
+}
+
+.social-icon.vk:hover {
+    color: #0066cc;
+    background: rgba(0, 119, 255, 0.1);
+    border-radius: 50%;
+}
+
+/* YouTube */
+.social-icon.youtube {
+    color: #FF0000;
+}
+
+.social-icon.youtube:hover {
+    color: #cc0000;
+    background: rgba(255, 0, 0, 0.1);
+    border-radius: 50%;
+}
+
+/* Rutube */
+.social-icon.rutube {
+    color: #0055FF;
+}
+
+.social-icon.rutube:hover {
+    color: #0044cc;
+    background: rgba(0, 85, 255, 0.1);
+    border-radius: 50%;
+}
+
+/* OK (Odnoklassniki) */
+.social-icon.ok {
+    color: #EE8208;
+}
+
+.social-icon.ok:hover {
+    color: #cc7000;
+    background: rgba(238, 130, 8, 0.1);
+    border-radius: 50%;
+}
+
+/* MAX Messenger */
+.social-icon.max {
+    color: #7C3AED;
+}
+
+.social-icon.max:hover {
+    color: #6d28d9;
+    background: rgba(124, 58, 237, 0.1);
+    border-radius: 50%;
+}
+
+/* Generic link icon as fallback */
+.social-icon.default {
+    color: #9CA3AF;
+}
+
+.social-icon.default:hover {
+    color: #6B7280;
+    background: rgba(156, 163, 175, 0.1);
+    border-radius: 50%;
+}
