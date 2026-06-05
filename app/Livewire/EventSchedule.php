@@ -33,15 +33,11 @@ class EventSchedule extends Component
             return;
         }
 
-        // Загружаем все дни с событиями и спикерами из кэша или БД
-        $this->days = Cache::remember(
-            $this->getDaysCacheKey(),
-            now()->addMinutes(30),
-            fn() => $this->event->days()
-                ->with(['events.speaker'])
-                ->orderBy('sort_order')
-                ->get()
-        );
+        // Загружаем дни из БД (без кэширования Collection)
+        $this->days = $this->event->days()
+            ->with(['events.speaker'])
+            ->orderBy('sort_order')
+            ->get();
 
         $today = Carbon::today()->toDateString();
         $todayDay = $this->days->first(fn ($day): bool => $day->date->toDateString() === $today);
@@ -66,16 +62,12 @@ class EventSchedule extends Component
         // Сначала ищем в уже загруженных данных
         $this->selectedDay = $this->days->find($this->selectedDayId);
         
-        // Если не нашли — загружаем из кэша или БД
+        // Если не нашли — загружаем из БД
         if (!$this->selectedDay) {
-            $this->selectedDay = Cache::remember(
-                $this->getDayEventsCacheKey($this->selectedDayId),
-                now()->addHour(),
-                fn() => EventDay::with(['events.speaker'])
-                    ->where('event_id', $this->event->id)
-                    ->where('id', $this->selectedDayId)
-                    ->first()
-            );
+            $this->selectedDay = EventDay::with(['events.speaker'])
+                ->where('event_id', $this->event->id)
+                ->where('id', $this->selectedDayId)
+                ->first();
         }
     }
 
@@ -85,31 +77,15 @@ class EventSchedule extends Component
      */
     public static function invalidateCache(int $eventId): void
     {
-        $cache = Cache::getFacadeRoot();
-        $prefix = config('cache.prefix');
+        // Очищаем все кэшированные данные для мероприятия
+        Cache::forget("event_{$eventId}_days");
         
-        // Инвалидируем кэш для всех дней мероприятия
-        $pattern = "{$prefix}event_{$eventId}_days";
-        self::invalidateByPattern($cache, $pattern);
-        
-        // Инвалидируем кэш для всех дней и событий
-        $dayPattern = "{$prefix}event_{$eventId}_day_";
-        self::invalidateByPattern($cache, $dayPattern);
-        
-        // Инвалидируем кэш событий
-        $eventPattern = "{$prefix}event_{$eventId}_events_";
-        self::invalidateByPattern($cache, $eventPattern);
-    }
-
-    /**
-     * Инвалидация кэша по паттерну (для Redis)
-     */
-    protected static function invalidateByPattern($cache, string $pattern): void
-    {
+        // Для Redis можно использовать паттерн-очистку
         if (config('cache.default') === 'redis') {
             try {
-                $redis = $cache->store('redis')->driver()->connection();
-                $keys = $redis->keys($pattern . '*');
+                $redis = Cache::store('redis')->driver()->connection();
+                $pattern = "event_{$eventId}_*";
+                $keys = $redis->keys($pattern);
                 
                 if (!empty($keys)) {
                     $redis->del($keys);
@@ -117,20 +93,7 @@ class EventSchedule extends Component
             } catch (\Throwable $e) {
                 \Log::error('Cache invalidation error: ' . $e->getMessage());
             }
-        } else {
-            // Fallback для других драйверов
-            Cache::tags(['schedule'])->flush();
         }
-    }
-
-    protected function getDaysCacheKey(): string
-    {
-        return "event_{$this->event->id}_days";
-    }
-
-    protected function getDayEventsCacheKey(int $dayId): string
-    {
-        return "event_{$this->event->id}_day_{$dayId}_events";
     }
 
     public function render()
