@@ -7,10 +7,11 @@ use App\Models\Faq;
 use App\Models\Guest;
 use App\Models\Speaker;
 use App\Models\Testimonial;
+use App\Services\IconService;
+use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -140,12 +141,71 @@ class EventForm
                                 ]),
 
                             Section::make('Социальные сети')
+                                ->headerActions([
+                                    Action::make('uploadIcon')
+                                        ->label('Загрузить иконку')
+                                        ->modalHeading('Загрузить новую иконку')
+                                        ->form([
+                                            FileUpload::make('icon_file')
+                                                ->label('Файл иконки')
+                                                ->image()
+                                                ->disk('public')
+                                                ->directory('icons')
+                                                ->visibility('public')
+                                                ->imageEditor()
+                                                ->required(),
+                                        ])
+                                        ->modalWidth('md')
+                                        ->action(function (array $data) {
+                                            // Иконка уже загружена в директорию icons
+                                        }),
+                                ])
                                 ->schema([
-                                    KeyValue::make('social_links')
+                                    Repeater::make('social_links')
                                         ->label('Социальные сети')
                                         ->addActionLabel('Добавить соцсеть')
-                                        ->keyLabel('Платформа')
-                                        ->valueLabel('URL')
+                                        ->schema([
+                                            Grid::make(3)->schema([
+                                                Select::make('platform')
+                                                    ->label('Платформа')
+                                                    ->options([
+                                                        'facebook' => 'Facebook',
+                                                        'instagram' => 'Instagram',
+                                                        'twitter' => 'Twitter / X',
+                                                        'linkedin' => 'LinkedIn',
+                                                        'youtube' => 'YouTube',
+                                                        'telegram' => 'Telegram',
+                                                        'vk' => 'ВКонтакте',
+                                                        'tiktok' => 'TikTok',
+                                                        'custom' => 'Другое',
+                                                    ])
+                                                    ->searchable()
+                                                    ->required()
+                                                    ->columnSpanFull(),
+                                                TextInput::make('url')
+                                                    ->label('URL страницы')
+                                                    ->url()
+                                                    ->required()
+                                                    ->placeholder('https://...')
+                                                    ->columnSpanFull(),
+                                                Select::make('icon')
+                                                    ->label('Иконка')
+                                                    ->options(function ($get, $set) {
+                                                        $iconService = app(IconService::class);
+                                                        $icons = $iconService->getAvailableIcons();
+                                                        
+                                                        return $icons->mapWithKeys(fn ($icon) => [
+                                                            $icon['value'] => $icon['label'],
+                                                        ])->toArray();
+                                                    })
+                                                    ->searchable()
+                                                    ->hintIcon('heroicon-o-information-circle', 'Выберите иконку из папки storage/app/public/icons')
+                                                    ->columnSpanFull(),
+                                            ]),
+                                        ])
+                                        ->orderColumn('sort_order')
+                                        ->collapsible()
+                                        ->itemLabel(fn (array $state) => ucfirst($state['platform'] ?? 'Соцсеть'))
                                         ->columnSpanFull(),
                                 ]),
 

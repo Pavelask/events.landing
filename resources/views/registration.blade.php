@@ -122,47 +122,48 @@
                 </div>
             </div>
 
-            {{-- Соцсети + документы --}}
+            {{-- Документы и соцсети --}}
             <div>
-                <p class="font-semibold uppercase tracking-wide text-gray-500 text-xs mb-4">Ссылки</p>
-                <div class="space-y-2 text-sm">
+                <p class="font-semibold uppercase tracking-wide text-gray-500 text-xs mb-4">Документы</p>
+                <div class="space-y-2 text-sm text-gray-300">
                     @if($event && $event->show_privacy_section)
                         @if($event->privacy_policy)
-                            <p class="text-gray-300">Политика конфиденциальности доступна на главной странице.</p>
+                            <p>Политика конфиденциальности доступна на главной странице.</p>
                         @endif
                         @if($event->personal_data_consent)
-                            <p class="text-gray-300">Согласие на обработку персональных данных доступно на главной странице.</p>
+                            <p>Согласие на обработку персональных данных доступно на главной странице.</p>
                         @endif
                     @endif
-                    @if($event?->social_links && is_array($event->social_links))
-                        <div class="flex flex-wrap gap-3 mt-3">
-                            @foreach($event->social_links as $platform => $url)
-                                @if($url)
+                </div>
+
+                @if($event?->social_links && is_array($event->social_links))
+                    <div class="mt-6">
+                        <p class="font-semibold uppercase tracking-wide text-gray-500 text-xs mb-3">Социальные сети</p>
+                        <div class="flex flex-wrap gap-3">
+                            @foreach($event->social_links as $social)
+                                @if(is_array($social) && !empty($social['url']))
                                     @php
-                                        $platformLower = strtolower($platform);
-                                        $iconClass = match($platformLower) {
-                                            'telegram', 'tg' => 'telegram',
-                                            'vk', 'vkontakte' => 'vk',
-                                            'youtube', 'yt' => 'youtube',
-                                            'rutube' => 'rutube',
-                                            'ok', 'odnoklassniki' => 'ok',
-                                            'max' => 'max',
-                                            default => 'default',
-                                        };
+                                        $platform = strtolower($social['platform'] ?? '');
+                                        $icon = $social['icon'] ?? null;
+                                        $url = $social['url'];
                                     @endphp
-                                    <a href="{{ $url }}" target="_blank" class="text-gray-400 hover:text-white transition-colors" title="{{ $platform }}">
-                                        @if($platformLower === 'telegram' || $platformLower === 'tg')
-                                            <x-social-icons.telegram class="w-6 h-6 social-icon {{ $iconClass }}" />
-                                        @elseif($platformLower === 'vk' || $platformLower === 'vkontakte')
-                                            <x-social-icons.vk class="w-6 h-6 social-icon {{ $iconClass }}" />
-                                        @elseif($platformLower === 'youtube' || $platformLower === 'yt')
-                                            <x-social-icons.youtube class="w-6 h-6 social-icon {{ $iconClass }}" />
-                                        @elseif($platformLower === 'rutube')
-                                            <x-social-icons.rutube class="w-6 h-6 social-icon {{ $iconClass }}" />
-                                        @elseif($platformLower === 'ok' || $platformLower === 'odnoklassniki')
-                                            <x-social-icons.ok class="w-6 h-6 social-icon {{ $iconClass }}" />
-                                        @elseif($platformLower === 'max')
-                                            <x-social-icons.max class="w-6 h-6 social-icon {{ $iconClass }}" />
+                                    <a href="{{ $url }}" target="_blank" class="text-gray-400 hover:text-white transition-colors" title="{{ ucfirst($social['platform'] ?? 'Social') }}">
+                                        @if($icon && file_exists(public_path('storage/icons/' . $icon . '.png')))
+                                            <img src="{{ asset('storage/icons/' . $icon . '.png') }}" alt="{{ $social['platform'] }}" class="w-6 h-6 social-icon object-contain">
+                                        @elseif($icon && file_exists(public_path('storage/icons/' . $icon . '.svg')))
+                                            <img src="{{ asset('storage/icons/' . $icon . '.svg') }}" alt="{{ $social['platform'] }}" class="w-6 h-6 social-icon object-contain">
+                                        @elseif($platform === 'telegram' || $platform === 'tg')
+                                            <x-social-icons.telegram class="w-6 h-6 social-icon" />
+                                        @elseif($platform === 'vk' || $platform === 'vkontakte')
+                                            <x-social-icons.vk class="w-6 h-6 social-icon" />
+                                        @elseif($platform === 'youtube' || $platform === 'yt')
+                                            <x-social-icons.youtube class="w-6 h-6 social-icon" />
+                                        @elseif($platform === 'rutube')
+                                            <x-social-icons.rutube class="w-6 h-6 social-icon" />
+                                        @elseif($platform === 'ok' || $platform === 'odnoklassniki')
+                                            <x-social-icons.ok class="w-6 h-6 social-icon" />
+                                        @elseif($platform === 'max')
+                                            <x-social-icons.max class="w-6 h-6 social-icon" />
                                         @else
                                             <x-heroicon-o-link class="w-6 h-6 social-icon social-icon-default" />
                                         @endif
@@ -170,8 +171,8 @@
                                 @endif
                             @endforeach
                         </div>
-                    @endif
-                </div>
+                    </div>
+                @endif
             </div>
         </div>
 
