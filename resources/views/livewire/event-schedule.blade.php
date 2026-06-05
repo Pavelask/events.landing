@@ -158,10 +158,11 @@
                                         <img
                                             src="{{ Storage::url($scheduleEvent->speaker->photo) }}"
                                             alt="{{ $scheduleEvent->speaker->name }}"
+                                            loading="lazy"
                                             class="h-16 w-16 shrink-0 rounded-full object-cover border-2 border-[var(--color-primary)]"
                                         >
                                     @elseif ($scheduleEvent->icon_image)
-                                        <img src="{{ Storage::url($scheduleEvent->icon_image) }}" alt="" class="h-16 w-16 shrink-0 rounded-full object-cover border-2 border-[var(--color-primary)]">
+                                        <img src="{{ Storage::url($scheduleEvent->icon_image) }}" alt="" loading="lazy" class="h-16 w-16 shrink-0 rounded-full object-cover border-2 border-[var(--color-primary)]">
                                     @elseif ($scheduleEvent->icon)
                                         <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--color-background)] text-3xl leading-none">{{ $scheduleEvent->icon }}</span>
                                     @else
@@ -185,7 +186,7 @@
                                                 </span>
                                             @endif
                                             @if ($scheduleEvent->location)
-                                                <span class="inline-flex items-center gap-1 rounded-[var(--radius-btn)] border border-[var(--color-primary)]/60 bg-[var(--color-primary)]/5 px-2.5 py-1 text-xs text-[var(--color-primary)]">
+                                                <span class="inline-flex items-center gap-1 rounded-[var(--radius-btn)] border border-[var(--color-primary)]/60 bg-[var(--color-primary)]/5 px-2.5 py-1  [... omitted end of long line]
                                                     <x-heroicon-o-map-pin class="h-3 w-3" />
                                                     {{ $scheduleEvent->location }}
                                                 </span>
