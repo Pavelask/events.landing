@@ -242,11 +242,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Анимация галереи - элементы (stagger effect)
+    const gallerySection = document.querySelector('#gallery');
     const galleryItems = gsap.utils.toArray('.gallery-item');
-    if (galleryItems.length > 0) {
+    if (galleryItems.length > 0 && gallerySection) {
         gsap.from(galleryItems, {
             scrollTrigger: {
-                trigger: '.gallery-masonry',
+                trigger: '#gallery',
                 start: 'top 85%'
             },
             y: 60,

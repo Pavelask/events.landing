@@ -54,11 +54,6 @@ body {
     border-radius: var(--radius-card);
 }
 
-/* Галерея Masonry */
-.gallery-masonry {
-    display: block;
-}
-
 .gallery-item {
     overflow: hidden;
     border-radius: var(--radius-card);
