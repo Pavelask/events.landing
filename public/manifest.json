@@ -1,0 +1,24 @@
+{
+    "name": "Fifth Event - Платформа мероприятий",
+    "short_name": "Fifth Event",
+    "description": "Платформа для управления мероприятиями",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f7f7f7",
+    "theme_color": "#ff385c",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/favicon.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/favicon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

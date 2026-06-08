@@ -8,6 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $activeEvent?->title ?? 'Платформа мероприятий' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#ff385c">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     <style>
@@ -187,6 +189,11 @@
             @endif
             <span class="text-sm md:block hidden">{{ $activeEvent?->title ?? 'Fifth Event' }}</span>
         </a>
+        @if(session('message'))
+            <div class="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-[var(--color-primary)] text-white px-6 py-2 rounded-[var(--radius-btn)] text-sm font-medium" x-data="{ show: true }" x-show="show" x-transition.duration.3000ms @click="show = false">
+                {{ session('message') }}
+            </div>
+        @endif
         <div class="hidden items-center gap-6 text-sm font-medium md:flex">
             <a href="#speakers" class="hover:text-[var(--color-primary)] transition-colors">СПИКЕРЫ</a>
             <a href="#keynote" class="hover:text-[var(--color-primary)] transition-colors">ГОСТИ</a>
@@ -229,7 +236,7 @@
                         <div class="mt-2 text-3xl font-bold text-[var(--color-text)]">{{ $activeEvent->duration_days }}</div>
                     </div>
                 </div>
-                @if($activeEvent && $activeEvent->is_registration_open)
+                @if($activeEvent && $activeEvent->is_registration_available)
                     <a href="{{ route('registration') }}" class="btn-primary mt-10 block w-full text-center">
                         Зарегистрироваться
                     </a>
@@ -525,6 +532,16 @@
     @endif
 @endif
 
+{{-- Офлайн-уведомление --}}
+<div id="offline-notification" class="fixed inset-x-0 bottom-0 z-50 hidden bg-[var(--color-primary)] text-white p-4 text-center font-medium" x-data="{ offline: !navigator.onLine }" x-show="offline" x-transition>
+    <div class="mx-auto max-w-7xl flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+        </svg>
+        <span>Нет подключения к интернету. Некоторые функции могут быть недоступны.</span>
+    </div>
+</div>
+
 <button id="scrollTop" x-data="{
         visible: false,
         scrollTopClicks: 0,
@@ -548,5 +565,61 @@
 </button>
 @vite(['resources/js/app.js'])
 @livewireScripts
+
+<script>
+    // Регистрация Service Worker для офлайн-поддержки
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration) => {
+                    console.log('Service Worker зарегистрирован:', registration.scope);
+                    
+                    // Проверяем обновления Service Worker
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('Service Worker обновлён, обновите страницу');
+                                }
+                            });
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.log('Service Worker регистрация не удалась:', error);
+                });
+        });
+
+        // Отслеживание статуса Service Worker
+        navigator.serviceWorker.ready.then((registration) => {
+            console.log('Service Worker готов:', registration);
+        });
+    }
+
+    // Отслеживание статуса подключения к интернету
+    const offlineNotification = document.getElementById('offline-notification');
+
+    window.addEventListener('online', () => {
+        console.log('Подключение к интернету восстановлено');
+        if (offlineNotification) {
+            offlineNotification.classList.add('hidden');
+        }
+    });
+
+    window.addEventListener('offline', () => {
+        console.log('Подключение к интернету потеряно');
+        if (offlineNotification) {
+            offlineNotification.classList.remove('hidden');
+        }
+    });
+
+    // Проверка статуса при загрузке
+    if (!navigator.onLine) {
+        if (offlineNotification) {
+            offlineNotification.classList.remove('hidden');
+        }
+    }
+</script>
 </body>
 </html>

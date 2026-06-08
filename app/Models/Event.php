@@ -46,9 +46,23 @@ class Event extends Model
     }
     public function getIsUpcomingAttribute(): bool { return $this->status === 'published' && $this->start_date->gt(Carbon::now($this->timezone)->startOfDay()); }
     public function getIsCompletedAttribute(): bool { return in_array($this->status, ['completed','archived'], true) || $this->end_date->lt(Carbon::now($this->timezone)->startOfDay()); }
+    public function getIsRecentlyCompletedAttribute(): bool
+    {
+        if ($this->status !== 'published') {
+            return false;
+        }
+        $today = Carbon::now($this->timezone)->startOfDay();
+        $threeMonthsAgo = $today->copy()->subMonths(3)->startOfDay();
+        return $this->end_date->lt($today) && $this->end_date->gte($threeMonthsAgo);
+    }
+    public function getIsRegistrationAvailableAttribute(): bool
+    {
+        return $this->is_registration_open && !$this->is_recently_completed;
+    }
     public function getDurationDaysAttribute(): int { return $this->start_date->diffInDays($this->end_date) + 1; }
     public function scopePublished(Builder $query): Builder { return $query->where('status','published'); }
     public function scopeActive(Builder $query): Builder { $today=now()->startOfDay(); return $query->where('status','published')->whereDate('start_date','<=',$today)->whereDate('end_date','>=',$today); }
     public function scopeUpcoming(Builder $query): Builder { return $query->where('status','published')->whereDate('start_date','>',now()->startOfDay()); }
+    public function scopeRecentlyCompleted(Builder $query): Builder { $today=now()->startOfDay(); return $query->where('status','published')->whereDate('end_date','<',$today)->whereDate('end_date','>=',$today->subMonths(3)->startOfDay()); }
     public function scopeCompleted(Builder $query): Builder { return $query->where(fn(Builder $query)=>$query->whereIn('status',['completed','archived'])->orWhereDate('end_date','<',now()->startOfDay())); }
 }

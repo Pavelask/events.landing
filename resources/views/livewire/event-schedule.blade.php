@@ -39,7 +39,7 @@
 
     @if ($event)
         {{-- Underline-tab навигация --}}
-        <div class="mb-8 flex gap-2" role="tablist">
+        <div class="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:flex lg:flex-row lg:flex-wrap lg:items-stretch" role="tablist">
             @foreach ($days as $day)
                 @php
                     $todayDate = \Carbon\Carbon::today()->toDateString();
@@ -53,7 +53,7 @@
                     wire:click="selectDay({{ $day->id }})"
                     role="tab"
                     aria-selected="{{ $isActive ? 'true' : 'false' }}"
-                    class="flex-1 cursor-pointer whitespace-nowrap text-sm font-medium transition rounded-[var(--radius-btn)] px-4 py-2
+                    class="flex w-full cursor-pointer items-center justify-center whitespace-nowrap text-sm font-medium transition rounded-[var(--radius-btn)] px-4 py-2 lg:flex-1 lg:h-full
                         {{ $isActive ? 'bg-[var(--color-primary)] text-white shadow-md hover:bg-[var(--color-primary)]' : 'bg-[var(--color-background)] text-[var(--color-text)] hover:bg-[var(--color-background)]' }}
                         {{ ($isPast && !$isActive) ? 'opacity-60' : '' }}"
                 >

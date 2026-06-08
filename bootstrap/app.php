@@ -14,5 +14,17 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
-    })->create();
+    $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\ServiceUnavailableException $e, \Illuminate\Http\Request $request) {
+        if ($request->expectsJson()) {
+            return response()->json(['error' => 'Service Unavailable'], 503);
+        }
+        return response()->view('errors.offline', [], 503);
+    });
+
+    $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, \Illuminate\Http\Request $request) {
+        if ($request->expectsJson()) {
+            return response()->json(['error' => 'Not Found'], 404);
+        }
+        return response()->view('errors.404', ['event' => \App\Models\Event::active()->first(), 'exception' => $e], 404);
+    });
+})->create();
