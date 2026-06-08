@@ -1,6 +1,6 @@
 {
-    "name": "Fifth Event - Платформа мероприятий",
-    "short_name": "Fifth Event",
+    "name": "Events Elprof- Платформа мероприятий ВЭП",
+    "short_name": "Events",
     "description": "Платформа для управления мероприятиями",
     "start_url": "/",
     "display": "standalone",
