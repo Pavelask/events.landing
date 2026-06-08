@@ -32,6 +32,29 @@
             color: var(--color-text) !important;
         }
 
+        /* Полоса загрузки */
+        #page-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--color-primary) 0%, #ff6b6b 100%);
+            z-index: 9999;
+            transition: width 0.3s ease;
+            box-shadow: 0 1px 3px rgba(255, 56, 92, 0.4);
+        }
+
+        #page-progress-bar.loading {
+            width: 100%;
+            transition: width 0.5s ease;
+        }
+
+        #page-progress-bar.complete {
+            opacity: 0;
+            transition: opacity 0.3s ease 0.3s;
+        }
+
         .fifth-toast {
             position: fixed;
             inset: auto 1rem 1rem auto;
@@ -141,6 +164,9 @@
     </style>
 </head>
 <body class="bg-surface text-text">
+
+{{-- Полоса загрузки --}}
+<div id="page-progress-bar"></div>
 
 <!-- Пасхалка Лилу Даллас — 5 кликов по картинке в секции О мероприятии -->
 <div id="easter-egg" style="display:none; position:fixed; inset:0; z-index:100; align-items:center; justify-content:center; pointer-events:none;">
@@ -566,6 +592,33 @@
 @livewireScripts
 
 <script>
+    // Полоса загрузки страницы
+    (function() {
+        const progressBar = document.getElementById('page-progress-bar');
+        
+        // Показываем прогресс при загрузке
+        window.addEventListener('load', function() {
+            progressBar.classList.add('loading');
+            setTimeout(function() {
+                progressBar.classList.add('complete');
+            }, 500);
+        });
+
+        // Показываем прогресс при клике на ссылки
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (link && !link.hasAttribute('data-no-progress')) {
+                progressBar.classList.remove('complete');
+                progressBar.classList.add('loading');
+            }
+        });
+
+        // Скрываем прогресс после загрузки
+        window.addEventListener('beforeunload', function() {
+            progressBar.classList.remove('complete');
+        });
+    })();
+
     // Регистрация Service Worker для офлайн-поддержки
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
