@@ -81,10 +81,16 @@
 
                 @foreach ($selectedDay->events as $scheduleEvent)
                     @php
-                        $tz = $selectedDay->event->timezone ?? config('app.timezone');
-                        $start = \Carbon\Carbon::parse($selectedDay->date->format('Y-m-d') . ' ' . $scheduleEvent->start_time->format('H:i:s'), $tz);
+                        // Пропускаем события без времени начала
+                        if (!$scheduleEvent->start_time) {
+                            continue;
+                        }
+                        
+                        $tz = ($selectedDay->event?->timezone ?? config('app.timezone'));
+                        $dateStr = $selectedDay->date?->format('Y-m-d') ?? now()->format('Y-m-d');
+                        $start = \Carbon\Carbon::parse($dateStr . ' ' . $scheduleEvent->start_time->format('H:i:s'), $tz);
                         $end = $scheduleEvent->end_time
-                            ? \Carbon\Carbon::parse($selectedDay->date->format('Y-m-d') . ' ' . $scheduleEvent->end_time->format('H:i:s'), $tz)
+                            ? \Carbon\Carbon::parse($dateStr . ' ' . $scheduleEvent->end_time->format('H:i:s'), $tz)
                             : $start->copy()->addHour();
 
                         $now = \Carbon\Carbon::now($tz);
