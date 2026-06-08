@@ -1,3 +1,6 @@
+@php
+    $startDate = $event && $event->start_date->isFuture() ? $event->start_date->toIso8601String() : null;
+@endphp
 <!doctype html>
 <html lang="ru" class="scroll-smooth">
 <head>
@@ -5,83 +8,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Регистрация — {{ $event?->title ?? 'Платформа мероприятий' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    @vite(['resources/css/app.css', 'resources/css/home.css', 'resources/js/app.js'])
     @livewireStyles
-    <style>.yandex-form-container {
+    <style>
+        .yandex-form-container {
             width: 100%;
         }
         .yandex-form-container iframe,
         .yandex-form-container form {
             width: 100%;
         }
-        
-        #main-navbar {
-            background-color: rgba(255, 255, 255, 0);
-            backdrop-filter: none;
-            transition: background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .navbar-scrolled {
-            background: rgba(255, 255, 255, 0.85) !important;
-            backdrop-filter: blur(16px) !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important;
-            color: var(--color-text) !important;
-        }
     </style>
 </head>
-<body class="bg-white text-[var(--color-text)]" x-data="{menuOpen: false}">
-<nav id="main-navbar" class="fixed inset-x-0 top-0 z-50 transition-all duration-300 text-black navbar-scrolled">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5"><a href="{{ url('/') }}"
-                                                                                  class="flex items-center gap-3 font-bold uppercase tracking-wide cursor-pointer">
+<body class="bg-surface text-text">
+
+{{-- Полоса загрузки --}}
+<div id="page-progress-bar"></div>
+
+<nav id="main-navbar" class="fixed inset-x-0 top-0 z-50 transition-all duration-300 text-black bg-white" x-data="{ menuOpen: false }">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
+        <a href="{{ url('/') }}" class="flex items-center gap-3 font-bold uppercase tracking-wide cursor-pointer text-black">
             @if($event?->logo)
-                <img src="{{ asset('storage/'.$event->logo) }}" class="h-10 w-10 rounded-full object-cover"
-                     alt="Logo">
-            @endif<span>{{ $event?->title ?? 'Fifth Event' }}</span></a>
-        <div class="hidden items-center gap-6 text-sm font-medium md:flex"><a href="{{ url('/') }}#speakers" class="hover:text-[var(--color-primary)] transition-colors">Спикеры</a><a href="{{ url('/') }}#keynote" class="hover:text-[var(--color-primary)] transition-colors">Гости</a><a href="{{ url('/') }}#schedule" class="hover:text-[var(--color-primary)] transition-colors">Расписание</a><a
-                href="{{ url('/') }}#documents" class="hover:text-[var(--color-primary)] transition-colors">Документы</a><a href="{{ url('/') }}#faq" class="hover:text-[var(--color-primary)] transition-colors">FAQ</a><a href="{{ url('/') }}#venue" class="hover:text-[var(--color-primary)] transition-colors">Адрес</a>
+                <img src="{{ asset('storage/'.$event->logo) }}" class="h-10 w-10 rounded-full object-cover" alt="Logo">
+            @endif
+            <span class="text-sm md:block hidden">{{ $event?->title ?? 'Fifth Event' }}</span>
+        </a>
+        <div class="hidden items-center gap-6 text-sm font-medium md:flex">
+            <a href="{{ url('/') }}#speakers" class="hover:text-[var(--color-primary)] transition-colors">СПИКЕРЫ</a>
+            <a href="{{ url('/') }}#keynote" class="hover:text-[var(--color-primary)] transition-colors">ГОСТИ</a>
+            <a href="{{ url('/') }}#schedule" class="hover:text-[var(--color-primary)] transition-colors">РАСПИСАНИЕ</a>
+            <a href="{{ url('/') }}#documents" class="hover:text-[var(--color-primary)] transition-colors">ДОКУМЕНТЫ</a>
+            <a href="{{ url('/') }}#faq" class="hover:text-[var(--color-primary)] transition-colors">FAQ</a>
+            <a href="{{ url('/') }}#venue" class="hover:text-[var(--color-primary)] transition-colors">АДРЕС</a>
         </div>
-        <button class="md:hidden flex items-center gap-2" @click="menuOpen=!menuOpen">
+        <button id="menuToggle" class="md:hidden flex items-center gap-2 text-black border border-[var(--color-border)] p-2 hover:bg-[var(--color-background)] hover:text-[var(--color-primary)] transition-colors rounded-[var(--radius-btn)]" @click="menuOpen=!menuOpen">
             <span x-text="menuOpen ? '✕' : '☰'" class="text-xl font-bold"></span>
         </button>
     </div>
-    <div x-show="menuOpen" x-transition class="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md md:hidden text-black">
-        <div class="flex flex-col items-center gap-4 px-6 py-6">
-            <a class="block py-2 text-base" href="{{ url('/') }}#speakers" @click="menuOpen=false">Спикеры</a>
-            <a class="block py-2 text-base" href="{{ url('/') }}#keynote" @click="menuOpen=false">Гости</a>
-            <a class="block py-2 text-base" href="{{ url('/') }}#schedule" @click="menuOpen=false">Расписание</a>
-            <a class="block py-2 text-base" href="{{ url('/') }}#documents" @click="menuOpen=false">Документы</a>
-            <a class="block py-2 text-base" href="{{ url('/') }}#faq" @click="menuOpen=false">FAQ</a>
-            <a class="block py-2 text-base" href="{{ url('/') }}#venue" @click="menuOpen=false">Адрес</a>
+    <div id="mobileMenu" x-show="menuOpen" x-transition
+         class="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md md:hidden">
+        <div class="flex flex-col items-center gap-2 px-6 py-6">
+            <a class="block py-3 text-base font-medium text-black w-full text-center hover:text-[var(--color-primary)]" href="{{ url('/') }}#speakers" @click="menuOpen=false">СПИКЕРЫ</a>
+            <a class="block py-3 text-base font-medium text-black w-full text-center hover:text-[var(--color-primary)]" href="{{ url('/') }}#keynote" @click="menuOpen=false">ГОСТИ</a>
+            <a class="block py-3 text-base font-medium text-black w-full text-center hover:text-[var(--color-primary)]" href="{{ url('/') }}#schedule" @click="menuOpen=false">РАСПИСАНИЕ</a>
+            <a class="block py-3 text-base font-medium text-black w-full text-center hover:text-[var(--color-primary)]" href="{{ url('/') }}#documents" @click="menuOpen=false">ДОКУМЕНТЫ</a>
+            <a class="block py-3 text-base font-medium text-black w-full text-center hover:text-[var(--color-primary)]" href="{{ url('/') }}#faq" @click="menuOpen=false">FAQ</a>
+            <a class="block py-3 text-base font-medium text-black w-full text-center hover:text-[var(--color-primary)]" href="{{ url('/') }}#venue" @click="menuOpen=false">АДРЕС</a>
         </div>
     </div>
 </nav>
 
-<div class="min-h-screen pt-24 pb-12">
+<div class="min-h-screen pt-32 pb-12">
     <div class="mx-auto max-w-4xl px-6">
-        <div class="mb-8 text-center">
-            <h1 class="mt-2 text-4xl font-bold text-[var(--color-text)]">{{ $event?->title ?? 'Регистрация на мероприятие' }}</h1>
+        <div class="mb-12 text-center">
+            <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">Регистрация</p>
+            <h1 class="mt-3 text-2xl md:text-3xl font-bold text-[var(--color-text)] leading-tight">{{ $event?->title ?? 'Регистрация на мероприятие' }}</h1>
         </div>
 
         @if(!$event)
-            <div class="rounded-[var(--radius-card)] bg-[var(--color-background)] p-8 text-center text-[var(--color-muted)]">
+            <div class="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-background)] p-8 text-center text-[var(--color-muted)]">
                 Активное мероприятие не найдено.
             </div>
         @elseif(!$event->is_registration_open)
-            <div class="rounded-[var(--radius-card)] bg-[var(--color-background)] p-8 text-center text-[var(--color-muted)]">
+            <div class="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-background)] p-8 text-center text-[var(--color-muted)]">
                 Регистрация для этого мероприятия пока не открыта.
-            @else
-                <div class="rounded-[var(--radius-card)] bg-[var(--color-background)] p-8 text-[var(--color-text)]">
-                    @if($event->registration_url)
-                        <iframe src="{{ $event->registration_url }}" class="h-[720px] w-full rounded-[var(--radius-card)] bg-white" frameborder="0"></iframe>
-                    @elseif($event->yandex_form_url)
-                        <div class="yandex-form-container">
-                            {!! $event->yandex_form_url !!}
-                        </div>
-                    @else
-                        <p class="text-center text-[var(--color-muted)]">Ссылка на регистрацию не указана.</p>
-                    @endif
-                </div>
-            @endif
+            </div>
+        @else
+            <div class="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-[var(--color-text)]">
+                @if($event->registration_url)
+                    <iframe src="{{ $event->registration_url }}" class="h-[720px] w-full rounded-[var(--radius-card)] bg-white" frameborder="0"></iframe>
+                @elseif($event->yandex_form_url)
+                    <div class="yandex-form-container">
+                        {!! $event->yandex_form_url !!}
+                    </div>
+                @else
+                    <p class="text-center text-[var(--color-muted)]">Ссылка на регистрацию не указана.</p>
+                @endif
+            </div>
+        @endif
 
         <div class="mt-8 text-center text-sm text-[var(--color-muted)]">
             <a href="{{ url('/') }}" class="hover:text-[var(--color-primary)] transition-colors">← Вернуться на главную</a>
@@ -95,7 +100,7 @@
         <div class="grid gap-10 md:grid-cols-3">
             {{-- Бренд --}}
             <div>
-                <a href="{{ url('/') }}" class="flex items-center gap-3 font-bold uppercase tracking-wide">
+                <a href="{{ url('/') }}" class="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide">
                     @if($event?->logo)
                         <img src="{{ asset('storage/'.$event->logo) }}" class="h-10 w-10 rounded-full object-cover" alt="Logo">
                     @endif
@@ -122,16 +127,18 @@
                 </div>
             </div>
 
-            {{-- Документы и соцсети --}}
+            {{-- Навигация и соцсети --}}
             <div>
-                <p class="font-semibold uppercase tracking-wide text-gray-500 text-xs mb-4">Документы</p>
-                <div class="space-y-2 text-sm text-gray-300">
+                <p class="font-semibold uppercase tracking-wide text-gray-500 text-xs mb-4">Навигация</p>
+                <div class="space-y-2 text-sm">
+                    <a href="{{ url('/') }}" class="block text-gray-300 hover:text-white transition-colors">Главная</a>
+                    <a href="{{ route('archive') }}" class="block text-gray-300 hover:text-white transition-colors">Архив мероприятий</a>
                     @if($event && $event->show_privacy_section)
                         @if($event->privacy_policy)
-                            <p>Политика конфиденциальности доступна на главной странице.</p>
+                            <a href="#privacy-policy" class="block text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</a>
                         @endif
                         @if($event->personal_data_consent)
-                            <p>Согласие на обработку персональных данных доступно на главной странице.</p>
+                            <a href="#personal-data-consent" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
                         @endif
                     @endif
                 </div>
@@ -184,5 +191,31 @@
 </footer>
 
 @livewireScripts
+
+<script>
+    // Полоса загрузки страницы
+    (function() {
+        const progressBar = document.getElementById('page-progress-bar');
+        
+        window.addEventListener('load', function() {
+            progressBar.classList.add('loading');
+            setTimeout(function() {
+                progressBar.classList.add('complete');
+            }, 500);
+        });
+
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (link && !link.hasAttribute('data-no-progress')) {
+                progressBar.classList.remove('complete');
+                progressBar.classList.add('loading');
+            }
+        });
+
+        window.addEventListener('beforeunload', function() {
+            progressBar.classList.remove('complete');
+        });
+    })();
+</script>
 </body>
 </html>
