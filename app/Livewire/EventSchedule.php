@@ -8,10 +8,8 @@ use App\Models\ScheduleEvent;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
-#[Lazy]
 class EventSchedule extends Component
 {
     public ?Event $event = null;
