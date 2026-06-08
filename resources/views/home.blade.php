@@ -9,7 +9,6 @@
     <title>{{ $activeEvent?->title ?? 'Платформа мероприятий' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <meta name="theme-color" content="#ff385c">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     <style>
