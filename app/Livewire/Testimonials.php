@@ -4,10 +4,9 @@ namespace App\Livewire;
 
 use App\Models\Event;
 use App\Models\Testimonial;
-use Livewire\Attributes\As;
 use Livewire\Component;
 
-#[As('testimonials')]
+#[\Livewire\Attributes\As('testimonials')]
 class Testimonials extends Component
 {
     public ?Event $event = null;
