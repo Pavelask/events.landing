@@ -300,7 +300,7 @@
     <section id="media" class="media-section bg-[var(--color-background)] py-20 text-[var(--color-text)] overflow-hidden">
         <div class="mx-auto max-w-7xl px-6">
             <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">Приветствие</p>
-            <h2 class="mt-3 text-2xl font-bold text-[var(--color-text)]">{{ $activeEvent->title }}</h2>
+            <h2 class="mt-3 text-2xl md:text-3xl lg:text-4xl font-bold text-[var(--color-text)]">{{ $activeEvent->title }}</h2>
             <div class="mt-10 grid gap-10 lg:grid-cols-3">
                 <div class="media-photo-wrapper lg:col-span-1">
                     @if($activeEvent->media_image)
