@@ -68,9 +68,9 @@ Route::get('/privacy-policy', function () {
         ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
         ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
     
-    // Если нет события или политики — редирект на главную
-    if (!$activeEvent || !$activeEvent->privacy_policy) {
-        return redirect()->route('home');
+    // Если нет события, политики или она скрыта — 404
+    if (!$activeEvent || !$activeEvent->privacy_policy || !$activeEvent->show_privacy_section) {
+        abort(404);
     }
     
     return view('privacy-policy', compact('activeEvent'));
@@ -81,9 +81,9 @@ Route::get('/personal-data-consent', function () {
         ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
         ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
     
-    // Если нет события или согласия — редирект на главную
-    if (!$activeEvent || !$activeEvent->personal_data_consent) {
-        return redirect()->route('home');
+    // Если нет события, согласия или он скрыт — 404
+    if (!$activeEvent || !$activeEvent->personal_data_consent || !$activeEvent->show_privacy_section) {
+        abort(404);
     }
     
     return view('personal-data-consent', compact('activeEvent'));
