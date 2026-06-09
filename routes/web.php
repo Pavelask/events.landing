@@ -64,9 +64,15 @@ Route::get('/health', function () {
 
 // Страницы политик
 Route::get('/privacy-policy', function () {
-    return view('privacy-policy');
+    $activeEvent = Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->active()->first()
+        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
+        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
+    return view('privacy-policy', compact('activeEvent'));
 })->name('privacy.policy');
 
 Route::get('/personal-data-consent', function () {
-    return view('personal-data-consent');
+    $activeEvent = Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->active()->first()
+        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
+        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
+    return view('personal-data-consent', compact('activeEvent'));
 })->name('personal.data.consent');
