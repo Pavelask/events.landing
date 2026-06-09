@@ -1,47 +1,14 @@
-const CACHE_NAME = 'fifth-event-v3';
-const OFFLINE_URL = '/offline';
-
-// Кэшируемые ресурсы при установке
-const STATIC_ASSETS = [
-    '/',
-    '/offline',
-    '/favicon.png',
-    '/manifest.json',
-];
+const CACHE_NAME = 'fifth-event-v4';
 
 // Установка Service Worker
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('Service Worker: Кэширование статических ресурсов');
-                return cache.addAll(STATIC_ASSETS);
-            })
-            .then(() => {
-                // Предзагружаем офлайн страницу
-                return caches.open(CACHE_NAME).then((cache) => {
-                    return cache.add('/offline').catch(err => {
-                        console.log('Service Worker: Оффлайн страница уже в кэше или кэширована');
-                    });
-                });
-            })
-            .then(() => {
-                // Кэсируем главную страницу для оффлайн доступа
-                return caches.open(CACHE_NAME).then((cache) => {
-                    return cache.add('/').catch(err => {
-                        console.log('Service Worker: Главная страница уже в кэше');
-                    });
-                });
-            })
-            .catch((error) => {
-                console.log('Service Worker: Ошибка кэширования', error);
-            })
-    );
+    console.log('Service Worker: Установка');
     self.skipWaiting();
 });
 
 // Активация Service Worker
 self.addEventListener('activate', (event) => {
+    console.log('Service Worker: Активация');
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
@@ -66,53 +33,35 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(event.request.url);
     
-    // Пропускаем запросы к health check
-    if (url.pathname === '/health') {
+    // Пропускаем запросы к health check и самому sw.js
+    if (url.pathname === '/health' || url.pathname === '/sw.js') {
         return;
     }
 
-    // Для навигационных запросов (переходы между страницами, загрузка страницы)
+    // Для навигационных запросов (переходы между страницами)
     if (event.request.mode === 'navigate') {
         event.respondWith(
-            (async () => {
-                try {
-                    // Пытаемся сделать запрос к сети
-                    const fetchResponse = await fetch(event.request);
-                    
+            fetch(event.request)
+                .then((response) => {
                     // Успешный ответ — кэшируем
-                    const responseClone = fetchResponse.clone();
-                    const cache = await caches.open(CACHE_NAME);
-                    if (event.request.method === 'GET') {
-                        await cache.put(event.request, responseClone);
-                    }
-                    return fetchResponse;
-                } catch (error) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseClone);
+                    });
+                    return response;
+                })
+                .catch(async () => {
                     // Нет сети — ищем в кэше
-                    console.log('Service Worker: Нет сети для', url.pathname);
+                    console.log('Service Worker: Нет сети, проверяем кэш');
                     
-                    // Сначала пробуем найти запрошенную страницу в кэше
                     const cachedResponse = await caches.match(event.request);
                     if (cachedResponse) {
-                        console.log('Service Worker: Возвращаем из кэша', url.pathname);
+                        console.log('Service Worker: Возвращаем из кэша');
                         return cachedResponse;
                     }
                     
-                    // Если страницы нет в кэше — пробуем оффлайн страницу
-                    const offlineResponse = await caches.match('/offline');
-                    if (offlineResponse) {
-                        console.log('Service Worker: Возвращаем офлайн страницу');
-                        return offlineResponse;
-                    }
-                    
-                    // Если и главная страница есть в кэше — возвращаем её
-                    const homeResponse = await caches.match('/');
-                    if (homeResponse) {
-                        console.log('Service Worker: Возвращаем главную из кэша');
-                        return homeResponse;
-                    }
-                    
-                    // Фолбэк на базовую оффлайн страницу
-                    console.log('Service Worker: Показываем базовую оффлайн заглушку');
+                    // Если ничего нет в кэше — показываем базовую оффлайн страницу
+                    console.log('Service Worker: Показываем оффлайн заглушку');
                     return new Response(`<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -131,25 +80,10 @@ self.addEventListener('fetch', (event) => {
             color: #222;
             padding: 2rem;
         }
-        .container {
-            text-align: center;
-            max-width: 500px;
-        }
-        svg {
-            width: 80px;
-            height: 80px;
-            color: #ff385c;
-            margin-bottom: 1rem;
-        }
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        p {
-            color: #666;
-            margin-bottom: 2rem;
-            line-height: 1.5;
-        }
+        .container { text-align: center; max-width: 500px; }
+        svg { width: 80px; height: 80px; color: #ff385c; margin-bottom: 1rem; }
+        h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+        p { color: #666; margin-bottom: 2rem; line-height: 1.5; }
         button {
             background: #ff385c;
             color: #fff;
@@ -160,9 +94,7 @@ self.addEventListener('fetch', (event) => {
             cursor: pointer;
             font-size: 1rem;
         }
-        button:hover {
-            background: #e53e5c;
-        }
+        button:hover { background: #e53e5c; }
     </style>
 </head>
 <body>
@@ -176,41 +108,22 @@ self.addEventListener('fetch', (event) => {
     </div>
 </body>
 </html>`, {
-                        headers: {
-                            'Content-Type': 'text/html; charset=utf-8',
-                        },
+                        headers: { 'Content-Type': 'text/html; charset=utf-8' },
                     });
-                }
-            })()
+                })
         );
         return;
     }
 
-    // Для остальных запросов (статика, API) — Strategy: Cache First
+    // Для остальных запросов (статика, API) — Cache First
     event.respondWith(
         caches.match(event.request)
             .then((cachedResponse) => {
                 if (cachedResponse) {
                     return cachedResponse;
                 }
-
-                return fetch(event.request)
-                    .then((response) => {
-                        const responseClone = response.clone();
-                        caches.open(CACHE_NAME).then((cache) => {
-                            if (event.request.method === 'GET') {
-                                cache.put(event.request, responseClone);
-                            }
-                        });
-                        return response;
-                    });
+                return fetch(event.request);
             })
     );
 });
 
-// Обработка сообщений от клиентов
-self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
-});
