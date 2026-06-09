@@ -329,10 +329,10 @@
                     <a href="{{ route('archive') }}" class="block text-gray-300 hover:text-white transition-colors">Архив мероприятий</a>
                     @if($activeEvent && $activeEvent->show_privacy_section)
                         @if($activeEvent->privacy_policy)
-                            <a href="#privacy-policy" @click.prevent="document.getElementById('privacy-policy')?.scrollIntoView({behavior:'smooth'})" class="block text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</a>
+                            <a href="{{ route('privacy.policy') }}" class="block text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</a>
                         @endif
                         @if($activeEvent->personal_data_consent)
-                            <a href="#personal-data-consent" @click.prevent="document.getElementById('personal-data-consent')?.scrollIntoView({behavior:'smooth'})" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
+                            <a href="{{ route('personal.data.consent') }}" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
                         @endif
                     @endif
                 </div>
@@ -383,28 +383,6 @@
         </div>
     </div>
 </footer>
-
-{{-- Секция политики конфиденциальности (в конце страницы, если включена) --}}
-@if($activeEvent && $activeEvent->show_privacy_section)
-    @if($activeEvent->privacy_policy || $activeEvent->personal_data_consent)
-        <section id="privacy" class="bg-[var(--color-background)] py-16 text-[var(--color-text)]">
-            <div class="mx-auto max-w-4xl px-6 space-y-12">
-                @if($activeEvent->privacy_policy)
-                    <div id="privacy-policy">
-                        <h3 class="text-2xl font-bold mb-4">Политика конфиденциальности</h3>
-                        <div class="prose prose-sm max-w-none text-[var(--color-text-secondary)]">{!! $activeEvent->privacy_policy !!}</div>
-                    </div>
-                @endif
-                @if($activeEvent->personal_data_consent)
-                    <div id="personal-data-consent">
-                        <h3 class="text-2xl font-bold mb-4">Согласие на обработку персональных данных</h3>
-                        <div class="prose prose-sm max-w-none text-[var(--color-text-secondary)]">{!! $activeEvent->personal_data_consent !!}</div>
-                    </div>
-                @endif
-            </div>
-        </section>
-    @endif
-@endif
 
 {{-- Офлайн-уведомление --}}
 <div id="offline-notification" class="fixed inset-x-0 bottom-0 z-50 hidden bg-[var(--color-primary)] text-white p-4 text-center font-medium" x-data="{ offline: !navigator.onLine }" x-show="offline" x-transition>

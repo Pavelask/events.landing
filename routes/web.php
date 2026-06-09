@@ -61,3 +61,12 @@ Route::get('/offline', function () {
 Route::get('/health', function () {
     return response('', 200)->header('Content-Type', 'text/plain');
 });
+
+// Страницы политик
+Route::get('/privacy-policy', function () {
+    return view('privacy-policy');
+})->name('privacy.policy');
+
+Route::get('/personal-data-consent', function () {
+    return view('personal-data-consent');
+})->name('personal.data.consent');
