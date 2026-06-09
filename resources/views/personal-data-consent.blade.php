@@ -89,10 +89,14 @@
                 <p class="font-semibold uppercase tracking-wide text-gray-500 text-xs mb-4">Навигация</p>
                 <div class="space-y-2 text-sm">
                     <a href="{{ route('archive') }}" class="block text-gray-300 hover:text-white transition-colors">Архив мероприятий</a>
-                    @if($activeEvent && $activeEvent->privacy_policy)
-                        <a href="{{ route('privacy.policy') }}" class="block text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</a>
+                    @if($activeEvent && $activeEvent->show_privacy_section)
+                        @if($activeEvent->privacy_policy)
+                            <a href="{{ route('privacy.policy') }}" class="block text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</a>
+                        @endif
+                        @if($activeEvent->personal_data_consent)
+                            <a href="{{ route('personal.data.consent') }}" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
+                        @endif
                     @endif
-                    <a href="{{ route('personal.data.consent') }}" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
                 </div>
             </div>
         </div>
