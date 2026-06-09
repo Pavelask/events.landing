@@ -33,8 +33,14 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(event.request.url);
     
-    // Пропускаем запросы к health check и самому sw.js
-    if (url.pathname === '/health' || url.pathname === '/sw.js') {
+    // Игнорируем запросы к статическим ресурсам, которые не критичны
+    const ignoredPaths = ['/favicon.ico', '/sw.js', '/health'];
+    if (ignoredPaths.some(path => url.pathname === path)) {
+        return;
+    }
+
+    // Игнорируем запросы к внешним ресурсам (шрифты, CDN и т.д.)
+    if (!url.hostname.includes('events.elprof.ru')) {
         return;
     }
 
@@ -122,7 +128,10 @@ self.addEventListener('fetch', (event) => {
                 if (cachedResponse) {
                     return cachedResponse;
                 }
-                return fetch(event.request);
+                return fetch(event.request).catch(() => {
+                    // Пропускаем ошибки для статических ресурсов (иконки, шрифты и т.д.)
+                    return null;
+                });
             })
     );
 });
