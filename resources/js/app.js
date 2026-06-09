@@ -127,7 +127,7 @@ function initSwiper() {
     const heroSwiperEl = document.querySelector('.hero-swiper');
     
     if (heroSwiperEl) {
-        console.log('Hero swiper found, initializing...');
+        // console.log('Hero swiper found, initializing...');
         
         // Проверяем, что слайды есть
         const slides = heroSwiperEl.querySelectorAll('.swiper-slide');
@@ -159,12 +159,12 @@ function initSwiper() {
             },
             on: {
                 init: function() {
-                    console.log('Swiper initialized with', this.slides.length, 'slides');
-                    console.log('Autoplay enabled:', this.params.autoplay.enabled);
+                    // console.log('Swiper initialized with', this.slides.length, 'slides');
+                    // console.log('Autoplay enabled:', this.params.autoplay.enabled);
                 }
             },
         });
-        console.log('Hero swiper initialized');
+        // console.log('Hero swiper initialized');
     }
 }
 

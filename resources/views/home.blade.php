@@ -494,7 +494,7 @@
 
         // Отслеживание статуса Service Worker
         navigator.serviceWorker.ready.then((registration) => {
-            console.log('Service Worker готов:', registration);
+            // console.log('Service Worker готов:', registration);
         });
     }
 
