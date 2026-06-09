@@ -190,6 +190,17 @@
     </div>
 </footer>
 
+{{-- Офлайн-уведомление --}}
+<div id="offline-notification" class="fixed inset-x-0 bottom-0 z-50 hidden bg-[var(--color-primary)] text-white p-4 text-center font-medium" x-data="{ offline: !navigator.onLine }" x-show="offline" x-transition>
+    <div class="mx-auto max-w-7xl flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+        </svg>
+        <span>Нет подключения к интернету. Некоторые функции могут быть недоступны.</span>
+    </div>
+</div>
+
+@livewireScripts
 @livewireScripts
 
 <script>
@@ -216,6 +227,28 @@
             progressBar.classList.remove('complete');
         });
     })();
+
+    // Отслеживание статуса подключения к интернету
+    const offlineNotification = document.getElementById('offline-notification');
+
+    window.addEventListener('online', () => {
+        if (offlineNotification) {
+            offlineNotification.classList.add('hidden');
+        }
+    });
+
+    window.addEventListener('offline', () => {
+        if (offlineNotification) {
+            offlineNotification.classList.remove('hidden');
+        }
+    });
+
+    // Проверка статуса при загрузке
+    if (!navigator.onLine) {
+        if (offlineNotification) {
+            offlineNotification.classList.remove('hidden');
+        }
+    }
 </script>
 </body>
 </html>

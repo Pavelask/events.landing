@@ -18,6 +18,36 @@
 
     <h1 class="mt-8 text-4xl font-bold">Архив мероприятий</h1>
 
+    <script>
+        // Офлайн-уведомление
+        (function() {
+            const notification = document.createElement('div');
+            notification.id = 'offline-notification';
+            notification.className = 'fixed inset-x-0 bottom-0 z-50 hidden bg-[var(--color-primary)] text-white p-4 text-center font-medium';
+            notification.innerHTML = `
+                <div class="mx-auto max-w-7xl flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                    </svg>
+                    <span>Нет подключения к интернету. Некоторые функции могут быть недоступны.</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            window.addEventListener('online', () => {
+                notification.classList.add('hidden');
+            });
+
+            window.addEventListener('offline', () => {
+                notification.classList.remove('hidden');
+            });
+
+            if (!navigator.onLine) {
+                notification.classList.remove('hidden');
+            }
+        })();
+    </script>
+
     @if ($lastCompletedEvent)
         <div class="mt-8 archive-banner relative flex h-[450px] items-center justify-center rounded-[var(--radius-card)] bg-cover bg-center overflow-hidden"
             style="background-image: url('{{ $lastCompletedEvent->poster_image ? Storage::url($lastCompletedEvent->poster_image) : ($lastCompletedEvent->heroSlides->first()?->image ? Storage::url($lastCompletedEvent->heroSlides->first()->image) : '') }}');">
