@@ -435,7 +435,7 @@
     }" @scroll.window="handleScroll()" x-show="visible"
         x-transition
         @click="handleClick()"
-        class="fixed bottom-6 right-6 z-50 rounded-[var(--radius-round)] bg-[var(--color-text)] p-4 font-bold text-white shadow-xl hover:bg-gray-800 transition-colors w-12 h-12 flex items-center justify-center">↑
+        class="fixed bottom-6 right-6 z-50 rounded-[var(--radius-round)] bg-white text-[var(--color-text)] p-4 font-bold shadow-xl border-2 border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors w-12 h-12 flex items-center justify-center">↑
 </button>
 @vite(['resources/js/app.js'])
 @livewireScripts
