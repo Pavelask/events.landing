@@ -9,6 +9,12 @@ Route::get('/', function () {
     $activeEvent = Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->active()->first()
         ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
         ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
+    
+    // Если нет опубликованных мероприятий — показываем заглушку
+    if (!$activeEvent) {
+        return view('no-events');
+    }
+    
     return view('home', compact('activeEvent'));
 })->name('home');
 
