@@ -43,15 +43,6 @@
     </div>
 </main>
 
-{{-- Футтер --}}
-<footer class="bg-[var(--color-text)] text-white">
-    <div class="mx-auto max-w-7xl px-6 py-12">
-        <div class="mt-12 border-t border-white/10 pt-8 text-center text-xs text-gray-500">
-            © {{ now()->year }} Fifth Event. Все права защищены.
-        </div>
-    </div>
-</footer>
-
 @vite(['resources/js/app.js'])
 
 <script>
