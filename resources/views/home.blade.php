@@ -480,17 +480,24 @@
     const offlineNotification = document.getElementById('offline-notification');
 
     window.addEventListener('online', () => {
-        console.log('Подключение к интернету восстановлено');
+        // console.log('Подключение к интернету восстановлено');
         if (offlineNotification) {
             offlineNotification.classList.add('hidden');
         }
     });
 
     window.addEventListener('offline', () => {
-        console.log('Подключение к интернету потеряно');
+        // console.log('Подключение к интернету потеряно');
         if (offlineNotification) {
             offlineNotification.classList.remove('hidden');
         }
+        // Показываем уведомление о перезагрузке через 2 секунды
+        setTimeout(() => {
+            if (!offlineNotification || offlineNotification.classList.contains('hidden')) {
+                // Если пользователь не увидел уведомление, можно показать офлайн страницу
+                window.location.href = '/offline';
+            }
+        }, 2000);
     });
 
     // Проверка статуса при загрузке

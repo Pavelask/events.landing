@@ -1,9 +1,21 @@
-const CACHE_NAME = 'fifth-event-v4';
+const CACHE_NAME = 'fifth-event-v5';
+
+// Предзагружаемые ресурсы (включая офлайн-страницу)
+const OFFLINE_PAGE = '/offline';
 
 // Установка Service Worker
 self.addEventListener('install', (event) => {
     console.log('Service Worker: Установка');
-    self.skipWaiting();
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            console.log('Service Worker: Кэширование офлайн-страницы');
+            return cache.put(OFFLINE_PAGE, new Response('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Нет подключения</title></head><body>Offline</body></html>', {
+                headers: { 'Content-Type': 'text/html; charset=utf-8' }
+            }));
+        }).then(() => {
+            return self.skipWaiting();
+        })
+    );
 });
 
 // Активация Service Worker
@@ -66,9 +78,20 @@ self.addEventListener('fetch', (event) => {
                         return cachedResponse;
                     }
                     
+                    // Ищем главную страницу в кэше
+                    const homeCached = await caches.match('/');
+                    if (homeCached) {
+                        console.log('Service Worker: Возвращаем главную из кэша');
+                        return homeCached;
+                    }
+                    
                     // Если ничего нет в кэше — показываем базовую оффлайн страницу
                     console.log('Service Worker: Показываем оффлайн заглушку');
-                    return new Response(`<!DOCTYPE html>
+                    return caches.match(OFFLINE_PAGE).then((offlineResponse) => {
+                        if (offlineResponse) {
+                            return offlineResponse;
+                        }
+                        return new Response(`<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8">
@@ -114,7 +137,8 @@ self.addEventListener('fetch', (event) => {
     </div>
 </body>
 </html>`, {
-                        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+                            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+                        });
                     });
                 })
         );
