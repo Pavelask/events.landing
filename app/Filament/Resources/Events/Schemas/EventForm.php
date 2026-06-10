@@ -99,10 +99,6 @@ class EventForm
                                             ->options([
                                                 'draft' => 'Черновик',
                                                 'published' => 'Опубликовано',
-                                                'active' => 'Идёт сейчас',
-                                                'completed' => 'Завершено',
-                                                'archived' => 'Архив',
-                                                'cancelled' => 'Отменено',
                                             ])
                                             ->default('draft'),
                                     ]),

@@ -34,17 +34,10 @@ class EventsTable
                     ->colors([
                         'gray' => 'draft',
                         'success' => 'published',
-                        'primary' => 'active',
-                        'warning' => 'completed',
-                        'danger' => 'cancelled',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'draft' => 'Черновик',
                         'published' => 'Опубликовано',
-                        'active' => 'Идёт сейчас',
-                        'completed' => 'Завершено',
-                        'archived' => 'Архив',
-                        'cancelled' => 'Отменено',
                         default => $state,
                     }),
                 TextColumn::make('schedule_events_count')->label('Событий')->counts('scheduleEvents')->sortable(),
@@ -56,10 +49,6 @@ class EventsTable
                 SelectFilter::make('status')->label('Статус')->options([
                     'draft' => 'Черновик',
                     'published' => 'Опубликовано',
-                    'active' => 'Идёт сейчас',
-                    'completed' => 'Завершено',
-                    'archived' => 'Архив',
-                    'cancelled' => 'Отменено',
                 ]),
             ])
             ->recordActions([EditAction::make()])
