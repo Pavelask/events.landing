@@ -27,9 +27,22 @@
                 Мероприятия временно недоступны
             </h1>
             
-            <p class="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto">
-                В настоящее время нет доступных мероприятий. Проверьте позже или свяжитесь с организаторами для получения информации о предстоящих событиях.
+            <p class="text-lg text-[var(--color-text-secondary)] max-w-2xl mx-auto mb-8">
+                В настоящее время нет доступных мероприятий. Проверьте позже или посмотрите архивные мероприятия.
             </p>
+
+            @php
+                $hasArchivedEvents = \App\Models\Event::archived()->with('heroSlides')->exists();
+            @endphp
+            
+            @if($hasArchivedEvents)
+                <a href="{{ route('archive') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-primary-hover)] transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Перейти в архив
+                </a>
+            @endif
         </div>
     </div>
 </main>

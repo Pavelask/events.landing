@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     $activeEvent = Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->active()->first()
         ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
-        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
+        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first()
+        ?? Event::completed()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->orderByDesc('end_date')->first();
     
-    // Если нет опубликованных мероприятий — показываем заглушку
+    // Если нет опубликованных или завершённых мероприятий — показываем заглушку
     if (!$activeEvent) {
         return view('no-events');
     }
@@ -44,7 +45,7 @@ Route::get('/registration', function () {
 Route::get('/events/{event:slug}', fn(Event $event) => view('event.show', compact('event')))->name('event.show');
 
 Route::get('/archive', function () {
-    $lastCompletedEvent = \App\Models\Event::completed()->with('heroSlides')->orderByDesc('end_date')->first();
+    $lastCompletedEvent = \App\Models\Event::archived()->with('heroSlides')->orderByDesc('end_date')->first();
     return view('archive', compact('lastCompletedEvent'));
 })->name('archive');
 
