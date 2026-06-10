@@ -13,15 +13,6 @@
 {{-- Полоса загрузки --}}
 <div id="page-progress-bar"></div>
 
-{{-- Навигация --}}
-<nav class="fixed inset-x-0 top-0 z-50 transition-all duration-300 text-black bg-white">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
-        <a href="{{ url('/') }}" class="flex items-center gap-3 font-bold uppercase tracking-wide">
-            <span class="text-sm">Fifth Event</span>
-        </a>
-    </div>
-</nav>
-
 {{-- Основной контент --}}
 <main class="pt-32 pb-20">
     <div class="mx-auto max-w-7xl px-6">
