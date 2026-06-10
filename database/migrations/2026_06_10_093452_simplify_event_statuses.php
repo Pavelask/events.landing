@@ -8,21 +8,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Обновляем все статусы
-        DB::table('events')->where('status', 'active')->update(['status' => 'published']);
-        DB::table('events')->where('status', 'completed')->update(['status' => 'completed']);
-        DB::table('events')->where('status', 'archived')->update(['status' => 'archived']);
-        DB::table('events')->where('status', 'cancelled')->update(['status' => 'draft']);
-
-        // Меняем тип колонки status
+        // Сначала меняем тип колонки status на новый enum
         Schema::table('events', function ($table) {
             $table->enum('status', ['draft', 'published', 'completed', 'archived'])->default('draft')->change();
         });
+
+        // Затем обновляем старые значения статусов
+        DB::table('events')->where('status', 'active')->update(['status' => 'published']);
+        DB::table('events')->where('status', 'archived')->update(['status' => 'archived']);
+        DB::table('events')->where('status', 'cancelled')->update(['status' => 'draft']);
     }
 
     public function down(): void
     {
-        // Возвращаем старые статусы
+        // Обновляем обратно для safety
+        DB::table('events')->where('status', 'completed')->update(['status' => 'published']);
+        DB::table('events')->where('status', 'archived')->update(['status' => 'archived']);
+
+        // Возвращаем старый тип колонки
         Schema::table('events', function ($table) {
             $table->enum('status', ['draft', 'published', 'active', 'completed', 'archived', 'cancelled'])->default('draft')->change();
         });
