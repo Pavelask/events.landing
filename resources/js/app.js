@@ -34,15 +34,16 @@ window.addEventListener('scroll', () => {
     // Clear previous timeout
     clearTimeout(navbarScrollTimeout);
     
-    if (scrollY > 80) {
+    if (scrollY > 30) {
         if (!navbar.classList.contains('navbar-scrolled')) {
             navbar.classList.add('navbar-scrolled');
             
-            // GSAP анимация появления - фон
+            // GSAP анимация появления - фон и хедер
             gsap.to(navbar, { 
                 backgroundColor: 'rgba(255,255,255,0.85)', 
                 backdropFilter: 'blur(16px)',
                 boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+                opacity: 1,
                 duration: 0.3, 
                 ease: 'power2.out' 
             });
@@ -85,11 +86,12 @@ window.addEventListener('scroll', () => {
             navbarScrollTimeout = setTimeout(() => {
                 navbar.classList.remove('navbar-scrolled');
                 
-                // GSAP анимация исчезновения - фон
+                // GSAP анимация исчезновения - фон и хедер
                 gsap.to(navbar, { 
                     backgroundColor: 'rgba(255,255,255,0)', 
                     backdropFilter: 'none',
                     boxShadow: 'none',
+                    opacity: 0,
                     duration: 0.3, 
                     ease: 'power2.out' 
                 });
@@ -183,29 +185,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // GSAP инициализация хедера
     const navbar = document.getElementById('main-navbar');
     if (navbar) {
-        // Начальное состояние - прозрачный фон
+        // Начальное состояние - прозрачный фон и невидимый хедер
         gsap.set(navbar, { 
             backgroundColor: 'rgba(255,255,255,0)',
             backdropFilter: 'none',
-            boxShadow: 'none'
+            boxShadow: 'none',
+            opacity: 0
         });
         
-        // Логотип и текст - изначально видны
+        // Логотип и текст - изначально невидимы
         const logoText = navbar.querySelector('.navbar-logo');
         if (logoText) {
-            gsap.set(logoText, { opacity: 1, y: 0 });
+            gsap.set(logoText, { opacity: 0, y: -20 });
         }
         
-        // Навигационные ссылки (desktop) - изначально видны
+        // Навигационные ссылки (desktop) - изначально невидимы
         const navLinks = navbar.querySelectorAll('.navbar-navlinks a');
         if (navLinks.length > 0) {
-            gsap.set(navLinks, { opacity: 1, y: 0 });
+            gsap.set(navLinks, { opacity: 0, y: -15 });
         }
         
-        // Кнопка меню (mobile) - изначально видна
+        // Кнопка меню (mobile) - изначально невидима
         const menuBtn = navbar.querySelector('.navbar-menu-btn');
         if (menuBtn) {
-            gsap.set(menuBtn, { opacity: 1, scale: 1 });
+            gsap.set(menuBtn, { opacity: 0, scale: 0.7 });
         }
         
         // Мобильное меню изначально скрыто
