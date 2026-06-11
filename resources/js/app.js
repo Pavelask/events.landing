@@ -52,8 +52,8 @@ window.addEventListener('scroll', () => {
             const logoText = navbar.querySelector('.navbar-logo');
             if (logoText) {
                 gsap.fromTo(logoText, 
-                    { opacity: 0, y: -20 },
-                    { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
+                    { opacity: 0 },
+                    { opacity: 1, duration: 0.3, ease: 'power2.out' }
                 );
             }
             
@@ -99,7 +99,7 @@ window.addEventListener('scroll', () => {
                 // Логотип и текст - исчезают
                 const logoText = navbar.querySelector('.navbar-logo');
                 if (logoText) {
-                    gsap.to(logoText, { opacity: 0, y: -20, duration: 0.25, ease: 'power2.in' });
+                    gsap.to(logoText, { opacity: 0, duration: 0.25, ease: 'power2.in' });
                 }
                 
                 // Навигационные ссылки (desktop) - исчезают
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Логотип и текст - изначально невидимы
         const logoText = navbar.querySelector('.navbar-logo');
         if (logoText) {
-            gsap.set(logoText, { opacity: 0, y: -20 });
+            gsap.set(logoText, { opacity: 0 });
         }
         
         // Навигационные ссылки (desktop) - изначально невидимы
