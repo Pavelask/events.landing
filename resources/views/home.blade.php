@@ -9,6 +9,9 @@
     <title>{{ $activeEvent?->title ?? 'Платформа мероприятий' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
     @vite(['resources/css/app.css', 'resources/css/home.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -80,7 +83,7 @@
             <span x-text="menuOpen ? '✕' : '☰'" class="text-xl font-bold"></span>
         </button>
     </div>
-    <div id="mobileMenu" x-show="menuOpen" x-transition
+    <div id="mobileMenu" x-show="menuOpen" x-cloak x-transition
          class="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md md:hidden">
         <div class="flex flex-col items-center gap-2 px-6 py-6">
             <a class="block py-3 text-base font-medium text-black w-full text-center hover:text-[var(--color-primary)]" href="#speakers" @click="menuOpen=false">СПИКЕРЫ</a>
