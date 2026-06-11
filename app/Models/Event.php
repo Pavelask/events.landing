@@ -17,11 +17,11 @@ class Event extends Model
     use HasSlug;
     use SoftDeletes;
 
-    protected $fillable = ['title','slug','description','start_date','end_date','daily_start_time','daily_end_time','timezone','status','venue_name','venue_address','venue_lat','venue_lng','venue_how_to_get','show_privacy_section','privacy_policy','personal_data_consent','poster_image','logo','video_url','gallery','social_links','contact_email','contact_phone','registration_type','registration_url','yandex_form_url','is_registration_open','media_image','media_description','is_media_visible','created_by'];
+    protected $fillable = ['title','slug','description','start_date','end_date','daily_start_time','daily_end_time','timezone','status','venue_name','venue_address','venue_lat','venue_lng','venue_how_to_get','show_privacy_section','privacy_policy','personal_data_consent','poster_image','logo','video_url','gallery','gallery_view_count','social_links','contact_email','contact_phone','registration_type','registration_url','yandex_form_url','is_registration_open','media_image','media_description','is_media_visible','created_by'];
 
     protected function casts(): array
     {
-        return ['start_date'=>'date','end_date'=>'date','daily_start_time'=>'string','daily_end_time'=>'string','venue_lat'=>'decimal:7','venue_lng'=>'decimal:7','gallery'=>'array','social_links'=>'array','is_registration_open'=>'boolean','is_media_visible'=>'boolean','show_privacy_section'=>'boolean'];
+        return ['start_date'=>'date','end_date'=>'date','daily_start_time'=>'string','daily_end_time'=>'string','venue_lat'=>'decimal:7','venue_lng'=>'decimal:7','gallery'=>'array','social_links'=>'array','is_registration_open'=>'boolean','is_media_visible'=>'boolean','show_privacy_section'=>'boolean','gallery_view_count'=>'integer'];
     }
 
     public function getSlugOptions(): SlugOptions { return SlugOptions::create()->generateSlugsFrom('title')->saveSlugsTo('slug'); }
@@ -54,6 +54,11 @@ class Event extends Model
         $today = Carbon::now($this->timezone)->startOfDay();
         $threeMonthsAgo = $today->copy()->subMonths(3)->startOfDay();
         return $this->end_date->lt($today) && $this->end_date->gte($threeMonthsAgo);
+    }
+
+    public function incrementGalleryViewCount(): void
+    {
+        $this->increment('gallery_view_count');
     }
     public function getIsRegistrationAvailableAttribute(): bool
     {

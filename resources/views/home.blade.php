@@ -218,7 +218,15 @@
              x-data="{ open: false, index: 0, images: {{ json_encode($galleryImages) }}, next() { this.index = (this.index + 1) % this.images.length }, prev() { this.index = (this.index - 1 + this.images.length) % this.images.length }, close() { this.open = false } }">
         <div class="mx-auto max-w-7xl px-6">
             <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2 text-center">Фотографии с предыдущих мероприятий</p>
-            <!-- <h2 class="mt-3 text-center text-4xl font-bold text-[var(--color-text)]">Фотогалерея</h2> -->
+            
+            {{-- Счётчик просмотров --}}
+            <div class="flex items-center justify-center gap-2 mt-2 mb-6 text-sm text-[var(--color-text-secondary)]">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span>{{ number_format($activeEvent->gallery_view_count ?? 0) }} просмотров</span>
+            </div>
 
             <div class="mt-12 columns-2 gap-4 space-y-4 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6">
                 @foreach($galleryImages as $idx => $image)
@@ -509,6 +517,25 @@
             offlineNotification.classList.remove('hidden');
         }
     }
+
+    // Инкремент счётчика просмотров галереи при первом клике
+    let galleryViewIncremented = false;
+    document.addEventListener('click', function(e) {
+        const galleryImage = e.target.closest('.gallery-image');
+        if (galleryImage && !galleryViewIncremented) {
+            galleryViewIncremented = true;
+            fetch('/api/gallery-view', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    event_slug: '{{ $activeEvent->slug }}'
+                })
+            }).catch(() => {});
+        }
+    });
 </script>
 </body>
 </html>

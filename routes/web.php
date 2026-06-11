@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GalleryViewController;
 use App\Http\Controllers\IcalController;
 use App\Livewire\EventRegistration;
 use App\Models\Event;
@@ -68,6 +69,9 @@ Route::get('/offline', function () {
 Route::get('/health', function () {
     return response('', 200)->header('Content-Type', 'text/plain');
 });
+
+// API для инкремента счётчика просмотров галереи
+Route::post('/api/gallery-view', [GalleryViewController::class, 'increment'])->name('gallery.view.increment');
 
 // Страницы политик
 Route::get('/privacy-policy', function () {
