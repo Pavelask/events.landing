@@ -60,7 +60,7 @@
 
 <nav id="main-navbar" class="fixed inset-x-0 top-0 z-50 transition-all duration-300 text-black bg-white" x-data="{ menuOpen: false }">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
-        <a href="{{ url('/') }}" class="flex items-center gap-3 font-bold uppercase tracking-wide cursor-pointer text-black md:block hidden" x-cloak>
+        <a href="{{ url('/') }}" class="flex items-center gap-3 font-bold uppercase tracking-wide cursor-pointer text-black md:block hidden navbar-logo">
             @if($activeEvent?->logo)
                 <img src="{{ asset('storage/'.$activeEvent->logo) }}" class="h-10 w-10 rounded-full object-cover" alt="Logo">
             @endif
@@ -71,7 +71,7 @@
                 {{ session('message') }}
             </div>
         @endif
-        <div class="hidden items-center gap-6 text-sm font-medium md:flex" x-cloak>
+        <div class="hidden items-center gap-6 text-sm font-medium md:flex navbar-navlinks">
             <a href="#speakers" class="hover:text-[var(--color-primary)] transition-colors">СПИКЕРЫ</a>
             <a href="#keynote" class="hover:text-[var(--color-primary)] transition-colors">ГОСТИ</a>
             <a href="#schedule" class="hover:text-[var(--color-primary)] transition-colors">РАСПИСАНИЕ</a>
@@ -79,7 +79,7 @@
             <a href="#faq" class="hover:text-[var(--color-primary)] transition-colors">FAQ</a>
             <a href="#venue" class="hover:text-[var(--color-primary)] transition-colors">АДРЕС</a>
         </div>
-        <button id="menuToggle" class="md:hidden flex items-center gap-2 text-black border border-[var(--color-border)] p-2 hover:bg-[var(--color-background)] hover:text-[var(--color-primary)] transition-colors rounded-[var(--radius-btn)]" @click="menuOpen=!menuOpen" x-cloak>
+        <button id="menuToggle" class="md:hidden flex items-center gap-2 text-black border border-[var(--color-border)] p-2 hover:bg-[var(--color-background)] hover:text-[var(--color-primary)] transition-colors rounded-[var(--radius-btn)] navbar-menu-btn" @click="menuOpen=!menuOpen">
             <span x-text="menuOpen ? '✕' : '☰'" class="text-xl font-bold"></span>
         </button>
     </div>

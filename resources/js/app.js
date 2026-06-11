@@ -48,7 +48,7 @@ window.addEventListener('scroll', () => {
             });
             
             // Логотип и текст - появляются
-            const logoText = navbar.querySelector('.flex.items-center.gap-3');
+            const logoText = navbar.querySelector('.navbar-logo');
             if (logoText) {
                 gsap.fromTo(logoText, 
                     { opacity: 0, y: -20 },
@@ -57,7 +57,7 @@ window.addEventListener('scroll', () => {
             }
             
             // Навигационные ссылки (desktop) - появляются
-            const navLinks = navbar.querySelectorAll('.hidden.md\\:flex a');
+            const navLinks = navbar.querySelectorAll('.navbar-navlinks a');
             if (navLinks.length > 0) {
                 gsap.fromTo(navLinks,
                     { opacity: 0, y: -15 },
@@ -66,7 +66,7 @@ window.addEventListener('scroll', () => {
             }
             
             // Кнопка меню (mobile) - появляется
-            const menuBtn = navbar.querySelector('#menuToggle');
+            const menuBtn = navbar.querySelector('.navbar-menu-btn');
             if (menuBtn) {
                 gsap.fromTo(menuBtn,
                     { opacity: 0, scale: 0.7 },
@@ -95,19 +95,19 @@ window.addEventListener('scroll', () => {
                 });
                 
                 // Логотип и текст - исчезают
-                const logoText = navbar.querySelector('.flex.items-center.gap-3');
+                const logoText = navbar.querySelector('.navbar-logo');
                 if (logoText) {
                     gsap.to(logoText, { opacity: 0, y: -20, duration: 0.25, ease: 'power2.in' });
                 }
                 
                 // Навигационные ссылки (desktop) - исчезают
-                const navLinks = navbar.querySelectorAll('.hidden.md\\:flex a');
+                const navLinks = navbar.querySelectorAll('.navbar-navlinks a');
                 if (navLinks.length > 0) {
                     gsap.to(navLinks, { opacity: 0, y: -15, duration: 0.25, ease: 'power2.in', stagger: 0.02 });
                 }
                 
                 // Кнопка меню (mobile) - исчезает
-                const menuBtn = navbar.querySelector('#menuToggle');
+                const menuBtn = navbar.querySelector('.navbar-menu-btn');
                 if (menuBtn) {
                     gsap.to(menuBtn, { opacity: 0, scale: 0.7, duration: 0.25, ease: 'power2.in' });
                 }
@@ -191,17 +191,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         // Все элементы навбара изначально невидимы
-        const logoText = navbar.querySelector('.flex.items-center.gap-3');
+        const logoText = navbar.querySelector('.navbar-logo');
         if (logoText) {
             gsap.set(logoText, { opacity: 0, y: -20 });
         }
         
-        const navLinks = navbar.querySelectorAll('.hidden.md\\:flex a');
+        const navLinks = navbar.querySelectorAll('.navbar-navlinks a');
         if (navLinks.length > 0) {
             gsap.set(navLinks, { opacity: 0, y: -15 });
         }
         
-        const menuBtn = navbar.querySelector('#menuToggle');
+        const menuBtn = navbar.querySelector('.navbar-menu-btn');
         if (menuBtn) {
             gsap.set(menuBtn, { opacity: 0, scale: 0.7 });
         }
