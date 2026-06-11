@@ -131,17 +131,8 @@ function initSwiper() {
     if (heroSwiperEl) {
         // console.log('Hero swiper found, initializing...');
         
-        // Проверяем, что слайды есть
-        const slides = heroSwiperEl.querySelectorAll('.swiper-slide');
-        console.log('Slides count:', slides.length);
-        
-        if (slides.length < 2) {
-            console.log('Less than 2 slides, autoplay not needed');
-            return;
-        }
-        
         const swiper = new Swiper('.hero-swiper', {
-            loop: false,
+            loop: true,
             speed: 900,
             parallax: true,
             autoplay: {
