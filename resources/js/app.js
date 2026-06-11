@@ -183,27 +183,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // GSAP инициализация хедера
     const navbar = document.getElementById('main-navbar');
     if (navbar) {
-        // Начальное состояние - прозрачный фон и невидимые элементы
+        // Начальное состояние - прозрачный фон
         gsap.set(navbar, { 
             backgroundColor: 'rgba(255,255,255,0)',
             backdropFilter: 'none',
             boxShadow: 'none'
         });
         
-        // Все элементы навбара изначально невидимы
+        // Логотип и текст - изначально видны
         const logoText = navbar.querySelector('.navbar-logo');
         if (logoText) {
-            gsap.set(logoText, { opacity: 0, y: -20 });
+            gsap.set(logoText, { opacity: 1, y: 0 });
         }
         
+        // Навигационные ссылки (desktop) - изначально видны
         const navLinks = navbar.querySelectorAll('.navbar-navlinks a');
         if (navLinks.length > 0) {
-            gsap.set(navLinks, { opacity: 0, y: -15 });
+            gsap.set(navLinks, { opacity: 1, y: 0 });
         }
         
+        // Кнопка меню (mobile) - изначально видна
         const menuBtn = navbar.querySelector('.navbar-menu-btn');
         if (menuBtn) {
-            gsap.set(menuBtn, { opacity: 0, scale: 0.7 });
+            gsap.set(menuBtn, { opacity: 1, scale: 1 });
         }
         
         // Мобильное меню изначально скрыто
