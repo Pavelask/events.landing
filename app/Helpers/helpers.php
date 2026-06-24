@@ -14,7 +14,7 @@ if (!function_exists('clean_html')) {
         
 
         $allowedTags = [
-            'p' => [],
+            'p' => ['style'],
             'br' => [],
             'strong' => [],
             'b' => [],
@@ -25,8 +25,8 @@ if (!function_exists('clean_html')) {
             'ul' => [],
             'ol' => [],
             'li' => [],
-            'h2' => [],
-            'h3' => [],
+            'h2' => ['style'],
+            'h3' => ['style'],
             'h4' => [],
             'h5' => [],
             'h6' => [],
@@ -38,11 +38,11 @@ if (!function_exists('clean_html')) {
             'div' => ['class'],
         ];
 
-        $html = strip_tags($html, '<' . implode('>', array_keys($allowedTags)) . '>');
+        $html = strip_tags($html, '<' . implode('><', array_keys($allowedTags)) . '>');
 
-        $html = preg_replace_callback('/<([a-z][a-z0-9]*)\s+([^>]*?)>/i', function ($match) use ($allowedTags) {
+        $html = preg_replace_callback('/<([a-z][a-z0-9]*)(?:\s+([^>]*?))?>/i', function ($match) use ($allowedTags) {
             $tag = strtolower($match[1]);
-            $attrs = $match[2];
+            $attrs = $match[2] ?? '';
 
             if (!isset($allowedTags[$tag])) {
                 return '';
