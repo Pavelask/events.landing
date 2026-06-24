@@ -11,6 +11,7 @@ if (!function_exists('clean_html')) {
         if ($html === null || $html === '') {
             return '';
         }
+        
 
         $allowedTags = [
             'p' => [],
