@@ -21,7 +21,7 @@
                 @if ($event)
                     <div class="flex shrink-0 items-center gap-2">
                         <div class="relative" x-data="{ calOpen: false }" @click.outside="calOpen = false" @keydown.escape="calOpen = false">
-                            <button @click="calOpen = ! calOpen" class="inline-flex items-center gap-2 rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-white px-3.5 py-2 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] sm:text-sm">
+                            <button @click="calOpen = ! calOpen" aria-label="Добавить в календарь" class="inline-flex items-center gap-2 rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-white px-3.5 py-2 text-xs font-medium text-[var(--color-text)] transition hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] sm:text-sm">
                                 <x-heroicon-o-calendar class="h-4 w-4 shrink-0" />
                                 Добавить в календарь
                             </button>
@@ -38,8 +38,9 @@
         </div>
 
     @if ($event)
+        <div class="sticky z-30 bg-white py-4 border-b border-[var(--color-border)]" style="position: sticky; top: 60px;">
         {{-- Underline-tab навигация --}}
-        <div class="mb-8 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:flex lg:flex-row lg:flex-wrap lg:items-stretch" role="tablist">
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:flex lg:flex-row lg:flex-wrap lg:items-stretch" role="tablist">
             @foreach ($days as $day)
                 @php
                     $todayDate = \Carbon\Carbon::today()->toDateString();
@@ -50,12 +51,11 @@
                 @endphp
                 <button
                     type="button"
-                    wire:click="selectDay({{ $day->id }})"
+                    wire:click="selectDay({{ $day->id }})" x-on:click="$nextTick(() => { const panel = document.querySelector('[role="tabpanel"]'); if(panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); })"
                     role="tab"
                     aria-selected="{{ $isActive ? 'true' : 'false' }}"
-                    class="flex w-full cursor-pointer items-center justify-center whitespace-nowrap text-sm font-medium transition rounded-[var(--radius-btn)] px-4 py-2 lg:flex-1 lg:h-full
-                        {{ $isActive ? 'bg-[var(--color-primary)] text-white shadow-md hover:bg-[var(--color-primary)]' : 'bg-[var(--color-background)] text-[var(--color-text)] hover:bg-[var(--color-background)]' }}
-                        {{ ($isPast && !$isActive) ? 'opacity-60' : '' }}"
+                    style="{{ $isActive ? 'background-color: var(--color-primary); color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);' : 'background-color: var(--color-background); color: var(--color-text);' }}{{ ($isPast && !$isActive) ? ' opacity: 0.6;' : '' }}"
+                    class="flex w-full cursor-pointer items-center justify-center whitespace-nowrap text-sm font-medium transition rounded-[var(--radius-btn)] px-4 py-2 lg:flex-1 lg:h-full hover:opacity-90"
                 >
                     <span class="inline-flex flex-col items-center">
                         <span>{{ $day->label }}</span>
@@ -68,14 +68,10 @@
                 </button>
             @endforeach
         </div>
+        </div>
 
         @if ($selectedDay)
-            @php
-                // Отладка
-                // dump('Event timezone:', $selectedDay->event->timezone ?? config('app.timezone'));
-            @endphp
-
-            <div class="relative" wire:key="day-{{ $selectedDay->id }}">
+            <div wire:transition.opacity.duration.300ms class="relative" wire:key="day-{{ $selectedDay->id }}" role="tabpanel" id="panel-day-{{ $selectedDay->id }}" aria-labelledby="tab-day-{{ $selectedDay->id }}">
                 {{-- Вертикальная линия таймлинии --}}
                 <div class="absolute left-4 top-0 bottom-0 w-px bg-[var(--color-border)]"></div>
 
@@ -114,61 +110,63 @@
 
                     <div class="relative pb-6 last:pb-0">
                         {{-- Шар-индикатор на таймлинии --}}
-                        <div @class([
-                            'absolute left-4 top-2 z-10 h-3 w-3 -translate-x-1/2 rounded-[var(--radius-round)] border-2',
-                            'border-[var(--color-primary)] bg-[var(--color-primary)] ring-4 ring-[var(--color-primary)]/20' => $status === 'active',
-                            'border-[var(--color-border)] bg-[var(--color-muted)]' => $status === 'past',
-                            'border-[var(--color-primary)] bg-white' => $status === 'upcoming',
-                        ])></div>
+                        @if($status === 'active')
+                            <div class="absolute left-4 top-2 z-10 h-3 w-3 -translate-x-1/2 rounded-[var(--radius-round)] border-2 border-green-500 bg-green-500 ring-4 ring-green-500/20 animate-pulse" aria-hidden="true"></div>
+                        @elseif($status === 'past')
+                            <div class="absolute left-4 top-2 z-10 h-3 w-3 -translate-x-1/2 rounded-[var(--radius-round)] border-2 border-[var(--color-primary)] bg-[var(--color-primary)]" aria-hidden="true"></div>
+                        @else
+                            <div class="absolute left-4 top-2 z-10 h-3 w-3 -translate-x-1/2 rounded-[var(--radius-round)] border-2 border-gray-800 bg-white" aria-hidden="true"></div>
+                        @endif
 
                         <div class="ml-8 sm:ml-10 mt-1.5">
                             <div class="mb-2 flex items-center justify-between gap-2">
                                 <div class="flex items-center gap-2">
-                                    <span @class([
-                                        'rounded-[var(--radius-btn)] px-3 py-1 font-mono text-sm tabular-nums font-semibold',
-                                        'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' => $status === 'active',
-                                        'bg-[var(--color-background)] text-[var(--color-text)]' => $status === 'past',
-                                        'bg-[var(--color-background)] text-[var(--color-text)]' => $status === 'upcoming',
-                                    ])>
+                                    @if($status === 'active')
+                                        <span class="rounded-[var(--radius-btn)] px-3 py-1 font-mono text-sm tabular-nums font-semibold bg-green-100 text-green-700">
+                                    @elseif($status === 'past')
+                                        <span class="rounded-[var(--radius-btn)] px-3 py-1 font-mono text-sm tabular-nums font-semibold bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                                    @else
+                                        <span class="rounded-[var(--radius-btn)] px-3 py-1 font-mono text-sm tabular-nums font-semibold bg-gray-100 text-gray-900">
+                                    @endif
                                         {{ $start->format('H:i') }} - {{ $end->format('H:i') }}
                                     </span>
 
                                     @if ($status === 'active')
-                                        <span class="inline-flex items-center gap-1 rounded-[var(--radius-btn)] bg-[var(--color-primary)]/10 px-2 py-0.5 text-[11px] font-semibold text-[var(--color-primary)]">● Идёт сейчас</span>
+                                        <span class="inline-flex items-center gap-1 rounded-[var(--radius-btn)] bg-green-100 px-2 py-0.5 text-[11px] font-semibold text-green-600">● Идёт сейчас</span>
                                     @elseif ($status === 'past')
-                                        <span class="text-xs text-[var(--color-muted)]">Завершено</span>
+                                        <span class="text-xs text-[var(--color-primary)]">Завершено</span>
                                     @endif
                                 </div>
 
                                 <div class="relative" x-data="{ evtCalOpen: false }" @click.outside="evtCalOpen = false" @keydown.escape="evtCalOpen = false">
-                                    <button @click="evtCalOpen = ! evtCalOpen" class="rounded-[var(--radius-btn)] p-1 text-[var(--color-muted)] transition hover:bg-[var(--color-background)] hover:text-[var(--color-primary)]" title="Добавить в календарь">
+                                    <button @click="evtCalOpen = ! evtCalOpen" aria-label="Добавить событие в календарь" class="rounded-[var(--radius-btn)] p-1 text-[var(--color-muted)] transition hover:bg-[var(--color-background)] hover:text-[var(--color-primary)]" title="Добавить в календарь">
                                         <x-heroicon-o-calendar class="h-4 w-4" />
                                     </button>
-                                    <div x-show="evtCalOpen" x-cloak @click.away="evtCalOpen = false" class="absolute right-0 z-20 mt-1 w-44 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white py-1 shadow-lg">
-                                        <a href="{{ route('ical.single', $scheduleEvent) }}" class="block px-4 py-1.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-background)]">Скачать .ics</a>
+                                    <div x-show="evtCalOpen" x-cloak @click.away="evtCalOpen = false" class="absolute right-0 z-20 mt-1 w-48 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white py-1 shadow-lg">
                                         <a href="{{ $googleUrl }}" target="_blank" class="block px-4 py-1.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-background)]">Google Calendar</a>
-                                        <a href="{{ route('ical.single', $scheduleEvent) }}" class="block px-4 py-1.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-background)]">Apple Calendar</a>
+                                        <a href="{{ route('ical.single', $scheduleEvent) }}" class="block px-4 py-1.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-background)]">Apple / Outlook / .ics</a>
                                         <a href="{{ route('ical.qr.single', $scheduleEvent) }}" target="_blank" class="block px-4 py-1.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-background)]">QR-код</a>
                                     </div>
                                 </div>
                             </div>
 
-                            <div @class([
-                                'schedule-card rounded-[var(--radius-card)] border p-4 transition sm:p-5',
-                                'border-[var(--color-primary)] bg-[var(--color-primary)]/5 shadow-[0_0_0_1px_var(--color-primary)]' => $status === 'active',
-                                'border-[var(--color-border)] bg-[var(--color-background)] opacity-60' => $status === 'past',
-                                'border-[var(--color-border)] bg-white hover:shadow-sm' => $status === 'upcoming',
-                            ])>
+                            @if($status === 'active')
+                                <div class="schedule-card rounded-[var(--radius-card)] border border-green-500 p-4 transition-all sm:p-5 shadow-[0_0_0_1px_var(--color-success)] hover:shadow-lg hover:-translate-y-0.5">
+                            @elseif($status === 'past')
+                                <div class="schedule-card rounded-[var(--radius-card)] border border-gray-200 p-4 transition-all sm:p-5 opacity-60 hover:opacity-80">
+                            @else
+                                <div class="schedule-card rounded-[var(--radius-card)] border border-[var(--color-border)] p-4 transition-all sm:p-5 hover:shadow-md hover:-translate-y-0.5">
+                            @endif
                                 <div class="flex items-start gap-4">
                                     @if ($scheduleEvent->speaker && $scheduleEvent->speaker->photo)
                                         <img
                                             src="{{ Storage::url($scheduleEvent->speaker->photo) }}"
                                             alt="{{ $scheduleEvent->speaker->name }}"
                                             loading="lazy"
-                                            class="h-16 w-16 shrink-0 rounded-full object-cover border-2 border-[var(--color-primary)]"
+                                            class="h-16 w-16 shrink-0 rounded-full object-cover border-2 {{ $status === 'active' ? 'border-green-500' : ($status === 'past' ? 'border-gray-300' : 'border-gray-400') }}"
                                         >
                                     @elseif ($scheduleEvent->icon_image)
-                                        <img src="{{ Storage::url($scheduleEvent->icon_image) }}" alt="" loading="lazy" class="h-16 w-16 shrink-0 rounded-full object-cover border-2 border-[var(--color-primary)]">
+                                        <img src="{{ Storage::url($scheduleEvent->icon_image) }}" alt="{{ $scheduleEvent->title }}" loading="lazy" class="h-16 w-16 shrink-0 rounded-full object-cover border-2 {{ $status === 'active' ? 'border-green-500' : ($status === 'past' ? 'border-gray-300' : 'border-gray-400') }}">
                                     @elseif ($scheduleEvent->icon)
                                         <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--color-background)] text-3xl leading-none">{{ $scheduleEvent->icon }}</span>
                                     @else
@@ -192,7 +190,7 @@
                                                 </span>
                                             @endif
                                             @if ($scheduleEvent->location)
-                                                <span class="inline-flex items-center gap-1 rounded-[var(--radius-btn)] border border-[var(--color-primary)]/60 bg-[var(--color-primary)]/5 px-2.5 py-1  [... omitted end of long line]
+                                                <span class="inline-flex items-center gap-1 rounded-[var(--radius-btn)] border border-[var(--color-primary)]/60 bg-[var(--color-primary)]/5 px-2.5 py-1 text-xs text-[var(--color-muted)]">
                                                     <x-heroicon-o-map-pin class="h-3 w-3" />
                                                     {{ $scheduleEvent->location }}
                                                 </span>
@@ -216,5 +214,7 @@
         </div>
     @endif
     </div>
+
+
 </section>
 

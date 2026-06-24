@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Storage;
                     <p class="text-sm text-[var(--color-muted)]">{{ $guest->organization }}</p>
                 @endif
                 @if ($guest->description)
-                    <div class="mt-2 text-xs text-[var(--color-muted)] text-left">{!! $guest->description !!}</div>
+                    <div class="mt-2 text-xs text-[var(--color-muted)] text-left">{!! clean_html($guest->description) !!}</div>
                 @endif
             </div>
             @endif

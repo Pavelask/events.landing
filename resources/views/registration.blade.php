@@ -48,7 +48,7 @@
             <a href="{{ url('/') }}#faq" class="hover:text-[var(--color-primary)] transition-colors">FAQ</a>
             <a href="{{ url('/') }}#venue" class="hover:text-[var(--color-primary)] transition-colors">АДРЕС</a>
         </div>
-        <button id="menuToggle" class="md:hidden flex items-center gap-2 text-black border border-[var(--color-border)] p-2 hover:bg-[var(--color-background)] hover:text-[var(--color-primary)] transition-colors rounded-[var(--radius-btn)] navbar-menu-btn" @click="menuOpen=!menuOpen">
+        <button id="menuToggle" aria-label="Открыть меню" aria-expanded="menuOpen" class="md:hidden flex items-center gap-2 text-black border border-[var(--color-border)] p-2 hover:bg-[var(--color-background)] hover:text-[var(--color-primary)] transition-colors rounded-[var(--radius-btn)] navbar-menu-btn" @click="menuOpen=!menuOpen">
             <span x-text="menuOpen ? '✕' : '☰'" class="text-xl font-bold"></span>
         </button>
     </div>
@@ -65,7 +65,7 @@
     </div>
 </nav>
 
-<div class="min-h-screen pt-32 pb-12">
+<main class="min-h-screen pt-32 pb-12">
     <div class="mx-auto max-w-4xl px-6">
         <div class="mb-12 text-center">
             <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">Регистрация</p>
@@ -83,7 +83,7 @@
         @else
             <div class="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-[var(--color-text)]">
                 @if($event->registration_url)
-                    <iframe src="{{ $event->registration_url }}" class="h-[720px] w-full rounded-[var(--radius-card)] bg-white" frameborder="0"></iframe>
+                    <iframe src="{{ $event->registration_url }}" title="Форма регистрации" class="h-[720px] w-full rounded-[var(--radius-card)] bg-white" frameborder="0" loading="lazy"></iframe>
                 @elseif($event->yandex_form_url)
                     <div class="yandex-form-container">
                         {!! $event->yandex_form_url !!}
@@ -98,7 +98,7 @@
             <a href="{{ url('/') }}" class="hover:text-[var(--color-primary)] transition-colors">← Вернуться на главную</a>
         </div>
     </div>
-</div>
+</main>
 
 {{-- Футтер --}}
 <footer class="bg-[var(--color-text)] text-white">

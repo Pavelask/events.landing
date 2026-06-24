@@ -2,8 +2,8 @@
 // Импорты библиотек
 import Swiper from 'swiper';
 import { Navigation, Pagination, Parallax, Autoplay } from 'swiper/modules';
-import Plyr from 'plyr';
-import 'plyr/dist/plyr.css';
+
+
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 
@@ -21,7 +21,12 @@ Swiper.use([Navigation, Pagination, Parallax, Autoplay]);
 
 // Экспорт библиотек для использования в Blade-шаблонах
 window.Swiper = Swiper;
-window.Plyr = Plyr;
+// Plyr — динамическая загрузка
+window.Plyr = null;
+import('plyr').then(({ default: PlyrClass }) => {
+    import('plyr/dist/plyr.css');
+    window.Plyr = PlyrClass;
+});
 
 // Альтернатива: используем window scroll с GSAP
 let navbarScrollTimeout;
@@ -75,11 +80,6 @@ window.addEventListener('scroll', () => {
                 );
             }
             
-            // Мобильное меню (выпадающее) - закрываем и скрываем
-            const mobileMenu = document.getElementById('mobileMenu');
-            if (mobileMenu) {
-                mobileMenu.style.display = 'none';
-            }
         }
     } else {
         if (navbar.classList.contains('navbar-scrolled')) {
@@ -112,12 +112,6 @@ window.addEventListener('scroll', () => {
                 const menuBtn = navbar.querySelector('.navbar-menu-btn');
                 if (menuBtn) {
                     gsap.to(menuBtn, { opacity: 0, scale: 0.7, duration: 0.25, ease: 'power2.in' });
-                }
-                
-                // Мобильное меню (выпадающее) - гарантированно скрываем
-                const mobileMenu = document.getElementById('mobileMenu');
-                if (mobileMenu) {
-                    mobileMenu.style.display = 'none';
                 }
             }, 50);
         }
@@ -200,12 +194,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const menuBtn = navbar.querySelector('.navbar-menu-btn');
         if (menuBtn) {
             gsap.set(menuBtn, { opacity: 0, scale: 0.7 });
-        }
-        
-        // Мобильное меню изначально скрыто
-        const mobileMenu = document.getElementById('mobileMenu');
-        if (mobileMenu) {
-            mobileMenu.style.display = 'none';
         }
     }
 

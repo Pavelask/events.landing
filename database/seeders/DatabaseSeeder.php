@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
+            AdminUserSeeder::class,
             SpeakerSeeder::class,
             GuestSeeder::class,
             FaqSeeder::class,

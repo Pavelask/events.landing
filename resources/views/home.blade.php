@@ -9,6 +9,10 @@
     <title>{{ $activeEvent?->title ?? 'Платформа мероприятий' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @if($activeEvent)
+        <meta name="event-slug" content="{{ $activeEvent->slug }}">
+    @endif
     <style>
         [x-cloak] { display: none !important; }
     </style>
@@ -29,34 +33,6 @@
         </div>
     </div>
 </div>
-
-<script>
-    (function() {
-        let posterClicks = 0;
-        let lastClickTime = 0;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const poster = document.querySelector('#about img[alt="{{ $activeEvent?->title ?? 'event' }}"]');
-            if (!poster) return;
-
-            poster.addEventListener('click', function(e) {
-                const now = Date.now();
-                if (now - lastClickTime > 2000) {
-                    posterClicks = 0;
-                }
-                lastClickTime = now;
-                posterClicks++;
-
-                if (posterClicks >= 5) {
-                    posterClicks = 0;
-                    const egg = document.getElementById('easter-egg');
-                    egg.style.display = 'flex';
-                    setTimeout(() => egg.style.display = 'none', 2000);
-                }
-            });
-        });
-    })();
-</script>
 
 <nav id="main-navbar" class="fixed inset-x-0 top-0 z-50 transition-all duration-300 text-black bg-white" x-data="{ menuOpen: false }">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
@@ -79,7 +55,7 @@
             <a href="#faq" class="hover:text-[var(--color-primary)] transition-colors">FAQ</a>
             <a href="#venue" class="hover:text-[var(--color-primary)] transition-colors">АДРЕС</a>
         </div>
-        <button id="menuToggle" class="md:hidden flex items-center gap-2 text-black border border-[var(--color-border)] p-2 hover:bg-[var(--color-background)] hover:text-[var(--color-primary)] transition-colors rounded-[var(--radius-btn)] navbar-menu-btn" @click="menuOpen=!menuOpen">
+        <button id="menuToggle" aria-label="Открыть меню" aria-expanded="menuOpen" class="md:hidden flex items-center gap-2 text-black border border-[var(--color-border)] p-2 hover:bg-[var(--color-background)] hover:text-[var(--color-primary)] transition-colors rounded-[var(--radius-btn)] navbar-menu-btn" @click="menuOpen=!menuOpen">
             <span x-text="menuOpen ? '✕' : '☰'" class="text-xl font-bold"></span>
         </button>
     </div>
@@ -136,7 +112,7 @@
             </div>
             <div class="event-card overflow-hidden">
                 @if($activeEvent->video_url)
-                    <div x-init="new Plyr($refs.player)" class="bg-[var(--color-text)]">
+                    <div x-init="window.Plyr && new window.Plyr($refs.player) || window.addEventListener('load', () => window.Plyr && new window.Plyr($refs.player))" class="bg-[var(--color-text)]">
                         <video x-ref="player" controls playsinline class="w-full">
                             <source src="{{ $activeEvent->video_url }}">
                         </video>
@@ -166,7 +142,7 @@
                 <div class="media-text lg:col-span-2">
                     @if($activeEvent->media_description)
                         <div class="text-base text-[var(--color-text-secondary)] leading-relaxed">
-                            {!! $activeEvent->media_description !!}
+                            {!! clean_html($activeEvent->media_description) !!}
                         </div>
                     @endif
                 </div>
@@ -194,11 +170,12 @@
                 @foreach($activeEvent->faqs as $faq)
                     <div class="faq-item rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-background)] p-5" x-data="{ open: false }">
                         <button @click="open = !open"
+                                :aria-expanded="open"
                                 class="flex w-full items-center justify-between text-left font-semibold text-[var(--color-text)]">
                             {{ $faq->question }}
                             <span :class="open ? 'rotate-180' : ''" class="transition-transform rounded-[var(--radius-round)] w-8 h-8 flex items-center justify-center text-[var(--color-muted)]">▼</span>
                         </button>
-                        <div x-show="open" x-transition class="mt-3 text-[var(--color-text-secondary)]">{!! $faq->answer !!}</div>
+                        <div x-show="open" x-transition class="mt-3 text-[var(--color-text-secondary)]">{!! clean_html($faq->answer) !!}</div>
                     </div>
                 @endforeach
             </div>
@@ -220,13 +197,13 @@
             <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2 text-center">Фотографии с предыдущих мероприятий</p>
             <!-- <h2 class="mt-3 text-center text-4xl font-bold text-[var(--color-text)]">Фотогалерея</h2> -->
             
-            <div class="mt-12 columns-2 gap-4 space-y-4 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6">
+            <div class="mt-12 columns-2 gap-2 space-y-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6">
                 @foreach($galleryImages as $idx => $image)
                     <div class="break-inside-avoid gallery-item overflow-hidden rounded-[var(--radius-card)]">
                         <img
                             src="{{ $image }}"
-                            alt="{{ $activeEvent->title }}"
-                            class="w-full h-auto object-cover shadow-md gallery-image cursor-pointer brightness-90 hover:brightness-100 transition-all"
+                            alt="{{ "Фото " . ($idx + 1) . " — " . $activeEvent->title }}"
+                            class="w-full object-cover shadow-md gallery-image cursor-pointer brightness-90 hover:brightness-100 transition-all" decoding="async"
                             loading="lazy"
                             @click="index = {{ $idx }}; open = true"
                         />
@@ -235,7 +212,7 @@
             </div>
         </div>
 
-        {{-- Lightbox --}}
+        {{-- Lightbox с Swiper для свайпа на мобильных --}}
         <div
             x-show="open"
             x-transition:enter="transition ease-out duration-300"
@@ -244,44 +221,54 @@
             x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+            class="fixed inset-0 z-[100] bg-black/90"
             @keydown.window.escape="close()"
             @click.self="close()"
             style="display: none;"
+            x-init="$watch('open', val => { if(val) { $nextTick(() => { const el = $refs.lightboxSwiper; if(!el) return; if(el.swiper) { el.swiper.slideTo(index, 0); return; } new Swiper(el, { initialSlide: index, loop: false, zoom: true, on: { slideChange: (s) => { index = s.realIndex; } } }); }); } })"
         >
-            <button
-                @click.stop="prev()"
-                class="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-4xl md:text-5xl font-light transition-colors z-10"
-            >‹</button>
+            <div x-ref="lightboxSwiper" class="swiper w-full h-full lightbox-swiper" @click.stop>
+                <div class="swiper-wrapper">
+                    <template x-for="(img, i) in images" :key="i">
+                        <div class="swiper-slide flex items-center justify-center">
+                            <img :src="img" class="max-h-[85vh] max-w-[90vw] object-contain rounded-[var(--radius-card)]" loading="lazy" />
+                        </div>
+                    </template>
+                </div>
+            </div>
 
-            <img
-                :src="images[index]"
-                class="max-h-[85vh] max-w-[85vw] object-contain rounded-[var(--radius-card)] shadow-2xl"
-                @click.stop="next()"
-            />
-
-            <button
-                @click.stop="next()"
-                class="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-4xl md:text-5xl font-light transition-colors z-10"
-            >›</button>
-
+            {{-- Close --}}
             <button
                 @click.stop="close()"
+                aria-label="Закрыть"
                 class="absolute top-4 right-4 text-white/70 hover:text-white text-3xl transition-colors z-10"
-            >✕</button>
+            >&#x2715;</button>
 
+            {{-- Prev / Next — десктоп --}}
+            <button
+                @click.stop="$refs.lightboxSwiper?.swiper?.slidePrev()"
+                aria-label="Предыдущее фото"
+                class="hidden md:flex absolute left-2 md:left-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-4xl md:text-5xl font-light transition-colors z-10 items-center justify-center w-12 h-12"
+            >&#x2039;</button>
+            <button
+                @click.stop="$refs.lightboxSwiper?.swiper?.slideNext()"
+                aria-label="Следующее фото"
+                class="hidden md:flex absolute right-2 md:right-6 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-4xl md:text-5xl font-light transition-colors z-10 items-center justify-center w-12 h-12"
+            >&#x203A;</button>
+
+            {{-- Counter --}}
             <div class="absolute bottom-4 left-0 right-0 text-center text-white/60 text-sm" x-text="(index + 1) + ' / ' + images.length"></div>
         </div>
     </section>
 @endif
 
 @if($activeEvent)
-    <section id="venue" class="bg-[var(--color-background)] pt-20 pb-20 text-[var(--color-text)]" style="background-color: #e5e5e5;">
+    <section id="venue" class="bg-[#e5e5e5] pt-20 pb-20 text-[var(--color-text)]">
         <div class="mx-auto grid max-w-7xl gap-8 px-6 lg:grid-cols-2">
             <div><p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs">Место проведения</p>
                 <h2 class="mt-3 text-2xl font-bold">{{ $activeEvent->venue_name }}</h2>
                 <p class="mt-4 text-[var(--color-text-secondary)]">{{ $activeEvent->venue_address }}</p>
-                <p class="mt-6 text-[var(--color-text-secondary)]">{!! $activeEvent->venue_how_to_get !!}</p>
+                <p class="mt-6 text-[var(--color-text-secondary)]">{!! clean_html($activeEvent->venue_how_to_get) !!}</p>
             </div>
             @if($activeEvent->venue_lat && $activeEvent->venue_lng)
                 <iframe class="h-96 w-full rounded-[var(--radius-card)] border-2 border-[var(--color-primary)]/30"
@@ -397,7 +384,7 @@
     </div>
 </div>
 
-<button id="scrollTop" x-data="{
+<button id="scrollTop" aria-label="Наверх" x-data="{
         visible: false,
         scrollTopClicks: 0,
         handleScroll() { this.visible = window.scrollY > 300 },
@@ -418,116 +405,7 @@
         @click="handleClick()"
         class="fixed bottom-6 right-6 z-50 rounded-[var(--radius-round)] bg-white text-[var(--color-text)] p-4 font-bold shadow-xl border-2 border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors w-12 h-12 flex items-center justify-center">↑
 </button>
-@vite(['resources/js/app.js'])
+@vite(['resources/js/app.js', 'resources/js/home.js'])
 @livewireScripts
-
-<script>
-    // Полоса загрузки страницы
-    (function() {
-        const progressBar = document.getElementById('page-progress-bar');
-        
-        // Показываем прогресс при загрузке
-        window.addEventListener('load', function() {
-            progressBar.classList.add('loading');
-            setTimeout(function() {
-                progressBar.classList.add('complete');
-            }, 500);
-        });
-
-        // Показываем прогресс при клике на ссылки
-        document.addEventListener('click', function(e) {
-            const link = e.target.closest('a');
-            if (link && !link.hasAttribute('data-no-progress')) {
-                progressBar.classList.remove('complete');
-                progressBar.classList.add('loading');
-            }
-        });
-
-        // Скрываем прогресс после загрузки
-        window.addEventListener('beforeunload', function() {
-            progressBar.classList.remove('complete');
-        });
-    })();
-
-    // Регистрация Service Worker для офлайн-поддержки
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then((registration) => {
-                    console.log('Service Worker зарегистрирован:', registration.scope);
-                    
-                    // Проверяем обновления Service Worker
-                    registration.addEventListener('updatefound', () => {
-                        const newWorker = registration.installing;
-                        if (newWorker) {
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('Service Worker обновлён, обновите страницу');
-                                }
-                            });
-                        }
-                    });
-                })
-                .catch((error) => {
-                    console.log('Service Worker регистрация не удалась:', error);
-                });
-        });
-
-        // Отслеживание статуса Service Worker
-        navigator.serviceWorker.ready.then((registration) => {
-            // console.log('Service Worker готов:', registration);
-        });
-    }
-
-    // Отслеживание статуса подключения к интернету
-    const offlineNotification = document.getElementById('offline-notification');
-
-    window.addEventListener('online', () => {
-        // console.log('Подключение к интернету восстановлено');
-        if (offlineNotification) {
-            offlineNotification.classList.add('hidden');
-        }
-    });
-
-    window.addEventListener('offline', () => {
-        // console.log('Подключение к интернету потеряно');
-        if (offlineNotification) {
-            offlineNotification.classList.remove('hidden');
-        }
-        // Показываем уведомление о перезагрузке через 2 секунды
-        setTimeout(() => {
-            if (!offlineNotification || offlineNotification.classList.contains('hidden')) {
-                // Если пользователь не увидел уведомление, можно показать офлайн страницу
-                window.location.href = '/offline';
-            }
-        }, 2000);
-    });
-
-    // Проверка статуса при загрузке
-    if (!navigator.onLine) {
-        if (offlineNotification) {
-            offlineNotification.classList.remove('hidden');
-        }
-    }
-
-    // Инкремент счётчика просмотров галереи при первом клике
-    let galleryViewIncremented = false;
-    document.addEventListener('click', function(e) {
-        const galleryImage = e.target.closest('.gallery-image');
-        if (galleryImage && !galleryViewIncremented) {
-            galleryViewIncremented = true;
-            fetch('/api/gallery-view', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    event_slug: '{{ $activeEvent->slug }}'
-                })
-            }).catch(() => {});
-        }
-    });
-</script>
 </body>
 </html>

@@ -3,9 +3,9 @@
         @if($event)
             <h1 class="text-4xl font-black">Регистрация: {{ $event->title }}</h1>
             @if($event->yandex_form_url)
-                <iframe src="{{ $event->yandex_form_url }}" class="mt-8 h-[720px] w-full rounded-3xl bg-white" frameborder="0"></iframe>
+                <iframe src="{{ $event->yandex_form_url }}" title="Форма регистрации Яндекс" class="mt-8 h-[720px] w-full rounded-3xl bg-white" frameborder="0" loading="lazy"></iframe>
             @elseif($event->registration_url)
-                <iframe src="{{ $event->registration_url }}" class="mt-8 h-[720px] w-full rounded-3xl bg-white" frameborder="0"></iframe>
+                <iframe src="{{ $event->registration_url }}" title="Форма регистрации" class="mt-8 h-[720px] w-full rounded-3xl bg-white" frameborder="0" loading="lazy"></iframe>
             @else
                 <p class="mt-8 text-zinc-300">Регистрация для этого мероприятия пока не открыта.</p>
             @endif

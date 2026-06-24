@@ -2,18 +2,20 @@
 
 namespace App\Livewire;
 
+use App\Models\Event;
+use App\Traits\ResolvesEvent;
 use Livewire\Component;
 
 class EventHero extends Component
 {
-    public ?\App\Models\Event $event = null;
+    use ResolvesEvent;
+
+    public ?Event $event = null;
     public $slides;
 
-    public function mount(?\App\Models\Event $event = null): void
+    public function mount(Event|string|null $event = null): void
     {
-        $this->event = $event ?? \App\Models\Event::published()->with('heroSlides')->active()->first()
-            ?? \App\Models\Event::published()->with('heroSlides')->upcoming()->orderBy('start_date')->first()
-            ?? \App\Models\Event::published()->with('heroSlides')->recentlyCompleted()->orderByDesc('end_date')->first();
+        $this->event = $this->resolveEvent($event);
         $this->slides = $this->event?->heroSlides()->where('is_active', true)->get() ?? collect();
     }
 

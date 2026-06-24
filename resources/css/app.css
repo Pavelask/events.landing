@@ -71,3 +71,16 @@ body {
     overflow-x: hidden;
 }
 
+
+/* Lightbox Swiper — центрирование фото */
+.lightbox-swiper .swiper-slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Thin scrollbar for mobile tabs */
+.scrollbar-thin::-webkit-scrollbar { height: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+.scrollbar-thin { scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }

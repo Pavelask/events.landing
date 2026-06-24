@@ -3,11 +3,14 @@
 namespace App\Livewire;
 
 use App\Models\Event;
+use App\Traits\ResolvesEvent;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class EventSpeakers extends Component
 {
+    use ResolvesEvent;
+
     public ?Event $event = null;
 
     public Collection $speakers;
@@ -25,20 +28,5 @@ class EventSpeakers extends Component
     public function render()
     {
         return view('livewire.event-speakers');
-    }
-
-    private function resolveEvent(Event|string|null $event, ?string $eventSlug): ?Event
-    {
-        if ($event instanceof Event) {
-            return $event;
-        }
-
-        $slug = $eventSlug ?? (is_string($event) ? $event : null);
-
-        if ($slug) {
-            return Event::where('slug', $slug)->firstOrFail();
-        }
-
-        return Event::active()->first() ?? Event::upcoming()->orderBy('start_date')->first();
     }
 }
