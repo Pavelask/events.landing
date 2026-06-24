@@ -12,6 +12,7 @@
     @vite(['resources/css/app.css', 'resources/css/home.css', 'resources/js/app.js'])
     @livewireStyles
     <style>
+        [x-cloak] { display: none !important; }
         .yandex-form-container {
             width: 100%;
         }
@@ -28,12 +29,17 @@
 
 <nav id="main-navbar" class="fixed inset-x-0 top-0 z-50 transition-all duration-300 text-black bg-white" x-data="{ menuOpen: false }">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
-        <a href="{{ url('/') }}" class="flex items-center gap-3 font-bold uppercase tracking-wide cursor-pointer text-black md:block hidden navbar-logo">
+        <a href="{{ url('/') }}" class="flex items-center gap-3 font-bold uppercase tracking-wide cursor-pointer text-black text-sm md:block hidden navbar-logo">
             @if($event?->logo)
                 <img src="{{ asset('storage/'.$event->logo) }}" class="h-10 w-10 rounded-full object-cover" alt="Logo">
             @endif
-            <span class="text-sm">{{ $event?->title ?? 'Fifth Event' }}</span>
+            <span>{{ $event?->title ?? 'Fifth Event' }}</span>
         </a>
+        @if(session('message'))
+            <div class="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-[var(--color-primary)] text-white px-6 py-2 rounded-[var(--radius-btn)] text-sm font-medium" x-data="{ show: true }" x-show="show" x-transition.duration.3000ms @click="show = false">
+                {{ session('message') }}
+            </div>
+        @endif
         <div class="hidden items-center gap-6 text-sm font-medium md:flex navbar-navlinks">
             <a href="{{ url('/') }}#speakers" class="hover:text-[var(--color-primary)] transition-colors">СПИКЕРЫ</a>
             <a href="{{ url('/') }}#keynote" class="hover:text-[var(--color-primary)] transition-colors">ГОСТИ</a>
@@ -46,7 +52,7 @@
             <span x-text="menuOpen ? '✕' : '☰'" class="text-xl font-bold"></span>
         </button>
     </div>
-    <div id="mobileMenu" x-show="menuOpen" x-transition
+    <div id="mobileMenu" x-show="menuOpen" x-cloak x-transition
          class="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md md:hidden">
         <div class="flex flex-col items-center gap-2 px-6 py-6">
             <a class="block py-3 text-base font-medium text-black w-full text-center hover:text-[var(--color-primary)]" href="{{ url('/') }}#speakers" @click="menuOpen=false">СПИКЕРЫ</a>
@@ -200,7 +206,6 @@
     </div>
 </div>
 
-@livewireScripts
 @livewireScripts
 
 <script>
