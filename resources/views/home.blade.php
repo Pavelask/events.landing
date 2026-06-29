@@ -30,7 +30,7 @@
     <div id="easter-egg-backdrop" style="position:absolute; inset:0; background:rgba(0,0,0,0);"></div>
     <div id="easter-egg-content" style="text-align:center; position:relative; z-index:1;">
         <img id="easter-egg-img" src="{{ asset('storage/img/Leeloo_with_multipass.webp') }}" alt="Leeloo" style="width:300px; height:auto; margin-bottom:16px; border-radius:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); opacity:0; transform:scale(0.5) rotate(-10deg);">
-        <div id="easter-egg-badge" style="font-size:36px; font-weight:900; background:#fbbf24; color:#000; padding:16px 32px; border-radius:9999px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); opacity:0; transform:translateY(30px);">
+        <div id="easter-egg-badge" style="display:inline-block; font-size:36px; font-weight:900; background:#fbbf24; color:#000; padding:16px 32px; border-radius:9999px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); opacity:0; transform:translateY(30px);">
             Leeloo Dallas Multipass
         </div>
     </div>
