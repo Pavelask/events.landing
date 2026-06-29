@@ -13,10 +13,20 @@
 
     document.addEventListener('click', function (e) {
         const link = e.target.closest('a');
-        if (link && !link.hasAttribute('data-no-progress')) {
-            progressBar.classList.remove('complete');
-            progressBar.classList.add('loading');
-        }
+        if (!link || link.hasAttribute('data-no-progress')) return;
+
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        // Пропускаем хеш-ссылки, якоря и javascript: — они не перезагружают страницу
+        if (href.startsWith('#') || href.startsWith('javascript:') || link.target === '_blank') return;
+
+        // Пропускаем ссылки на ту же страницу (только хеш изменился)
+        const url = new URL(href, window.location.origin);
+        if (url.pathname === window.location.pathname && url.origin === window.location.origin) return;
+
+        progressBar.classList.remove('complete');
+        progressBar.classList.add('loading');
     });
 
     window.addEventListener('beforeunload', function () {
