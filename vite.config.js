@@ -13,9 +13,13 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks: {
-                    'vendor-swiper': ['swiper'],
-                    'vendor-gsap': ['gsap'],
+                manualChunks(id) {
+                    if (id.includes('node_modules/swiper')) {
+                        return 'vendor-swiper';
+                    }
+                    if (id.includes('node_modules/gsap')) {
+                        return 'vendor-gsap';
+                    }
                 },
             },
         },
