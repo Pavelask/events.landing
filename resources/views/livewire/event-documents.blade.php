@@ -32,7 +32,7 @@
                                 @endif
                             </div>
                             @if($doc->description)
-                                <div class="mt-1 text-sm text-[var(--color-text-secondary)]">{!! $doc->description !!}</div>
+                                <div class="mt-1 text-sm text-[var(--color-text-secondary)]">{!! clean_html($doc->description) !!}</div>
                             @endif
                             <a href="{{ asset('storage/' . $doc->file_path) }}"
                                target="_blank"

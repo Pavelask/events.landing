@@ -9,6 +9,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -28,27 +29,20 @@ class EventsTable
                     ->sortable()
                     ->wrap()
                     ->description(fn (Event $record): string => $record->start_date->format('d M Y') . ' - ' . $record->end_date->format('d M Y')),
-                TextColumn::make('status')
+                SelectColumn::make('status')
                     ->label('Статус')
-                    ->badge()
-                    ->colors([
-                        'gray' => 'draft',
-                        'success' => 'published',
-                        'warning' => 'completed',
-                        'secondary' => 'archived',
-                    ])
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->options([
                         'draft' => 'Черновик',
                         'published' => 'Опубликовано',
                         'completed' => 'Завершено',
                         'archived' => 'Архив',
-                        default => $state,
-                    }),
+                    ])
+                    ->selectablePlaceholder(false),
                 TextColumn::make('schedule_events_count')->label('Событий')->counts('scheduleEvents')->sortable(),
                 TextColumn::make('speakers_count')->label('Спикеров')->counts('speakers')->sortable(),
                 TextColumn::make('guests_count')->label('Гостей')->counts('guests')->sortable(),
             ])
-            ->defaultSort('start_date', 'desc')
+            ->defaultSort('start_date', 'asc')
             ->filters([
                 SelectFilter::make('status')->label('Статус')->options([
                     'draft' => 'Черновик',

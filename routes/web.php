@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\FaviconController;
 use App\Http\Controllers\GalleryViewController;
 use App\Http\Controllers\IcalController;
 use App\Livewire\EventRegistration;
 use App\Models\Event;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/favicon/{event:slug}.png', [FaviconController::class, 'show'])->name('event.favicon');
+Route::get('/apple-touch-icon/{event:slug}.png', [FaviconController::class, 'appleTouch'])->name('event.apple-touch-icon');
 
 Route::get('/', function () {
     $activeEvent = Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->active()->first()
@@ -93,9 +97,21 @@ Route::get('/personal-data-consent', function () {
         ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
     
     // Если нет события, согласия или он скрыт — 404
-    if (!$activeEvent || !$activeEvent->personal_data_consent || !$activeEvent->show_privacy_section) {
+    if (!$activeEvent || !$activeEvent->personal_data_consent || !$activeEvent->show_personal_data_consent) {
         abort(404);
     }
     
     return view('personal-data-consent', compact('activeEvent'));
 })->name('personal.data.consent');
+
+Route::get('/cookie-policy', function () {
+    $activeEvent = Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->active()->first()
+        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
+        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
+
+    if (!$activeEvent || !$activeEvent->privacy_cookie_policy || !$activeEvent->show_cookie_banner) {
+        abort(404);
+    }
+
+    return view('cookie-policy', compact('activeEvent'));
+})->name('cookie.policy');

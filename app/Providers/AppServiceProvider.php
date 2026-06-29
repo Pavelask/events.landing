@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Event;
 use App\Models\EventDay;
 use App\Models\ScheduleEvent;
 use App\Observers\EventDayObserver;
+use App\Observers\EventObserver;
 use App\Observers\ScheduleEventObserver;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,5 +28,6 @@ class AppServiceProvider extends ServiceProvider
         // Регистрируем Observer для кэширования расписания
         ScheduleEvent::observe(ScheduleEventObserver::class);
         EventDay::observe(EventDayObserver::class);
+        Event::observe(EventObserver::class);
     }
 }

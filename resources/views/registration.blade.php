@@ -7,7 +7,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Регистрация — {{ $event?->title ?? 'Платформа мероприятий' }}</title>
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="icon" type="image/png" href="{{ $event ? route('event.favicon', $event) : asset('favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ $event ? route('event.apple-touch-icon', $event) : asset('favicon.png') }}">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     @vite(['resources/css/app.css', 'resources/css/home.css', 'resources/js/app.js'])
     @livewireStyles
@@ -139,52 +140,16 @@
                 <div class="space-y-2 text-sm">
                     <a href="{{ url('/') }}" class="block text-gray-300 hover:text-white transition-colors">Главная</a>
                     <a href="{{ route('archive') }}" class="block text-gray-300 hover:text-white transition-colors">Архив мероприятий</a>
-                    @if($event && $event->show_privacy_section)
-                        @if($event->privacy_policy)
-                            <a href="#privacy-policy" class="block text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</a>
-                        @endif
-                        @if($event->personal_data_consent)
-                            <a href="#personal-data-consent" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
-                        @endif
+                    @if($event && $event->show_privacy_section && $event->privacy_policy)
+                        <a href="#privacy-policy" class="block text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</a>
+                    @endif
+                    @if($event && $event->show_personal_data_consent && $event->personal_data_consent)
+                        <a href="#personal-data-consent" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
                     @endif
                 </div>
 
                 @if($event?->social_links && is_array($event->social_links))
-                    <div class="mt-6">
-                        <p class="font-semibold uppercase tracking-wide text-gray-500 text-xs mb-3">Социальные сети</p>
-                        <div class="flex flex-wrap gap-3">
-                            @foreach($event->social_links as $social)
-                                @if(is_array($social) && !empty($social['url']))
-                                    @php
-                                        $platform = strtolower($social['platform'] ?? '');
-                                        $icon = $social['icon'] ?? null;
-                                        $url = $social['url'];
-                                    @endphp
-                                    <a href="{{ $url }}" target="_blank" class="text-gray-400 hover:text-white transition-colors" title="{{ ucfirst($social['platform'] ?? 'Social') }}">
-                                        @if($icon && file_exists(public_path('storage/icons/' . $icon . '.png')))
-                                            <img src="{{ asset('storage/icons/' . $icon . '.png') }}" alt="{{ $social['platform'] }}" class="w-6 h-6 social-icon object-contain">
-                                        @elseif($icon && file_exists(public_path('storage/icons/' . $icon . '.svg')))
-                                            <img src="{{ asset('storage/icons/' . $icon . '.svg') }}" alt="{{ $social['platform'] }}" class="w-6 h-6 social-icon object-contain">
-                                        @elseif($platform === 'telegram' || $platform === 'tg')
-                                            <x-social-icons.telegram class="w-6 h-6 social-icon" />
-                                        @elseif($platform === 'vk' || $platform === 'vkontakte')
-                                            <x-social-icons.vk class="w-6 h-6 social-icon" />
-                                        @elseif($platform === 'youtube' || $platform === 'yt')
-                                            <x-social-icons.youtube class="w-6 h-6 social-icon" />
-                                        @elseif($platform === 'rutube')
-                                            <x-social-icons.rutube class="w-6 h-6 social-icon" />
-                                        @elseif($platform === 'ok' || $platform === 'odnoklassniki')
-                                            <x-social-icons.ok class="w-6 h-6 social-icon" />
-                                        @elseif($platform === 'max')
-                                            <x-social-icons.max class="w-6 h-6 social-icon" />
-                                        @else
-                                            <x-heroicon-o-link class="w-6 h-6 social-icon social-icon-default" />
-                                        @endif
-                                    </a>
-                                @endif
-                            @endforeach
-                        </div>
-                    </div>
+                    <x-social-links :socialLinks="$event->social_links" />
                 @endif
             </div>
         </div>
@@ -195,6 +160,31 @@
         </div>
     </div>
 </footer>
+
+{{-- Баннер о cookie --}}
+@if($event && $event->show_cookie_banner && $event->privacy_cookie_banner_text)
+    <div x-data="{ show: !localStorage.getItem('cookie_consent_accepted_{{ $event->slug }}') && !localStorage.getItem('cookie_consent_declined_{{ $event->slug }}') }" x-show="show" x-transition
+         class="fixed inset-x-0 bottom-0 z-50 bg-[var(--color-surface)] border-t border-[var(--color-primary)]/20 shadow-lg">
+        <div class="mx-auto max-w-7xl px-4 py-4 flex items-start justify-between gap-4">
+            <div class="text-sm text-[var(--color-text)] leading-relaxed">
+                <p>{{ $event->privacy_cookie_banner_text }}</p>
+                @if($event->privacy_cookie_policy)
+                    <a href="{{ route('cookie.policy') }}" class="underline hover:text-[var(--color-primary)] transition-colors">{{ $event->privacy_cookie_banner_title ?: 'Политика использования файлов cookie' }}</a>
+                @endif
+            </div>
+            <div class="flex shrink-0 gap-2">
+                <button @click="show = false; localStorage.setItem('cookie_consent_accepted_{{ $event->slug }}', '1'); localStorage.removeItem('cookie_consent_declined_{{ $event->slug }}')"
+                        class="rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity">
+                    Принять
+                </button>
+                <button @click="show = false; localStorage.setItem('cookie_consent_declined_{{ $event->slug }}', '1'); localStorage.removeItem('cookie_consent_accepted_{{ $event->slug }}')"
+                        class="rounded-lg border border-[var(--color-primary)]/30 px-4 py-2 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-primary)]/10 transition-colors">
+                    Отклонить
+                </button>
+            </div>
+        </div>
+    </div>
+@endif
 
 {{-- Офлайн-уведомление --}}
 <div id="offline-notification" class="fixed inset-x-0 bottom-0 z-50 hidden bg-[var(--color-primary)] text-white p-4 text-center font-medium" x-data="{ offline: !navigator.onLine }" x-show="offline" x-transition>

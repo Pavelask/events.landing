@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class HeroSlide extends Model
 {
@@ -17,5 +18,16 @@ class HeroSlide extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::deleted(function (HeroSlide $slide) {
+            if ($slide->image) {
+                Storage::disk('public')->delete($slide->image);
+            }
+        });
     }
 }

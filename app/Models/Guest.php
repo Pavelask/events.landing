@@ -33,4 +33,15 @@ class Guest extends Model
         }
         return Storage::url('img/Simpleicons_Interface_user-black-close-up-shape.svg.png');
     }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::deleted(function (Guest $guest) {
+            if ($guest->photo) {
+                Storage::disk('public')->delete($guest->photo);
+            }
+        });
+    }
 }

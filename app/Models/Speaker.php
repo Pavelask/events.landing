@@ -38,4 +38,15 @@ class Speaker extends Model
         }
         return Storage::url('img/Simpleicons_Interface_user-black-close-up-shape.svg.png');
     }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::deleted(function (Speaker $speaker) {
+            if ($speaker->photo) {
+                Storage::disk('public')->delete($speaker->photo);
+            }
+        });
+    }
 }

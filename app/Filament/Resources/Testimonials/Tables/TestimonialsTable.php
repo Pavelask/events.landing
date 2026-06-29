@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Testimonials\Tables;
 
 use App\Models\Testimonial;
+use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -14,8 +15,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Storage;
-
 
 class TestimonialsTable
 {
@@ -25,6 +24,7 @@ class TestimonialsTable
             ->columns([
                 ImageColumn::make('photo')
                     ->label('Фото')
+                    ->disk('public')
                     ->circular()
                     ->width(50)
                     ->height(50),
@@ -40,12 +40,6 @@ class TestimonialsTable
                     ->html()
                     ->wrap()
                     ->lineClamp(3),
-
-                TextColumn::make('is_active')
-                    ->label('Статус')
-                    ->badge()
-                    ->formatStateUsing(fn ($state) => $state ? 'Активен' : 'Скрыт')
-                    ->color(fn ($state) => $state ? 'success' : 'gray'),
 
                 ToggleColumn::make('is_active')
                     ->label('Включен')
@@ -76,8 +70,11 @@ class TestimonialsTable
             ])
             ->defaultSort('sort_order', 'asc')
             ->defaultSort('created_at', 'desc')
-            ->actions([
-                EditAction::make(),
+            ->recordActions([
+                EditAction::make()->label('')->icon('heroicon-o-pencil')->iconSize('md'),
+                Action::make('clone')->label('')->icon('heroicon-o-document-duplicate')->iconSize('md')
+                    ->action(fn ($record) => $record->replicate()->save()),
+                DeleteAction::make()->label('')->icon('heroicon-o-trash')->iconSize('md'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

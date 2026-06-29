@@ -7,7 +7,9 @@ use App\Filament\Resources\Faqs\Pages\EditFaq;
 use App\Filament\Resources\Faqs\Pages\ListFaqs;
 use App\Models\Faq;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\RichEditor;
@@ -40,7 +42,12 @@ class FaqResource extends Resource
                 TextColumn::make('question')->label('Вопрос')->searchable()->sortable()->wrap(),
                 TextColumn::make('answer')->label('Ответ')->html()->limit(100)->searchable()->wrap(),
             ])
-            ->recordActions([EditAction::make()])
+            ->recordActions([
+                EditAction::make()->label('')->icon('heroicon-o-pencil')->iconSize('md'),
+                Action::make('clone')->label('')->icon('heroicon-o-document-duplicate')->iconSize('md')
+                    ->action(fn ($record) => $record->replicate()->save()),
+                DeleteAction::make()->label('')->icon('heroicon-o-trash')->iconSize('md'),
+            ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

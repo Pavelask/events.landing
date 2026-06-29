@@ -95,6 +95,14 @@ class IconService
     }
 
     /**
+     * Проверить, существует ли иконка по имени
+     */
+    public function hasIcon(string $iconName): bool
+    {
+        return $this->getIconUrl($iconName) !== null;
+    }
+
+    /**
      * Удалить иконку
      */
     public function deleteIcon(string $iconName): bool

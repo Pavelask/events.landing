@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $event->title }}</title>
+    <link rel="icon" type="image/png" href="{{ route('event.favicon', $event) }}">
+    <link rel="apple-touch-icon" href="{{ route('event.apple-touch-icon', $event) }}">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-white text-[var(--color-text)]">

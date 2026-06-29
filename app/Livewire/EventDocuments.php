@@ -9,7 +9,7 @@ class EventDocuments extends Component
 {
     public ?Event $event = null;
 
-    public function mount(Event $event = null): void
+    public function mount(?Event $event = null): void
     {
         $this->event = $event;
     }

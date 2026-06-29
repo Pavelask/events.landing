@@ -32,12 +32,22 @@
     <div class="mx-auto max-w-4xl px-6">
         <div class="mt-8">
             <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">Документы</p>
-            <h1 class="text-3xl md:text-4xl font-bold text-[var(--color-text)] leading-tight">Политика конфиденциальности</h1>
         </div>
 
-        <div class="mt-12 prose prose-lg max-w-none text-[var(--color-text-secondary)]">
+        <div class="privacy-content mt-12 max-w-none text-[var(--color-text-secondary)]" style="line-height:1.8;">
+            <style>
+                .privacy-content h2 { font-size:1.5rem; font-weight:700; color:var(--color-text); margin:2rem 0 1rem; }
+                .privacy-content h3 { font-size:1.25rem; font-weight:600; color:var(--color-text); margin:1.5rem 0 0.75rem; }
+                .privacy-content h4 { font-size:1.1rem; font-weight:600; color:var(--color-text); margin:1.25rem 0 0.5rem; }
+                .privacy-content p { margin:0.75rem 0; }
+                .privacy-content ul, .privacy-content ol { margin:0.75rem 0; padding-left:1.5rem; }
+                .privacy-content li { margin:0.25rem 0; }
+                .privacy-content a { color:var(--color-primary); text-decoration:underline; }
+                .privacy-content a:hover { opacity:0.8; }
+                .privacy-content blockquote { border-left:3px solid var(--color-primary); padding-left:1rem; margin:1rem 0; color:var(--color-text-secondary); font-style:italic; }
+            </style>
             @if($activeEvent && $activeEvent->privacy_policy)
-                {!! $activeEvent->privacy_policy !!}
+                {!! clean_html($activeEvent->privacy_policy) !!}
             @else
                 <p>Политика конфиденциальности в настоящее время недоступна.</p>
             @endif
@@ -89,13 +99,11 @@
                 <p class="font-semibold uppercase tracking-wide text-gray-500 text-xs mb-4">Навигация</p>
                 <div class="space-y-2 text-sm">
                     <a href="{{ route('archive') }}" class="block text-gray-300 hover:text-white transition-colors">Архив мероприятий</a>
-                    @if($activeEvent && $activeEvent->show_privacy_section)
-                        @if($activeEvent->privacy_policy)
-                            <a href="{{ route('privacy.policy') }}" class="block text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</a>
-                        @endif
-                        @if($activeEvent->personal_data_consent)
-                            <a href="{{ route('personal.data.consent') }}" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
-                        @endif
+                    @if($activeEvent && $activeEvent->show_privacy_section && $activeEvent->privacy_policy)
+                        <a href="{{ route('privacy.policy') }}" class="block text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</a>
+                    @endif
+                    @if($activeEvent && $activeEvent->show_personal_data_consent && $activeEvent->personal_data_consent)
+                        <a href="{{ route('personal.data.consent') }}" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
                     @endif
                 </div>
             </div>

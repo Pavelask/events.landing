@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ScheduleEvent extends Model
 {
@@ -39,5 +40,16 @@ class ScheduleEvent extends Model
     public function speaker(): BelongsTo
     {
         return $this->belongsTo(Speaker::class);
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::deleted(function (ScheduleEvent $event) {
+            if ($event->icon_image) {
+                Storage::disk('public')->delete($event->icon_image);
+            }
+        });
     }
 }

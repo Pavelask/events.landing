@@ -47,4 +47,15 @@ class Testimonial extends Model
         }
         return null;
     }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::deleted(function (Testimonial $testimonial) {
+            if ($testimonial->photo) {
+                Storage::disk('public')->delete($testimonial->photo);
+            }
+        });
+    }
 }

@@ -8,7 +8,9 @@ use App\Filament\Resources\Guests\Pages\ListGuests;
 use App\Filament\Resources\Guests\Schemas\GuestForm;
 use App\Models\Guest;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Resources\Resource;
@@ -16,6 +18,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+
 class GuestResource extends Resource
 {
     protected static ?string $model = Guest::class;
@@ -42,7 +45,12 @@ class GuestResource extends Resource
                 TextColumn::make('position')->label('Должность')->searchable(),
                 TextColumn::make('organization')->label('Организация')->searchable(),
             ])
-            ->recordActions([EditAction::make()])
+            ->recordActions([
+                EditAction::make()->label('')->icon('heroicon-o-pencil')->iconSize('md'),
+                Action::make('clone')->label('')->icon('heroicon-o-document-duplicate')->iconSize('md')
+                    ->action(fn ($record) => $record->replicate()->save()),
+                DeleteAction::make()->label('')->icon('heroicon-o-trash')->iconSize('md'),
+            ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

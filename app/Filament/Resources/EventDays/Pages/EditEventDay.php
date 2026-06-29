@@ -1,21 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\Speakers\Pages;
+namespace App\Filament\Resources\EventDays\Pages;
 
-use App\Filament\Resources\Speakers\SpeakerResource;
-use Filament\Actions\DeleteAction;
+use App\Filament\Resources\EventDays\EventDayResource;
 use Filament\Resources\Pages\EditRecord;
 
-class EditSpeaker extends EditRecord
+class EditEventDay extends EditRecord
 {
-    protected static string $resource = SpeakerResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
+    protected static string $resource = EventDayResource::class;
 
     protected function getFormActions(): array
     {
