@@ -119,7 +119,7 @@
                         </video>
                     </div>
                 @elseif($activeEvent->poster_image)
-                    <img src="{{ asset('storage/'.$activeEvent->poster_image) }}" class="w-full object-cover" alt="{{ $activeEvent->title }}">
+                    <img src="{{ asset('storage/'.$activeEvent->poster_image) }}" class="w-full object-cover" alt="{{ $activeEvent->title }}" loading="lazy" decoding="async">
                 @endif
             </div>
         </div>
@@ -288,7 +288,7 @@
             <div>
                 <a href="{{ url('/') }}" class="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide">
                     @if($activeEvent?->logo)
-                        <img src="{{ asset('storage/'.$activeEvent->logo) }}" class="h-10 w-10 rounded-full object-cover" alt="Logo">
+                        <img src="{{ asset('storage/'.$activeEvent->logo) }}" class="h-10 w-10 rounded-full object-cover" alt="Logo" loading="lazy" decoding="async">
                     @endif
                     <span>{{ $activeEvent?->title ?? 'Fifth Event' }}</span>
                 </a>
@@ -371,7 +371,7 @@
         @click="handleClick()"
         class="fixed bottom-6 right-6 z-50 rounded-[var(--radius-round)] bg-white text-[var(--color-text)] p-4 font-bold shadow-xl border-2 border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors w-12 h-12 flex items-center justify-center">↑
 </button>
-@vite(['resources/js/app.js', 'resources/js/home.js'])
+@vite(['resources/js/home.js'])
 @livewireScripts
 
 {{-- Баннер о cookie (после Alpine.js инициализации) --}}

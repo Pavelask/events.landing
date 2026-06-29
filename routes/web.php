@@ -11,16 +11,12 @@ Route::get('/favicon/{event:slug}.png', [FaviconController::class, 'show'])->nam
 Route::get('/apple-touch-icon/{event:slug}.png', [FaviconController::class, 'appleTouch'])->name('event.apple-touch-icon');
 
 Route::get('/', function () {
-    $activeEvent = Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->active()->first()
-        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
-        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first()
-        ?? Event::completed()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->orderByDesc('end_date')->first();
-    
-    // Если нет опубликованных или завершённых мероприятий — показываем заглушку
+    $activeEvent = resolveActiveEvent();
+
     if (!$activeEvent) {
         return view('no-events');
     }
-    
+
     return view('home', compact('activeEvent'));
 })->name('home');
 
@@ -79,35 +75,27 @@ Route::post('/api/gallery-view', [GalleryViewController::class, 'increment'])->n
 
 // Страницы политик
 Route::get('/privacy-policy', function () {
-    $activeEvent = Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->active()->first()
-        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
-        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
-    
-    // Если нет события, политики или она скрыта — 404
+    $activeEvent = resolveActiveEvent();
+
     if (!$activeEvent || !$activeEvent->privacy_policy || !$activeEvent->show_privacy_section) {
         abort(404);
     }
-    
+
     return view('privacy-policy', compact('activeEvent'));
 })->name('privacy.policy');
 
 Route::get('/personal-data-consent', function () {
-    $activeEvent = Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->active()->first()
-        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
-        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
-    
-    // Если нет события, согласия или он скрыт — 404
+    $activeEvent = resolveActiveEvent();
+
     if (!$activeEvent || !$activeEvent->personal_data_consent || !$activeEvent->show_personal_data_consent) {
         abort(404);
     }
-    
+
     return view('personal-data-consent', compact('activeEvent'));
 })->name('personal.data.consent');
 
 Route::get('/cookie-policy', function () {
-    $activeEvent = Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->active()->first()
-        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->upcoming()->orderBy('start_date')->first()
-        ?? Event::published()->with(['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'])->recentlyCompleted()->orderByDesc('end_date')->first();
+    $activeEvent = resolveActiveEvent();
 
     if (!$activeEvent || !$activeEvent->privacy_cookie_policy || !$activeEvent->show_cookie_banner) {
         abort(404);

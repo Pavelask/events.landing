@@ -14,12 +14,14 @@ use Illuminate\Support\Facades\Storage;
                     <img
                         src="{{ $speaker->photo_url }}"
                         alt="{{ $speaker->name }}"
+                        loading="lazy" decoding="async"
                         class="mx-auto h-32 w-32 rounded-[var(--radius-round)] object-cover shadow-md {{ $eventSpeaker->is_keynote ? 'ring-2 ring-[var(--color-primary)] ring-offset-2' : '' }}"
                     />
                 @else
                     <img
                         src="{{ Storage::url('img/Simpleicons_Interface_user-black-close-up-shape.svg.png') }}"
                         alt="{{ $speaker->name }}"
+                        loading="lazy" decoding="async"
                         class="mx-auto h-32 w-32 rounded-[var(--radius-round)] object-cover bg-white p-2 border border-[var(--color-border)]"
                     />
                 @endif

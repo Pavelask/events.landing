@@ -1,14 +1,10 @@
-const CACHE_NAME = 'fifth-event-v5';
+const CACHE_NAME = 'fifth-event-v6';
 
-// Предзагружаемые ресурсы (включая офлайн-страницу)
 const OFFLINE_PAGE = '/offline';
 
-// Установка Service Worker
 self.addEventListener('install', (event) => {
-    console.log('Service Worker: Установка');
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('Service Worker: Кэширование офлайн-страницы');
             return cache.put(OFFLINE_PAGE, new Response('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Нет подключения</title></head><body>Offline</body></html>', {
                 headers: { 'Content-Type': 'text/html; charset=utf-8' }
             }));
@@ -18,15 +14,12 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// Активация Service Worker
 self.addEventListener('activate', (event) => {
-    console.log('Service Worker: Активация');
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
                     if (cacheName !== CACHE_NAME) {
-                        console.log('Service Worker: Удаление старого кэша', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
@@ -36,32 +29,26 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// Перехват запросов
 self.addEventListener('fetch', (event) => {
-    // Игнорируем не-HTTP запросы
     if (!event.request.url.startsWith('http')) {
         return;
     }
 
     const url = new URL(event.request.url);
-    
-    // Игнорируем запросы к статическим ресурсам, которые не критичны
+
     const ignoredPaths = ['/favicon.ico', '/sw.js', '/health'];
     if (ignoredPaths.some(path => url.pathname === path)) {
         return;
     }
 
-    // Игнорируем запросы к внешним ресурсам (шрифты, CDN и т.д.)
     if (!url.hostname.includes('events.elprof.ru')) {
         return;
     }
 
-    // Для навигационных запросов (переходы между страницами)
     if (event.request.mode === 'navigate') {
         event.respondWith(
             fetch(event.request)
                 .then((response) => {
-                    // Успешный ответ — кэшируем
                     const responseClone = response.clone();
                     caches.open(CACHE_NAME).then((cache) => {
                         cache.put(event.request, responseClone);
@@ -69,24 +56,16 @@ self.addEventListener('fetch', (event) => {
                     return response;
                 })
                 .catch(async () => {
-                    // Нет сети — ищем в кэше
-                    console.log('Service Worker: Нет сети, проверяем кэш');
-                    
                     const cachedResponse = await caches.match(event.request);
                     if (cachedResponse) {
-                        console.log('Service Worker: Возвращаем из кэша');
                         return cachedResponse;
                     }
-                    
-                    // Ищем главную страницу в кэше
+
                     const homeCached = await caches.match('/');
                     if (homeCached) {
-                        console.log('Service Worker: Возвращаем главную из кэша');
                         return homeCached;
                     }
-                    
-                    // Если ничего нет в кэше — показываем базовую оффлайн страницу
-                    console.log('Service Worker: Показываем оффлайн заглушку');
+
                     return caches.match(OFFLINE_PAGE).then((offlineResponse) => {
                         if (offlineResponse) {
                             return offlineResponse;
@@ -145,7 +124,6 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Для остальных запросов (статика, API) — Cache First
     event.respondWith(
         caches.match(event.request)
             .then((cachedResponse) => {
@@ -153,10 +131,8 @@ self.addEventListener('fetch', (event) => {
                     return cachedResponse;
                 }
                 return fetch(event.request).catch(() => {
-                    // Пропускаем ошибки для статических ресурсов (иконки, шрифты и т.д.)
                     return null;
                 });
             })
     );
 });
-

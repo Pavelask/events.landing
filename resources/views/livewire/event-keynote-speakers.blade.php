@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
                 <img
                     src="{{ $guest->photo_url ?? Storage::url('img/Simpleicons_Interface_user-black-close-up-shape.svg.png') }}"
                     alt="{{ $guest->name }}"
+                    loading="lazy" decoding="async"
                     class="mx-auto h-32 w-32 rounded-[var(--radius-round)] object-cover shadow-md {{ $eventGuest->is_keynote ? 'ring-2 ring-[var(--color-primary)] ring-offset-2' : '' }}"
                 />
                 <h3 class="mt-4 font-semibold text-[var(--color-text)]">{{ $guest->name }}</h3>

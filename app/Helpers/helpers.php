@@ -1,5 +1,19 @@
 <?php
 
+use App\Models\Event;
+
+if (!function_exists('resolveActiveEvent')) {
+    function resolveActiveEvent(): ?Event
+    {
+        $with = ['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'];
+
+        return Event::published()->with($with)->active()->first()
+            ?? Event::published()->with($with)->upcoming()->orderBy('start_date')->first()
+            ?? Event::published()->with($with)->recentlyCompleted()->orderByDesc('end_date')->first()
+            ?? Event::completed()->with($with)->orderByDesc('end_date')->first();
+    }
+}
+
 if (!function_exists('clean_html')) {
     /**
      * Sanitize HTML: strip dangerous tags/attributes, keep safe formatting.
