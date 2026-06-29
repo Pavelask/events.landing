@@ -38,10 +38,21 @@
 (function () {
     let posterClicks = 0;
     let lastClickTime = 0;
+    let audioCtx = null;
+
+    function getAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
 
     function playMultipassSound() {
         try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const ctx = getAudioContext();
             const notes = [523.25, 659.25, 783.99, 1046.50];
             notes.forEach((freq, i) => {
                 const osc = ctx.createOscillator();
@@ -73,12 +84,15 @@
         const tl = gsap.timeline({
             onComplete: () => {
                 gsap.to(backdrop, { background: 'rgba(0,0,0,0)', duration: 0.4 });
-                gsap.to([img, badge], {
-                    scale: 0.5, opacity: 0, duration: 0.4, stagger: 0.05,
+                gsap.to(img, { scale: 0.5, opacity: 0, rotation: -10, duration: 0.4 });
+                gsap.to(badge, {
+                    opacity: 0, y: 30, duration: 0.4,
                     onComplete: () => {
                         egg.style.display = 'none';
                         egg.style.pointerEvents = 'none';
-                        gsap.set([img, badge], { clearProps: 'all' });
+                        gsap.set(backdrop, { background: 'rgba(0,0,0,0)' });
+                        gsap.set(img, { opacity: 0, scale: 0.5, rotation: -10 });
+                        gsap.set(badge, { opacity: 0, y: 30 });
                     }
                 });
             }
@@ -94,7 +108,12 @@
         const poster = document.querySelector('#about img[alt]');
         if (!poster) return;
 
-        poster.addEventListener('click', function () {
+        poster.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            // Инициализируем AudioContext при первом клике (требование браузера)
+            getAudioContext();
+
             const now = Date.now();
             if (now - lastClickTime > 2000) {
                 posterClicks = 0;
