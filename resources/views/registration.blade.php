@@ -163,29 +163,6 @@
 </footer>
 
 {{-- Баннер о cookie --}}
-@if($event && $event->show_cookie_banner && $event->privacy_cookie_banner_text)
-    <div x-data="{ show: !localStorage.getItem('cookie_consent_accepted_{{ $event->slug }}') && !localStorage.getItem('cookie_consent_declined_{{ $event->slug }}') }" x-show="show" x-transition
-         class="fixed inset-x-0 bottom-0 z-50 bg-[var(--color-surface)] border-t border-[var(--color-primary)]/20 shadow-lg">
-        <div class="mx-auto max-w-7xl px-4 py-4 flex items-start justify-between gap-4">
-            <div class="text-sm text-[var(--color-text)] leading-relaxed">
-                <p>{{ $event->privacy_cookie_banner_text }}</p>
-                @if($event->privacy_cookie_policy)
-                    <a href="{{ route('cookie.policy') }}" class="underline hover:text-[var(--color-primary)] transition-colors">{{ $event->privacy_cookie_banner_title ?: 'Политика использования файлов cookie' }}</a>
-                @endif
-            </div>
-            <div class="flex shrink-0 gap-2">
-                <button @click="show = false; localStorage.setItem('cookie_consent_accepted_{{ $event->slug }}', '1'); localStorage.removeItem('cookie_consent_declined_{{ $event->slug }}')"
-                        class="rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity">
-                    Принять
-                </button>
-                <button @click="show = false; localStorage.setItem('cookie_consent_declined_{{ $event->slug }}', '1'); localStorage.removeItem('cookie_consent_accepted_{{ $event->slug }}')"
-                        class="rounded-lg border border-[var(--color-primary)]/30 px-4 py-2 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-primary)]/10 transition-colors">
-                    Отклонить
-                </button>
-            </div>
-        </div>
-    </div>
-@endif
 
 {{-- Офлайн-уведомление --}}
 <div id="offline-notification" class="fixed inset-x-0 bottom-0 z-50 hidden bg-[var(--color-primary)] text-white p-4 text-center font-medium" x-data="{ offline: !navigator.onLine }" x-show="offline" x-transition>
@@ -198,6 +175,32 @@
 </div>
 
 @livewireScripts
+
+@if($event && $event->show_cookie_banner && $event->privacy_cookie_banner_text)
+    <div x-data="{
+            show: !localStorage.getItem('cookie_consent_accepted_{{ $event->slug }}') && !localStorage.getItem('cookie_consent_declined_{{ $event->slug }}')
+        }" x-show="show" x-cloak x-transition
+         class="fixed inset-x-0 bottom-0 z-50 bg-[var(--color-surface)] border-t border-[var(--color-primary)]/20 shadow-lg">
+        <div class="mx-auto max-w-7xl px-4 py-4 flex items-start justify-between gap-4">
+            <div class="text-sm text-[var(--color-text)] leading-relaxed">
+                <p>{{ $event->privacy_cookie_banner_text }}</p>
+                @if($event->privacy_cookie_policy)
+                    <a href="{{ route('cookie.policy') }}" class="underline hover:text-[var(--color-primary)] transition-colors">{{ $event->privacy_cookie_banner_title ?: 'Политика использования файлов cookie' }}</a>
+                @endif
+            </div>
+            <div class="flex shrink-0 gap-2">
+                <button x-on:click="show = false; localStorage.setItem('cookie_consent_accepted_{{ $event->slug }}', '1'); localStorage.removeItem('cookie_consent_declined_{{ $event->slug }}')"
+                        class="rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity">
+                    Принять
+                </button>
+                <button x-on:click="show = false; localStorage.setItem('cookie_consent_declined_{{ $event->slug }}', '1'); localStorage.removeItem('cookie_consent_accepted_{{ $event->slug }}')"
+                        class="rounded-lg border border-[var(--color-primary)]/30 px-4 py-2 text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-primary)]/10 transition-colors">
+                    Отклонить
+                </button>
+            </div>
+        </div>
+    </div>
+@endif
 
 <script>
     // Полоса загрузки страницы
