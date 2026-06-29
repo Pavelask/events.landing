@@ -105,6 +105,7 @@
                     @if($activeEvent && $activeEvent->show_personal_data_consent && $activeEvent->personal_data_consent)
                         <a href="{{ route('personal.data.consent') }}" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
                     @endif
+                    <a href="{{ route('cookie.policy') }}" class="block text-gray-300 hover:text-white transition-colors">Политика использования файлов cookie</a>
                 </div>
             </div>
         </div>

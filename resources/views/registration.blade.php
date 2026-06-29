@@ -146,6 +146,7 @@
                     @if($event && $event->show_personal_data_consent && $event->personal_data_consent)
                         <a href="#personal-data-consent" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
                     @endif
+                    <a href="{{ route('cookie.policy') }}" class="block text-gray-300 hover:text-white transition-colors">Политика использования файлов cookie</a>
                 </div>
 
                 @if($event?->social_links && is_array($event->social_links))
