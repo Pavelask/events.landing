@@ -29,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->passwordReset()
+            ->canAccess(fn () => auth()->check())
             ->colors([
                 'primary' => Color::Amber,
             ])
