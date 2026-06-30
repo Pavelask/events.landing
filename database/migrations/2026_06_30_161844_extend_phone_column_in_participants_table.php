@@ -22,14 +22,4 @@ return new class extends Migration
             $table->string('phone', 20)->nullable()->change();
         });
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('participants', function (Blueprint $table) {
-            //
-        });
-    }
 };
