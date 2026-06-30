@@ -13,6 +13,13 @@ class YandexWebhookController extends Controller
 {
     public function handle(Request $request): JsonResponse
     {
+        Log::info('Yandex webhook: incoming request', [
+            'method' => $request->method(),
+            'content_type' => $request->header('Content-Type'),
+            'all' => $request->all(),
+            'query' => $request->query(),
+        ]);
+
         $secret = $request->header('X-Yandex-Webhook-Secret') ?? $request->query('secret');
 
         if ($secret !== config('services.webhook.yandex_secret')) {
