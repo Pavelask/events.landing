@@ -13,38 +13,57 @@ class YandexWebhookController extends Controller
 {
     public function handle(Request $request): JsonResponse
     {
-        Log::info('Yandex webhook: incoming request', [
-            'method' => $request->method(),
-            'content_type' => $request->header('Content-Type'),
-            'all' => $request->all(),
+        $rawBody = $request->getContent();
+        $jsonData = json_decode($rawBody, true);
+
+        Log::info('Yandex webhook: incoming', [
+            'body' => $jsonData,
             'query' => $request->query(),
         ]);
 
         $secret = $request->header('X-Yandex-Webhook-Secret') ?? $request->query('secret');
 
         if ($secret !== config('services.webhook.yandex_secret')) {
-            Log::warning('Yandex webhook: invalid secret', ['secret' => $secret]);
+            Log::warning('Yandex webhook: invalid secret');
             return response()->json(['error' => 'Forbidden'], 403);
         }
 
-        $data = $request->all();
+        $answers = $jsonData['answer']['data'] ?? $jsonData['data'] ?? null;
 
-        if (empty($data) || (count($data) === 1 && isset($data['secret']))) {
-            $rawBody = $request->getContent();
-            $jsonData = json_decode($rawBody, true);
-            if (is_array($jsonData)) {
-                $data = array_merge($data, $jsonData);
+        if (!$answers) {
+            Log::warning('Yandex webhook: no answer data', ['raw' => $jsonData]);
+            return response()->json(['error' => 'No answer data'], 422);
+        }
+
+        $name = null;
+        $email = null;
+        $phone = null;
+        $eventId = $request->query('event_id');
+
+        foreach ($answers as $slug => $item) {
+            $value = $item['value'] ?? null;
+            $typeSlug = $item['question']['answer_type']['slug'] ?? '';
+
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            if ($typeSlug === 'answer_number' || str_contains($slug, 'integer')) {
+                $eventId = $eventId ?? $value;
+            } elseif ($typeSlug === 'answer_phone') {
+                $phone = $value;
+            } elseif ($typeSlug === 'answer_non_profile_email' || $typeSlug === 'answer_email') {
+                $email = $value;
+            } elseif ($typeSlug === 'answer_short_text' || $typeSlug === 'answer_text') {
+                if (!$name) {
+                    $name = $value;
+                }
             }
         }
 
-        $name = $data['name'] ?? $data['Фамилия, Имя, Отчество'] ?? null;
-        $email = $data['email'] ?? $data['Адрес электронной почты'] ?? null;
-        $phone = $data['phone'] ?? $data['Номер телефона (мобильный для связи в пути и в г. Сочи)'] ?? null;
-        $eventId = is_numeric($data['event_id'] ?? null) ? $data['event_id'] : ($request->query('event_id') ?? null);
-
         if (!$name) {
-            Log::warning('Yandex webhook: missing required fields', ['data' => $data]);
-            return response()->json(['error' => 'Missing required fields'], 422);
+            Log::warning('Yandex webhook: no name found', ['answers' => $answers]);
+            return response()->json(['error' => 'Name is required'], 422);
         }
 
         if ($eventId && is_numeric($eventId)) {
@@ -58,20 +77,13 @@ class YandexWebhookController extends Controller
             return response()->json(['error' => 'Event not found'], 404);
         }
 
-        if ($event->status !== 'published') {
-            return response()->json(['message' => 'Event is not published'], 200);
-        }
-
         if (!empty($email)) {
             $exists = Participant::where('event_id', $event->id)
                 ->where('email', $email)
                 ->exists();
 
             if ($exists) {
-                Log::info('Yandex webhook: duplicate registration', [
-                    'event_id' => $event->id,
-                    'email' => $email,
-                ]);
+                Log::info('Yandex webhook: duplicate', ['email' => $email]);
                 return response()->json(['message' => 'Already registered'], 200);
             }
         }
@@ -79,19 +91,15 @@ class YandexWebhookController extends Controller
         $participant = Participant::create([
             'event_id' => $event->id,
             'name' => $name,
-            'email' => $email ?? null,
-            'phone' => $phone ?? null,
-            'answers' => $data,
+            'email' => $email,
+            'phone' => $phone,
+            'answers' => $jsonData,
             'source' => 'yandex_form',
         ]);
 
         $participant->generateCheckinToken();
 
-        Log::info('Yandex webhook: participant created', [
-            'participant_id' => $participant->id,
-            'event_id' => $event->id,
-            'email' => $validated['email'],
-        ]);
+        Log::info('Yandex webhook: created', ['id' => $participant->id, 'email' => $email]);
 
         return response()->json(['message' => 'Registered successfully'], 200);
     }
