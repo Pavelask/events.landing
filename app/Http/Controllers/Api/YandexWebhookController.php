@@ -40,14 +40,14 @@ class YandexWebhookController extends Controller
         $name = $data['name'] ?? $data['Фамилия, Имя, Отчество'] ?? null;
         $email = $data['email'] ?? $data['Адрес электронной почты'] ?? null;
         $phone = $data['phone'] ?? $data['Номер телефона (мобильный для связи в пути и в г. Сочи)'] ?? null;
-        $eventId = $data['event_id'] ?? $request->query('event_id') ?? null;
+        $eventId = is_numeric($data['event_id'] ?? null) ? $data['event_id'] : ($request->query('event_id') ?? null);
 
         if (!$name) {
             Log::warning('Yandex webhook: missing required fields', ['data' => $data]);
             return response()->json(['error' => 'Missing required fields'], 422);
         }
 
-        if ($eventId) {
+        if ($eventId && is_numeric($eventId)) {
             $event = Event::find($eventId);
         } else {
             $event = Event::where('status', 'published')->first();
