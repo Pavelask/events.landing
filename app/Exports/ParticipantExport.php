@@ -6,7 +6,7 @@ use App\Models\Participant;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 class ParticipantExport extends Exporter
 {
@@ -27,18 +27,18 @@ class ParticipantExport extends Exporter
         ];
     }
 
-    public function __invoke(array $record): array
+    public function __invoke(Model $record): array
     {
         return [
-            'id' => $record['id'],
-            'event.title' => $record['event']['title'] ?? '',
-            'name' => $record['name'],
-            'email' => $record['email'],
-            'phone' => $record['phone'],
-            'status' => $record['status'],
-            'source' => $record['source'],
-            'created_at' => $record['created_at'],
-            'checked_in_at' => $record['checked_in_at'],
+            'id' => $record->id,
+            'event.title' => $record->event->title ?? '',
+            'name' => $record->name,
+            'email' => $record->email,
+            'phone' => $record->phone,
+            'status' => $record->status,
+            'source' => $record->source,
+            'created_at' => $record->created_at,
+            'checked_in_at' => $record->checked_in_at,
         ];
     }
 
