@@ -14,7 +14,7 @@ class EventStatsWidget extends StatsOverviewWidget
 
     protected function getColumns(): int
     {
-        return 5;
+        return 4;
     }
 
     protected function getStats(): array
@@ -40,6 +40,10 @@ class EventStatsWidget extends StatsOverviewWidget
         $isActive = $event->start_date?->lte($today) && $event->end_date?->gte($today);
         $isPast = $event->end_date?->lt($today);
 
+        $totalParticipants = $event->participants()->count();
+        $arrivedParticipants = $event->participants()->where('status', 'arrived')->count();
+        $registeredParticipants = $event->participants()->where('status', 'registered')->count();
+
         return [
             Stat::make('Дни', $daysCount)
                 ->description('В расписании')
@@ -57,6 +61,18 @@ class EventStatsWidget extends StatsOverviewWidget
                 ->description('Приглашены')
                 ->descriptionIcon('heroicon-o-user-group')
                 ->color($guestsCount > 0 ? 'success' : 'gray'),
+            Stat::make('Регистрации', $totalParticipants)
+                ->description('Всего участников')
+                ->descriptionIcon('heroicon-o-users')
+                ->color('primary'),
+            Stat::make('Прибыло', $arrivedParticipants)
+                ->description('Отмечены на входе')
+                ->descriptionIcon('heroicon-o-check-badge')
+                ->color('success'),
+            Stat::make('Ожидается', $registeredParticipants)
+                ->description('Ещё не пришли')
+                ->descriptionIcon('heroicon-o-clock')
+                ->color('warning'),
             Stat::make('Прогресс', $progressPercent . '%')
                 ->description($isActive ? 'Идёт сейчас' : ($isPast ? 'Завершено' : 'Предстоит'))
                 ->descriptionIcon('heroicon-o-chart-bar')

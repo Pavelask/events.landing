@@ -7,11 +7,13 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "bezhansalleh/filament-shield": "^4.2",
         "filament/filament": "*",
         "intervention/image": "^4.1",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "*",
+        "maatwebsite/excel": "^3.1",
         "simplesoftwareio/simple-qrcode": "*",
         "spatie/laravel-sluggable": "*"
     },

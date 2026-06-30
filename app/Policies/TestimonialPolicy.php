@@ -1,17 +1,75 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Testimonial;
-use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TestimonialPolicy
 {
-    public function viewAny(User $user): bool { return true; }
-    public function view(User $user, Testimonial $record): bool { return true; }
-    public function create(User $user): bool { return true; }
-    public function update(User $user, Testimonial $record): bool { return true; }
-    public function delete(User $user, Testimonial $record): bool { return true; }
-    public function restore(User $user, Testimonial $record): bool { return true; }
-    public function forceDelete(User $user, Testimonial $record): bool { return true; }
+    use HandlesAuthorization;
+    
+    public function viewAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ViewAny:Testimonial');
+    }
+
+    public function view(AuthUser $authUser, Testimonial $testimonial): bool
+    {
+        return $authUser->can('View:Testimonial');
+    }
+
+    public function create(AuthUser $authUser): bool
+    {
+        return $authUser->can('Create:Testimonial');
+    }
+
+    public function update(AuthUser $authUser, Testimonial $testimonial): bool
+    {
+        return $authUser->can('Update:Testimonial');
+    }
+
+    public function delete(AuthUser $authUser, Testimonial $testimonial): bool
+    {
+        return $authUser->can('Delete:Testimonial');
+    }
+
+    public function deleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('DeleteAny:Testimonial');
+    }
+
+    public function restore(AuthUser $authUser, Testimonial $testimonial): bool
+    {
+        return $authUser->can('Restore:Testimonial');
+    }
+
+    public function forceDelete(AuthUser $authUser, Testimonial $testimonial): bool
+    {
+        return $authUser->can('ForceDelete:Testimonial');
+    }
+
+    public function forceDeleteAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('ForceDeleteAny:Testimonial');
+    }
+
+    public function restoreAny(AuthUser $authUser): bool
+    {
+        return $authUser->can('RestoreAny:Testimonial');
+    }
+
+    public function replicate(AuthUser $authUser, Testimonial $testimonial): bool
+    {
+        return $authUser->can('Replicate:Testimonial');
+    }
+
+    public function reorder(AuthUser $authUser): bool
+    {
+        return $authUser->can('Reorder:Testimonial');
+    }
+
 }

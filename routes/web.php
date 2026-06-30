@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\FaviconController;
 use App\Http\Controllers\GalleryViewController;
 use App\Http\Controllers\IcalController;
+use App\Http\Controllers\RecoveryController;
+use App\Http\Controllers\TicketController;
 use App\Livewire\EventRegistration;
 use App\Models\Event;
 use Illuminate\Support\Facades\Route;
@@ -103,3 +106,19 @@ Route::get('/cookie-policy', function () {
 
     return view('cookie-policy', compact('activeEvent'));
 })->name('cookie.policy');
+
+// Ticket, Checkin, Recovery routes
+Route::get('/ticket/{token}', [TicketController::class, 'show'])->name('ticket.show');
+Route::get('/checkin/{token}', [CheckinController::class, 'handle'])->name('checkin.handle')->middleware('auth');
+Route::get('/recovery', [RecoveryController::class, 'showForm'])->name('recovery.form');
+Route::post('/recovery', [RecoveryController::class, 'sendCode'])->name('recovery.send');
+Route::get('/recovery/code', [RecoveryController::class, 'showCodeForm'])->name('recovery.code.form');
+Route::post('/recovery/code', [RecoveryController::class, 'verifyCode'])->name('recovery.code.verify');
+
+// Redirect login to Filament admin
+Route::get('/login', fn () => redirect('/admin/login'))->name('login');
+
+// Yandex Form test page
+Route::get('/yandex-test', function () {
+    return view('yandex-test');
+})->name('yandex-test');

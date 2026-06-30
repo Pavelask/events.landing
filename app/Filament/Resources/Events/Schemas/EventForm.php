@@ -11,6 +11,7 @@ use App\Services\IconService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
@@ -168,6 +169,51 @@ class EventForm
                             ->rows(3)
                             ->visible(fn (callable $get) => $get('registration_type') === 'yandex')
                             ->default(null)
+                            ->columnSpanFull(),
+                        Grid::make(2)->schema([
+                            TextInput::make('capacity')
+                                ->label('Макс. кол-во мест')
+                                ->numeric()
+                                ->nullable()
+                                ->helperText('0 или пусто = без ограничений'),
+                            TextInput::make('yandex_form_id')
+                                ->label('ID формы Яндекс')
+                                ->nullable()
+                                ->helperText('ID формы для webhook'),
+                        ]),
+                        DateTimePicker::make('registration_deadline')
+                            ->label('Крайний срок регистрации')
+                            ->nullable()
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Кастомные вопросы формы')
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
+                        Repeater::make('questions')
+                            ->label('Вопросы')
+                            ->addActionLabel('Добавить вопрос')
+                            ->defaultItems(0)
+                            ->schema([
+                                TextInput::make('question')
+                                    ->label('Вопрос')
+                                    ->required()
+                                    ->maxLength(255),
+                                Select::make('type')
+                                    ->label('Тип поля')
+                                    ->options([
+                                        'text' => 'Текст',
+                                        'textarea' => 'Текстовая область',
+                                        'select' => 'Выпадающий список',
+                                        'radio' => 'Радио-кнопка',
+                                        'checkbox' => 'Чекбокс',
+                                    ])
+                                    ->default('text')
+                                    ->required(),
+                            ])
+                            ->collapsible()
+                            ->itemLabel(fn (array $state) => $state['question'] ?? 'Новый вопрос')
                             ->columnSpanFull(),
                     ]),
 
