@@ -29,6 +29,14 @@ class YandexWebhookController extends Controller
 
         $data = $request->all();
 
+        if (empty($data) || (count($data) === 1 && isset($data['secret']))) {
+            $rawBody = $request->getContent();
+            $jsonData = json_decode($rawBody, true);
+            if (is_array($jsonData)) {
+                $data = array_merge($data, $jsonData);
+            }
+        }
+
         $name = $data['name'] ?? $data['Фамилия, Имя, Отчество'] ?? null;
         $email = $data['email'] ?? $data['Адрес электронной почты'] ?? null;
         $phone = $data['phone'] ?? $data['Номер телефона (мобильный для связи в пути и в г. Сочи)'] ?? null;
