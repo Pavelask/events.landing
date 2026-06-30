@@ -27,12 +27,24 @@ class YandexWebhookController extends Controller
             return response()->json(['error' => 'Forbidden'], 403);
         }
 
-        $validated = $request->validate([
-            'event_id' => 'required|integer|exists:events,id',
-            'name' => 'required|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
-        ]);
+        $data = $request->all();
+
+        $name = $data['name'] ?? $data['Фамилия, Имя, Отчество'] ?? null;
+        $email = $data['email'] ?? $data['Адрес электронной почты'] ?? null;
+        $phone = $data['phone'] ?? $data['Номер телефона (мобильный для связи в пути и в г. Сочи)'] ?? null;
+        $eventId = $data['event_id'] ?? null;
+
+        if (!$eventId || !$name) {
+            Log::warning('Yandex webhook: missing required fields', ['data' => $data]);
+            return response()->json(['error' => 'Missing required fields'], 422);
+        }
+
+        $validated = [
+            'event_id' => $eventId,
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+        ];
 
         $event = Event::findOrFail($validated['event_id']);
 
