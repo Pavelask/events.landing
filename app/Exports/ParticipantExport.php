@@ -3,58 +3,49 @@
 namespace App\Exports;
 
 use App\Models\Participant;
+use Filament\Actions\Exports\ExportColumn;
+use Filament\Actions\Exports\Exporter;
+use Filament\Actions\Exports\Models\Export;
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ParticipantExport implements FromCollection, WithHeadings, WithMapping
+class ParticipantExport extends Exporter
 {
-    protected ?int $eventId;
+    protected static ?string $model = Participant::class;
 
-    public function __construct(?int $eventId = null)
-    {
-        $this->eventId = $eventId;
-    }
-
-    public function collection(): Collection
-    {
-        $query = Participant::with('event');
-
-        if ($this->eventId) {
-            $query->where('event_id', $this->eventId);
-        }
-
-        return $query->get();
-    }
-
-    public function headings(): array
+    public static function getColumns(): array
     {
         return [
-            'ID',
-            'Мероприятие',
-            'Имя',
-            'Email',
-            'Телефон',
-            'Статус',
-            'Источник',
-            'Дата регистрации',
-            'Время чек-ина',
+            ExportColumn::make('id')->label('ID'),
+            ExportColumn::make('event.title')->label('Мероприятие'),
+            ExportColumn::make('name')->label('Имя'),
+            ExportColumn::make('email')->label('Email'),
+            ExportColumn::make('phone')->label('Телефон'),
+            ExportColumn::make('status')->label('Статус'),
+            ExportColumn::make('source')->label('Источник'),
+            ExportColumn::make('created_at')->label('Дата регистрации')->dateTime('d.m.Y H:i'),
+            ExportColumn::make('checked_in_at')->label('Чек-ин')->dateTime('d.m.Y H:i'),
         ];
     }
 
-    public function map($participant): array
+    public function __invoke(array $record): array
     {
         return [
-            $participant->id,
-            $participant->event->title,
-            $participant->name,
-            $participant->email,
-            $participant->phone,
-            $participant->status_label,
-            $participant->source,
-            $participant->created_at->format('d.m.Y H:i'),
-            $participant->checked_in_at?->format('d.m.Y H:i'),
+            'id' => $record['id'],
+            'event.title' => $record['event']['title'] ?? '',
+            'name' => $record['name'],
+            'email' => $record['email'],
+            'phone' => $record['phone'],
+            'status' => $record['status'],
+            'source' => $record['source'],
+            'created_at' => $record['created_at'],
+            'checked_in_at' => $record['checked_in_at'],
         ];
+    }
+
+    public static function getCompletedNotificationBody(Export $export): string
+    {
+        $body = 'Экспорт завершён. ';
+        $body .= $export->successful_rows . ' записей экспортировано.';
+        return $body;
     }
 }
