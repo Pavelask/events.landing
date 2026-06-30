@@ -40,35 +40,37 @@ class YandexWebhookController extends Controller
         $name = $data['name'] ?? $data['Фамилия, Имя, Отчество'] ?? null;
         $email = $data['email'] ?? $data['Адрес электронной почты'] ?? null;
         $phone = $data['phone'] ?? $data['Номер телефона (мобильный для связи в пути и в г. Сочи)'] ?? null;
-        $eventId = $data['event_id'] ?? null;
+        $eventId = $data['event_id'] ?? $request->query('event_id') ?? null;
 
-        if (!$eventId || !$name) {
+        if (!$name) {
             Log::warning('Yandex webhook: missing required fields', ['data' => $data]);
             return response()->json(['error' => 'Missing required fields'], 422);
         }
 
-        $validated = [
-            'event_id' => $eventId,
-            'name' => $name,
-            'email' => $email,
-            'phone' => $phone,
-        ];
+        if ($eventId) {
+            $event = Event::find($eventId);
+        } else {
+            $event = Event::where('status', 'published')->first();
+        }
 
-        $event = Event::findOrFail($validated['event_id']);
+        if (!$event) {
+            Log::warning('Yandex webhook: event not found', ['event_id' => $eventId]);
+            return response()->json(['error' => 'Event not found'], 404);
+        }
 
         if ($event->status !== 'published') {
             return response()->json(['message' => 'Event is not published'], 200);
         }
 
-        if (!empty($validated['email'])) {
+        if (!empty($email)) {
             $exists = Participant::where('event_id', $event->id)
-                ->where('email', $validated['email'])
+                ->where('email', $email)
                 ->exists();
 
             if ($exists) {
                 Log::info('Yandex webhook: duplicate registration', [
                     'event_id' => $event->id,
-                    'email' => $validated['email'],
+                    'email' => $email,
                 ]);
                 return response()->json(['message' => 'Already registered'], 200);
             }
@@ -76,10 +78,10 @@ class YandexWebhookController extends Controller
 
         $participant = Participant::create([
             'event_id' => $event->id,
-            'name' => $validated['name'],
-            'email' => $validated['email'] ?? null,
-            'phone' => $validated['phone'] ?? null,
-            'answers' => $request->all(),
+            'name' => $name,
+            'email' => $email ?? null,
+            'phone' => $phone ?? null,
+            'answers' => $data,
             'source' => 'yandex_form',
         ]);
 
