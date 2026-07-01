@@ -22,8 +22,8 @@ class ParticipantExport extends Exporter
             ExportColumn::make('phone')->label('Телефон'),
             ExportColumn::make('status')->label('Статус'),
             ExportColumn::make('source')->label('Источник'),
-            ExportColumn::make('created_at')->label('Дата регистрации')->dateTime('d.m.Y H:i'),
-            ExportColumn::make('checked_in_at')->label('Чек-ин')->dateTime('d.m.Y H:i'),
+            ExportColumn::make('created_at')->label('Дата регистрации'),
+            ExportColumn::make('checked_in_at')->label('Чек-ин'),
         ];
     }
 
@@ -37,8 +37,8 @@ class ParticipantExport extends Exporter
             'phone' => $record->phone,
             'status' => $record->status,
             'source' => $record->source,
-            'created_at' => $record->created_at,
-            'checked_in_at' => $record->checked_in_at,
+            'created_at' => $record->created_at?->format('d.m.Y H:i'),
+            'checked_in_at' => $record->checked_in_at?->format('d.m.Y H:i'),
         ];
     }
 
