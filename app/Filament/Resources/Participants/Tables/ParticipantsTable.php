@@ -156,7 +156,7 @@ class ParticipantsTable
                                 'checked_in_at' => now(),
                                 'status' => 'arrived',
                             ]);
-                            \Filament\Notifications\Notification::make()->success('Участник отмечен как прибывший')->send();
+                            \Filament\Notifications\Notification::make()->title('Участник отмечен как прибывший')->success()->send();
                         }
                     })
                     ->visible(fn (Participant $record) => !$record->checked_in_at),
@@ -173,7 +173,7 @@ class ParticipantsTable
                             'checked_in_at' => null,
                             'status' => 'registered',
                         ]);
-                        \Filament\Notifications\Notification::make()->success('Чек-ин сброшен')->send();
+                        \Filament\Notifications\Notification::make()->title('Чек-ин сброшен')->success()->send();
                     })
                     ->visible(fn (Participant $record) => (bool) $record->checked_in_at),
                 \Filament\Actions\EditAction::make()
