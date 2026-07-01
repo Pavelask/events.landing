@@ -15,7 +15,8 @@ class TicketController extends Controller
             ->firstOrFail();
 
         $ticketUrl = route('ticket.show', $token);
-        $qrcode = QrCode::format('svg')->size(300)->generate($ticketUrl);
+        $checkinUrl = route('checkin.handle', $token);
+        $qrcode = QrCode::format('svg')->size(300)->generate($checkinUrl);
 
         return view('ticket.show', compact('participant', 'qrcode', 'ticketUrl'));
     }
