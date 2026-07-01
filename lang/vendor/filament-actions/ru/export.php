@@ -14,6 +14,18 @@ return [
 
                 'label' => 'Столбцы',
 
+                'actions' => [
+
+                    'select_all' => [
+                        'label' => 'Выбрать все',
+                    ],
+
+                    'deselect_all' => [
+                        'label' => 'Снять выделение',
+                    ],
+
+                ],
+
                 'form' => [
 
                     'is_enabled' => [
@@ -34,10 +46,6 @@ return [
 
             'export' => [
                 'label' => 'Экспорт',
-            ],
-
-            'deselect_all' => [
-                'label' => 'Снять выделение',
             ],
 
         ],
