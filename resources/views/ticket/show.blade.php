@@ -17,16 +17,13 @@
         .ticket-info span { font-size: 16px; font-weight: 500; color: #333; }
         .qr-code { text-align: center; padding: 20px; background: #f9f9f9; border-radius: 8px; margin: 20px 0; }
         .qr-code svg { max-width: 100%; height: auto; }
-        .ticket-footer { padding: 16px 24px; background: #f9f9f9; text-align: center; }
-        .btn { display: inline-block; padding: 12px 24px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 500; }
-        .btn:hover { background: #5a6fd6; }
     </style>
 </head>
 <body>
     <div class="ticket">
         <div class="ticket-header">
             <h1>{{ $participant->event->title }}</h1>
-            <p>{{ $participant->event->start_date->format('d.m.Y H:i') }}</p>
+            <p>с {{ $participant->event->start_date->format('d.m.Y') }} по {{ $participant->event->end_date->format('d.m.Y') }}</p>
         </div>
         <div class="ticket-body">
             <div class="ticket-info">
@@ -48,9 +45,6 @@
             <div class="qr-code">
                 {!! $qrcode !!}
             </div>
-        </div>
-        <div class="ticket-footer">
-            <a href="{{ route('ticket.pdf', $participant->checkin_token) }}" class="btn">Скачать PDF</a>
         </div>
     </div>
 </body>
