@@ -87,12 +87,18 @@ class ParticipantsTable
                     ->label('Отправить билеты')
                     ->icon('heroicon-o-envelope')
                     ->action(function ($records) {
+                        $count = 0;
                         foreach ($records as $record) {
                             if ($record->email) {
                                 \Illuminate\Support\Facades\Mail::to($record->email)->send(new \App\Mail\TicketMail($record, route('ticket.show', $record->checkin_token)));
                                 $record->update(['ticket_sent_at' => now()]);
+                                $count++;
                             }
                         }
+                        \Filament\Notifications\Notification::make()
+                            ->success()
+                            ->title("Отправлено билетов: {$count}")
+                            ->send();
                     }),
                 BulkAction::make('markArrived')
                     ->label('Отметить прибывших')
@@ -119,7 +125,7 @@ class ParticipantsTable
                             \Illuminate\Support\Facades\Mail::to($record->email)->send(new \App\Mail\TicketMail($record, route('ticket.show', $record->checkin_token)));
                             $record->update(['ticket_sent_at' => now()]);
                             $label = $record->ticket_sent_at ? 'Билет отправлен повторно' : 'Билет отправлен';
-                            \Filament\Notifications\Notification::make()->success($label)->send();
+                            \Filament\Notifications\Notification::make()->title($label)->success()->send();
                         }
                     })
                     ->visible(fn (Participant $record) => (bool) $record->email),
