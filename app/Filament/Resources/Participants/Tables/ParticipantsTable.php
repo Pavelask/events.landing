@@ -31,7 +31,20 @@ class ParticipantsTable
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
-                    ->color(fn (Participant $record): string => $record->status_color),
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'registered' => 'Зарегистрирован',
+                        'verified' => 'Подтверждён',
+                        'arrived' => 'Прибыл',
+                        'cancelled' => 'Отменён',
+                        default => $state,
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'registered' => 'gray',
+                        'verified' => 'blue',
+                        'arrived' => 'green',
+                        'cancelled' => 'red',
+                        default => 'gray',
+                    }),
                 TextColumn::make('source')
                     ->label('Источник')
                     ->sortable()
@@ -118,8 +131,10 @@ class ParticipantsTable
             ])
             ->actions([
                 \Filament\Actions\Action::make('sendTicket')
-                    ->label(fn (Participant $record) => $record->ticket_sent_at ? 'Отправить повторно' : 'Отправить билет')
+                    ->label('')
                     ->icon('heroicon-o-envelope')
+                    ->iconSize('md')
+                    ->color('primary')
                     ->action(function (Participant $record) {
                         if ($record->email) {
                             $isResend = (bool) $record->ticket_sent_at;
@@ -131,8 +146,10 @@ class ParticipantsTable
                     })
                     ->visible(fn (Participant $record) => (bool) $record->email),
                 \Filament\Actions\Action::make('markArrived')
-                    ->label('Отметить прибывшим')
+                    ->label('')
                     ->icon('heroicon-o-check-badge')
+                    ->iconSize('md')
+                    ->color('success')
                     ->action(function (Participant $record) {
                         if (!$record->checked_in_at) {
                             $record->update([
@@ -144,8 +161,9 @@ class ParticipantsTable
                     })
                     ->visible(fn (Participant $record) => !$record->checked_in_at),
                 \Filament\Actions\Action::make('resetCheckin')
-                    ->label('Сбросить чек-ин')
+                    ->label('')
                     ->icon('heroicon-o-arrow-path')
+                    ->iconSize('md')
                     ->color('warning')
                     ->requiresConfirmation()
                     ->modalHeading('Сбросить чек-ин?')
@@ -159,6 +177,10 @@ class ParticipantsTable
                     })
                     ->visible(fn (Participant $record) => (bool) $record->checked_in_at),
                 \Filament\Actions\EditAction::make()
+                    ->label('')
+                    ->icon('heroicon-o-pencil')
+                    ->iconSize('md')
+                    ->color('info'),
             ]);
     }
 }
