@@ -326,6 +326,7 @@
                         <a href="{{ route('personal.data.consent') }}" class="block text-gray-300 hover:text-white transition-colors">Обработка персональных данных</a>
                     @endif
                     <a href="{{ route('cookie.policy') }}" class="block text-gray-300 hover:text-white transition-colors">Политика использования файлов cookie</a>
+                    <a href="{{ route('recovery.form') }}" class="block text-gray-300 hover:text-white transition-colors">Восстановить билет</a>
                 </div>
 
                 @if($activeEvent?->social_links && is_array($activeEvent->social_links))
