@@ -143,6 +143,21 @@ class ParticipantsTable
                         }
                     })
                     ->visible(fn (Participant $record) => !$record->checked_in_at),
+                \Filament\Actions\Action::make('resetCheckin')
+                    ->label('Сбросить чек-ин')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Сбросить чек-ин?')
+                    ->modalDescription('Участник сможет пройти чек-ин заново')
+                    ->action(function (Participant $record) {
+                        $record->update([
+                            'checked_in_at' => null,
+                            'status' => 'registered',
+                        ]);
+                        \Filament\Notifications\Notification::make()->success('Чек-ин сброшен')->send();
+                    })
+                    ->visible(fn (Participant $record) => (bool) $record->checked_in_at),
                 \Filament\Actions\EditAction::make()
             ]);
     }
