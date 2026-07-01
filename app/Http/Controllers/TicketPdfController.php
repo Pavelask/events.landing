@@ -15,10 +15,20 @@ class TicketPdfController extends Controller
             ->firstOrFail();
 
         $checkinUrl = route('checkin.handle', $token);
-        $qrcode = QrCode::format('svg')->size(200)->generate($checkinUrl);
 
-        $pdf = Pdf::loadView('ticket.pdf', compact('participant', 'qrcode'))
-            ->setPaper('a4');
+        $qrPath = storage_path('app/temp_qr_' . $token . '.png');
+        QrCode::format('png')->size(300)->generate($checkinUrl, $qrPath);
+
+        $qrBase64 = base64_encode(file_get_contents($qrPath));
+        $qrDataUrl = 'data:image/png;base64,' . $qrBase64;
+
+        @unlink($qrPath);
+
+        $pdf = Pdf::loadView('ticket.pdf', compact('participant', 'qrDataUrl'))
+            ->setPaper('a4')
+            ->setOption('defaultFont', 'sans-serif')
+            ->setOption('isHtml5ParserEnabled', true)
+            ->setOption('isRemoteEnabled', true);
 
         return $pdf->download("ticket-{$participant->checkin_token}.pdf");
     }
