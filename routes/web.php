@@ -6,6 +6,7 @@ use App\Http\Controllers\GalleryViewController;
 use App\Http\Controllers\IcalController;
 use App\Http\Controllers\RecoveryController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TicketPdfController;
 use App\Livewire\EventRegistration;
 use App\Models\Event;
 use Illuminate\Support\Facades\Route;
@@ -109,6 +110,7 @@ Route::get('/cookie-policy', function () {
 
 // Ticket, Checkin, Recovery routes
 Route::get('/ticket/{token}', [TicketController::class, 'show'])->name('ticket.show');
+Route::get('/ticket/{token}/pdf', [TicketPdfController::class, 'download'])->name('ticket.pdf');
 Route::get('/checkin/{token}', [CheckinController::class, 'handle'])->name('checkin.handle')->middleware('auth');
 Route::get('/recovery', [RecoveryController::class, 'showForm'])->name('recovery.form');
 Route::post('/recovery', [RecoveryController::class, 'sendCode'])->name('recovery.send');

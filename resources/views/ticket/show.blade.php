@@ -49,6 +49,9 @@
                 {!! $qrcode !!}
             </div>
         </div>
+        <div class="ticket-footer">
+            <a href="{{ route('ticket.pdf', $participant->checkin_token) }}" class="btn">Скачать PDF</a>
+        </div>
     </div>
 </body>
 </html>
