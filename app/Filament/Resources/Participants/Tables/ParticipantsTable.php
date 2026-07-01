@@ -122,9 +122,10 @@ class ParticipantsTable
                     ->icon('heroicon-o-envelope')
                     ->action(function (Participant $record) {
                         if ($record->email) {
+                            $isResend = (bool) $record->ticket_sent_at;
                             \Illuminate\Support\Facades\Mail::to($record->email)->send(new \App\Mail\TicketMail($record, route('ticket.show', $record->checkin_token)));
                             $record->update(['ticket_sent_at' => now()]);
-                            $label = $record->ticket_sent_at ? 'Билет отправлен повторно' : 'Билет отправлен';
+                            $label = $isResend ? 'Билет отправлен повторно' : 'Билет отправлен';
                             \Filament\Notifications\Notification::make()->title($label)->success()->send();
                         }
                     })
