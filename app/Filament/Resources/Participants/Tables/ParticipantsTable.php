@@ -174,6 +174,11 @@ class ParticipantsTable
 
                         fclose($handle);
 
+                        // Удаляем загруженный файл
+                        if (is_string($file)) {
+                            Storage::disk('local')->delete($file);
+                        }
+
                         Notification::make()
                             ->title("Импорт завершён")
                             ->body("Импортировано: {$imported}, Пропущено: {$skipped}")
