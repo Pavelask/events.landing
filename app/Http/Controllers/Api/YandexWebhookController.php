@@ -37,26 +37,13 @@ class YandexWebhookController extends Controller
             return response()->json(['error' => 'No answer data'], 422);
         }
 
-        $hasAnswerId = $this->columnExists('participants', 'answer_id');
+        $hasAnswerId = DB::select("SHOW COLUMNS FROM participants LIKE 'answer_id'");
 
-        if ($hasAnswerId) {
+        if (!empty($hasAnswerId)) {
             return $this->handleNewSchema($jsonData, $answers, $request);
         }
 
         return $this->handleOldSchema($jsonData, $answers, $request);
-    }
-
-    private function columnExists(string $table, string $column): bool
-    {
-        try {
-            $columns = DB::getSchemaBuilder()->getColumns($table);
-            foreach ($columns as $col) {
-                if ($col['name'] === $column) return true;
-            }
-        } catch (\Exception $e) {
-            Log::warning('Yandex webhook: schema check failed', ['error' => $e->getMessage()]);
-        }
-        return false;
     }
 
     private function handleOldSchema(array $jsonData, array $answers, Request $request): JsonResponse
