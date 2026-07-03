@@ -10,6 +10,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Storage;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
@@ -122,17 +123,10 @@ class ParticipantsTable
                         $file = $data['csv_file'];
                         $eventId = $data['event_id'];
 
-                        $path = $file instanceof \Illuminate\Http\UploadedFile
-                            ? $file->getRealPath()
-                            : storage_path('app/public/' . $file);
-
-                        if (!file_exists($path)) {
-                            $path = storage_path('app/' . $file);
-                        }
-
-                        if (!file_exists($path)) {
-                            Notification::make()->danger('Файл не найден: ' . $file)->send();
-                            return;
+                        if ($file instanceof \Illuminate\Http\UploadedFile) {
+                            $path = $file->getRealPath();
+                        } else {
+                            $path = Storage::disk('local')->path($file);
                         }
 
                         $handle = fopen($path, 'r');
