@@ -14,6 +14,7 @@ class Participant extends Model
         'email',
         'phone',
         'answers',
+        'answer_id',
         'checkin_token',
         'checked_in_at',
         'status',
