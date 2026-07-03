@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 class YandexFormsApi
 {
     private ?string $token;
-    private string $baseUrl = 'https://api.forms.yandex.ru/public/api/v1';
+    private string $baseUrl = 'https://forms.yandex.ru/api/v1';
 
     public function __construct()
     {
@@ -94,11 +94,23 @@ class YandexFormsApi
                 ->get("{$this->baseUrl}/forms/{$formId}/answers", $filters);
 
             if ($response->successful()) {
-                return $response->json('data', []);
+                $json = $response->json();
+                // Handle different response formats
+                if (isset($json['data'])) {
+                    return $json['data'];
+                }
+                if (isset($json['items'])) {
+                    return $json['items'];
+                }
+                if (is_array($json) && !isset($json['message'])) {
+                    return $json;
+                }
+                return [];
             }
 
             Log::warning('Yandex Forms API: getAnswers failed', [
                 'status' => $response->status(),
+                'body' => $response->body(),
             ]);
 
             return [];
