@@ -34,8 +34,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-        'webhook' => [
-            'yandex_secret' => env('YANDEX_WEBHOOK_SECRET'),
+    'yandex' => [
+        'token' => env('YANDEX_OAUTH_TOKEN'),
+    ],
+
+    'webhook' => [
+        'yandex_secret' => env('YANDEX_WEBHOOK_SECRET'),
     ],
 
 ];
