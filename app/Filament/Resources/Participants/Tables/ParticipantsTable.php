@@ -6,9 +6,13 @@ use App\Models\Event;
 use App\Models\Participant;
 use Filament\Actions\BulkAction;
 use Filament\Actions\ExportBulkAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class ParticipantsTable
 {
@@ -95,6 +99,81 @@ class ParticipantsTable
             ])
             ->defaultGroup('event.title')
             ->defaultSort('created_at', 'desc')
+            ->headerActions([
+                \Filament\Actions\Action::make('importCsv')
+                    ->label('Импорт CSV')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->modalHeading('Импорт участников из CSV')
+                    ->modalDescription('Загрузите CSV файл из Яндекс Форм')
+                    ->form([
+                        Select::make('event_id')
+                            ->label('Мероприятие')
+                            ->options(fn () => Event::pluck('title', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->default(1),
+                        FileUpload::make('csv_file')
+                            ->label('CSV файл')
+                            ->acceptedFileTypes(['text/csv', 'text/plain'])
+                            ->required(),
+                    ])
+                    ->action(function (array $data): void {
+                        $file = $data['csv_file'];
+                        $eventId = $data['event_id'];
+                        $path = is_string($file) ? $file : $file->getRealPath();
+                        $handle = fopen($path, 'r');
+
+                        if (!$handle) {
+                            Notification::make()->danger('Не удалось открыть файл')->send();
+                            return;
+                        }
+
+                        $headers = fgetcsv($handle, 0, ',');
+                        $imported = 0;
+                        $skipped = 0;
+
+                        while (($row = fgetcsv($handle, 0, ',')) !== false) {
+                            $row = array_combine($headers, $row);
+                            $yandexId = trim($row['ID'] ?? '');
+                            $name = trim($row['"Фамилия, Имя, Отчество"'] ?? $row['Фамилия, Имя, Отчество'] ?? '');
+                            $phone = trim($row['Номер телефона (мобильный для связи в пути и в г. Сочи)'] ?? '');
+                            $email = trim($row['Адрес электронной почты'] ?? '');
+
+                            if (!$yandexId || !$name || in_array($name, ['00000', '0000', '00'])) {
+                                $skipped++;
+                                continue;
+                            }
+
+                            $exists = Participant::where('event_id', $eventId)
+                                ->where('answer_id', $yandexId)->exists();
+
+                            if ($exists) {
+                                $skipped++;
+                                continue;
+                            }
+
+                            Participant::create([
+                                'event_id' => $eventId,
+                                'answer_id' => $yandexId,
+                                'name' => $name ?: null,
+                                'email' => $email ?: null,
+                                'phone' => $phone ?: null,
+                                'checkin_token' => Str::random(40),
+                                'status' => 'registered',
+                            ]);
+                            $imported++;
+                        }
+
+                        fclose($handle);
+
+                        Notification::make()
+                            ->title("Импорт завершён")
+                            ->body("Импортировано: {$imported}, Пропущено: {$skipped}")
+                            ->success()
+                            ->send();
+                    }),
+            ])
             ->bulkActions([
                 BulkAction::make('sendTickets')
                     ->label('Отправить билеты')
