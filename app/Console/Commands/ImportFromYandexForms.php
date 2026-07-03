@@ -38,55 +38,69 @@ class ImportFromYandexForms extends Command
         $imported = 0;
         $skipped = 0;
         $errors = 0;
-        $page = 1;
 
         $this->info("Importing answers from form {$formId}...");
 
-        do {
-            $answers = $api->getAnswers($formId, [
-                'page' => $page,
-                'pageSize' => 100,
-            ]);
+        $answers = $api->getAnswers($formId, ['format' => 'raw', 'page_size' => 100]);
 
-            if (empty($answers)) {
-                break;
+        if (empty($answers)) {
+            $this->error("No answers found or API unreachable");
+            return self::FAILURE;
+        }
+
+        foreach ($answers as $answer) {
+            $answerId = $answer['id'] ?? null;
+
+            if (!$answerId) {
+                $errors++;
+                continue;
             }
 
-            foreach ($answers as $answer) {
-                $answerId = $answer['id'] ?? null;
+            $exists = Participant::where('event_id', $eventId)
+                ->where('answer_id', (string) $answerId)
+                ->exists();
 
-                if (!$answerId) {
-                    $errors++;
-                    continue;
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
+
+            $name = null;
+            $email = null;
+            $phone = null;
+
+            foreach ($answer['data'] ?? [] as $key => $item) {
+                $value = $item['value'] ?? null;
+                if (is_array($value)) {
+                    $value = $value['text'] ?? $value['key'] ?? null;
                 }
+                if (!$value || !is_string($value)) continue;
 
-                $exists = Participant::where('event_id', $eventId)
-                    ->where('answer_id', (string) $answerId)
-                    ->exists();
-
-                if ($exists) {
-                    $skipped++;
-                    continue;
-                }
-
-                try {
-                    Participant::create([
-                        'event_id' => $eventId,
-                        'answer_id' => (string) $answerId,
-                        'checkin_token' => Str::random(40),
-                        'status' => 'registered',
-                    ]);
-                    $imported++;
-                } catch (\Exception $e) {
-                    $this->error("Error creating participant for answer {$answerId}: {$e->getMessage()}");
-                    $errors++;
+                if (str_contains($key, 'email') || filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    $email = $value;
+                } elseif (str_contains($key, 'phone') || preg_match('/^\+?\d[\d\s\-\(\)]+$/', $value)) {
+                    $phone = $value;
+                } elseif (!$name && strlen($value) > 2) {
+                    $name = $value;
                 }
             }
 
-            $page++;
-            usleep(100000); // 100ms delay between pages
-
-        } while (count($answers) === 100);
+            try {
+                Participant::create([
+                    'event_id' => $eventId,
+                    'answer_id' => (string) $answerId,
+                    'name' => $name,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'checkin_token' => Str::random(40),
+                    'status' => 'registered',
+                ]);
+                $imported++;
+            } catch (\Exception $e) {
+                $this->error("Error: {$e->getMessage()}");
+                $errors++;
+            }
+        }
 
         $this->info("Done!");
         $this->info("Imported: {$imported}");

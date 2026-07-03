@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 class YandexFormsApi
 {
     private ?string $token;
-    private string $baseUrl = 'https://forms.yandex.ru/api/v1';
+    private string $baseUrl = 'https://api.forms.yandex.net/v1';
 
     public function __construct()
     {
@@ -59,7 +59,7 @@ class YandexFormsApi
             try {
                 $response = Http::withToken($this->token)
                     ->timeout(30)
-                    ->get("{$this->baseUrl}/forms/{$formId}/answers/{$answerId}");
+                    ->get("{$this->baseUrl}/surveys/{$formId}/answers/{$answerId}");
 
                 if ($response->successful()) {
                     return $response->json();
@@ -89,12 +89,14 @@ class YandexFormsApi
         }
 
         try {
-            $url = "{$this->baseUrl}/forms/{$formId}/answers";
-            Log::info('Yandex Forms API: requesting', ['url' => $url, 'filters' => $filters]);
+            $url = "{$this->baseUrl}/surveys/{$formId}/answers";
+            $params = array_merge(['page_size' => 100], $filters);
+
+            Log::info('Yandex Forms API: requesting', ['url' => $url, 'params' => $params]);
 
             $response = Http::withToken($this->token)
                 ->timeout(30)
-                ->get($url, $filters);
+                ->get($url, $params);
 
             Log::info('Yandex Forms API: response', [
                 'status' => $response->status(),
@@ -103,16 +105,7 @@ class YandexFormsApi
 
             if ($response->successful()) {
                 $json = $response->json();
-                if (isset($json['data'])) {
-                    return $json['data'];
-                }
-                if (isset($json['items'])) {
-                    return $json['items'];
-                }
-                if (is_array($json) && !isset($json['message'])) {
-                    return $json;
-                }
-                return [];
+                return $json['answers'] ?? [];
             }
 
             Log::warning('Yandex Forms API: getAnswers failed', [
