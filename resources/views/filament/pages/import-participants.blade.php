@@ -2,7 +2,7 @@
     <div class="space-y-6">
         {{ $this->form }}
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 pt-4">
             <div wire:loading.remove wire:target="importCsv">
                 <x-filament::button wire:click="importCsv" icon="heroicon-o-arrow-up-tray" size="lg">
                     Импортировать участников

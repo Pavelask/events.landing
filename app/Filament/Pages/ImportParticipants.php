@@ -23,6 +23,8 @@ class ImportParticipants extends Page
 
     protected static string|\UnitEnum|null $navigationGroup = 'Мероприятия';
 
+    protected static bool $navigationHidden = true;
+
     protected static ?int $navigationSort = 5;
 
     public ?array $data = ['event_id' => 1, 'csv_file' => null];
