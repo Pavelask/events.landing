@@ -121,7 +121,20 @@ class ParticipantsTable
                     ->action(function (array $data): void {
                         $file = $data['csv_file'];
                         $eventId = $data['event_id'];
-                        $path = is_string($file) ? $file : $file->getRealPath();
+
+                        $path = $file instanceof \Illuminate\Http\UploadedFile
+                            ? $file->getRealPath()
+                            : storage_path('app/public/' . $file);
+
+                        if (!file_exists($path)) {
+                            $path = storage_path('app/' . $file);
+                        }
+
+                        if (!file_exists($path)) {
+                            Notification::make()->danger('Файл не найден: ' . $file)->send();
+                            return;
+                        }
+
                         $handle = fopen($path, 'r');
 
                         if (!$handle) {
