@@ -35,19 +35,19 @@ class ImportParticipants extends Page
     public function importCsv(): void
     {
         if (!$this->csvFile) {
-            Notification::make()->error('Загрузите CSV файл')->send();
+            Notification::make()->danger('Загрузите CSV файл')->send();
             return;
         }
 
         $file = $this->csvFile;
         if (!$file instanceof UploadedFile) {
-            Notification::make()->error('Неверный формат файла')->send();
+            Notification::make()->danger('Неверный формат файла')->send();
             return;
         }
 
         $handle = fopen($file->getRealPath(), 'r');
         if (!$handle) {
-            Notification::make()->error('Не удалось открыть файл')->send();
+            Notification::make()->danger('Не удалось открыть файл')->send();
             return;
         }
 
