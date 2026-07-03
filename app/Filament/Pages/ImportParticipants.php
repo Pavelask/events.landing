@@ -2,15 +2,19 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Event;
 use App\Models\Participant;
 use BackedEnum;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
 class ImportParticipants extends Page
 {
+    use \Filament\Forms\Concerns\InteractsWithForms;
+
     protected string $view = 'filament.pages.import-participants';
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-arrow-up-tray';
@@ -21,31 +25,56 @@ class ImportParticipants extends Page
 
     protected static ?int $navigationSort = 5;
 
-    public ?int $eventId = 1;
-    public $csvFile = null;
-    public array $preview = [];
+    public ?array $data = ['event_id' => 1, 'csv_file' => null];
     public int $importedCount = 0;
     public int $skippedCount = 0;
+    public bool $showResult = false;
 
     public function getTitle(): string
     {
         return 'Импорт участников из CSV';
     }
 
+    public function mount(): void
+    {
+        $this->form->fill($this->data);
+    }
+
+    public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
+    {
+        return $schema
+            ->statePath('data')
+            ->schema([
+                Select::make('event_id')
+                    ->label('Мероприятие')
+                    ->options(fn () => Event::pluck('title', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+                FileUpload::make('csv_file')
+                    ->label('CSV файл')
+                    ->acceptedFileTypes(['text/csv', 'text/plain'])
+                    ->required(),
+            ]);
+    }
+
     public function importCsv(): void
     {
-        if (!$this->csvFile) {
+        $this->showResult = false;
+
+        $data = $this->form->getState();
+
+        $file = $data['csv_file'] ?? null;
+        $eventId = $data['event_id'] ?? 1;
+
+        if (!$file) {
             Notification::make()->danger('Загрузите CSV файл')->send();
             return;
         }
 
-        $file = $this->csvFile;
-        if (!$file instanceof UploadedFile) {
-            Notification::make()->danger('Неверный формат файла')->send();
-            return;
-        }
+        $path = is_string($file) ? $file : $file->getRealPath();
+        $handle = fopen($path, 'r');
 
-        $handle = fopen($file->getRealPath(), 'r');
         if (!$handle) {
             Notification::make()->danger('Не удалось открыть файл')->send();
             return;
@@ -68,7 +97,7 @@ class ImportParticipants extends Page
                 continue;
             }
 
-            $exists = Participant::where('event_id', $this->eventId)
+            $exists = Participant::where('event_id', $eventId)
                 ->where('answer_id', $yandexId)
                 ->exists();
 
@@ -78,7 +107,7 @@ class ImportParticipants extends Page
             }
 
             Participant::create([
-                'event_id' => $this->eventId,
+                'event_id' => $eventId,
                 'answer_id' => $yandexId,
                 'name' => $name ?: null,
                 'email' => $email ?: null,
@@ -94,6 +123,7 @@ class ImportParticipants extends Page
 
         $this->importedCount = $imported;
         $this->skippedCount = $skipped;
+        $this->showResult = true;
 
         Notification::make()
             ->title("Импорт завершён")

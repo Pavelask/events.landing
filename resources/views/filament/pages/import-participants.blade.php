@@ -1,33 +1,7 @@
 <x-filament-panels::page>
     <div class="space-y-6">
-        {{-- Мероприятие --}}
-        <x-filament::section heading="Мероприятие">
-            <select wire:model="eventId" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                @foreach(\App\Models\Event::pluck('title', 'id') as $id => $title)
-                    <option value="{{ $id }}">{{ $title }}</option>
-                @endforeach
-            </select>
-        </x-filament::section>
+        {{ $this->form }}
 
-        {{-- Загрузка файла --}}
-        <x-filament::section heading="CSV файл">
-            <div class="space-y-3">
-                <div class="flex items-center gap-3">
-                    <input
-                        type="file"
-                        wire:model="csvFile"
-                        accept=".csv"
-                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
-                    >
-                </div>
-
-                <div class="text-xs text-gray-400">
-                    <p>Формат: <code class="bg-gray-100 px-1 rounded dark:bg-gray-600">ID</code>, <code class="bg-gray-100 px-1 rounded dark:bg-gray-600">Фамилия, Имя, Отчество</code>, <code class="bg-gray-100 px-1 rounded dark:bg-gray-600">Номер телефона</code>, <code class="bg-gray-100 px-1 rounded dark:bg-gray-600">Адрес электронной почты</code></p>
-                </div>
-            </div>
-        </x-filament::section>
-
-        {{-- Кнопка импорта --}}
         <div class="flex items-center gap-3">
             <div wire:loading.remove wire:target="importCsv">
                 <x-filament::button wire:click="importCsv" icon="heroicon-o-arrow-up-tray" size="lg">
@@ -41,20 +15,21 @@
             </div>
         </div>
 
-        {{-- Результат --}}
-        @if($importedCount > 0 || $skippedCount > 0)
-            <x-filament::section heading="Результат импорта">
+        @if($showResult)
+            <div class="rounded-lg border p-4 {{ $importedCount > 0 ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800' }}">
                 <div class="space-y-1">
-                    <p class="text-sm text-success-600 dark:text-success-400">
-                        <x-heroicon-o-check-circle class="inline h-4 w-4" />
-                        Импортировано: <strong>{{ $importedCount }}</strong>
-                    </p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        <x-heroicon-o-information-circle class="inline h-4 w-4" />
-                        Пропущено (дубликаты / пустые): <strong>{{ $skippedCount }}</strong>
-                    </p>
+                    @if($importedCount > 0)
+                        <p class="text-sm text-green-700 dark:text-green-400">
+                            Импортировано: <strong>{{ $importedCount }}</strong>
+                        </p>
+                    @endif
+                    @if($skippedCount > 0)
+                        <p class="text-sm text-yellow-700 dark:text-yellow-400">
+                            Пропущено (дубликаты / пустые): <strong>{{ $skippedCount }}</strong>
+                        </p>
+                    @endif
                 </div>
-            </x-filament::section>
+            </div>
         @endif
     </div>
 </x-filament-panels::page>
