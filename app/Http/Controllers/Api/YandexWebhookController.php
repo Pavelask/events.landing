@@ -7,7 +7,9 @@ use App\Models\Event;
 use App\Models\Participant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class YandexWebhookController extends Controller
 {
@@ -35,29 +37,49 @@ class YandexWebhookController extends Controller
             return response()->json(['error' => 'No answer data'], 422);
         }
 
+        $hasAnswerId = $this->columnExists('participants', 'answer_id');
+
+        if ($hasAnswerId) {
+            return $this->handleNewSchema($jsonData, $answers, $request);
+        }
+
+        return $this->handleOldSchema($jsonData, $answers, $request);
+    }
+
+    private function columnExists(string $table, string $column): bool
+    {
+        try {
+            $columns = DB::getSchemaBuilder()->getColumns($table);
+            foreach ($columns as $col) {
+                if ($col['name'] === $column) return true;
+            }
+        } catch (\Exception $e) {
+            Log::warning('Yandex webhook: schema check failed', ['error' => $e->getMessage()]);
+        }
+        return false;
+    }
+
+    private function handleOldSchema(array $jsonData, array $answers, Request $request): JsonResponse
+    {
         $name = null;
         $email = null;
         $phone = null;
         $eventId = $request->query('event_id');
 
         foreach ($answers as $slug => $item) {
-            $value = $item['value'] ?? null;
-            $typeSlug = $item['question']['answer_type']['slug'] ?? '';
+            $value = is_array($item) ? ($item['value'] ?? null) : $item;
+            $typeSlug = is_array($item) ? ($item['question']['answer_type']['slug'] ?? '') : '';
 
-            if ($value === null || $value === '') {
-                continue;
-            }
+            if ($value === null || $value === '') continue;
 
-            if ($typeSlug === 'answer_number' || str_contains($slug, 'integer')) {
-                $eventId = $eventId ?? $value;
-            } elseif ($typeSlug === 'answer_phone') {
+            if ($typeSlug === 'answer_phone') {
                 $phone = $value;
-            } elseif ($typeSlug === 'answer_non_profile_email' || $typeSlug === 'answer_email') {
+            } elseif (in_array($typeSlug, ['answer_non_profile_email', 'answer_email'])) {
                 $email = $value;
-            } elseif ($typeSlug === 'answer_short_text' || $typeSlug === 'answer_text') {
-                if (!$name) {
-                    $name = $value;
-                }
+            } elseif (in_array($typeSlug, ['answer_short_text', 'answer_text', 'answer_name'])) {
+                if (!$name) $name = $value;
+            } elseif ($typeSlug === 'answer_number' || str_contains((string) $slug, 'integer')) {
+                $eventId = $eventId ?? $value;
             }
         }
 
@@ -66,24 +88,14 @@ class YandexWebhookController extends Controller
             return response()->json(['error' => 'Name is required'], 422);
         }
 
-        if ($eventId && is_numeric($eventId)) {
-            $event = Event::find($eventId);
-        } else {
-            $event = Event::where('status', 'published')->first();
-        }
-
+        $event = $this->resolveEvent($eventId);
         if (!$event) {
-            Log::warning('Yandex webhook: event not found', ['event_id' => $eventId]);
             return response()->json(['error' => 'Event not found'], 404);
         }
 
         if (!empty($email)) {
-            $exists = Participant::where('event_id', $event->id)
-                ->where('email', $email)
-                ->exists();
-
+            $exists = Participant::where('event_id', $event->id)->where('email', $email)->exists();
             if ($exists) {
-                Log::info('Yandex webhook: duplicate', ['email' => $email]);
                 return response()->json(['message' => 'Already registered'], 200);
             }
         }
@@ -99,8 +111,53 @@ class YandexWebhookController extends Controller
 
         $participant->generateCheckinToken();
 
-        Log::info('Yandex webhook: created', ['id' => $participant->id, 'email' => $email]);
+        Log::info('Yandex webhook: created (old schema)', ['id' => $participant->id, 'email' => $email]);
 
         return response()->json(['message' => 'Registered successfully'], 200);
+    }
+
+    private function handleNewSchema(array $jsonData, array $answers, Request $request): JsonResponse
+    {
+        $answerId = $jsonData['answer']['id'] ?? null;
+        if (!$answerId) {
+            return response()->json(['error' => 'No answer_id'], 422);
+        }
+
+        $formId = $request->query('form_id') ?? $jsonData['form']['id'] ?? null;
+        $eventId = $request->query('event_id');
+
+        $event = $this->resolveEvent($eventId, $formId);
+        if (!$event) {
+            return response()->json(['error' => 'Event not found'], 404);
+        }
+
+        $exists = Participant::where('event_id', $event->id)
+            ->where('answer_id', (string) $answerId)->exists();
+
+        if ($exists) {
+            return response()->json(['message' => 'Already registered'], 200);
+        }
+
+        Participant::create([
+            'event_id' => $event->id,
+            'answer_id' => (string) $answerId,
+            'checkin_token' => Str::random(40),
+            'status' => 'registered',
+        ]);
+
+        Log::info('Yandex webhook: created (new schema)', ['answer_id' => $answerId]);
+
+        return response()->json(['message' => 'Registered successfully'], 200);
+    }
+
+    private function resolveEvent(?string $eventId = null, ?string $formId = null): ?Event
+    {
+        if ($eventId && is_numeric($eventId)) {
+            return Event::find($eventId);
+        }
+        if ($formId) {
+            return Event::where('yandex_form_id', $formId)->first();
+        }
+        return Event::where('status', 'published')->first();
     }
 }
