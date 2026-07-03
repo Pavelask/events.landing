@@ -89,13 +89,20 @@ class YandexFormsApi
         }
 
         try {
+            $url = "{$this->baseUrl}/forms/{$formId}/answers";
+            Log::info('Yandex Forms API: requesting', ['url' => $url, 'filters' => $filters]);
+
             $response = Http::withToken($this->token)
                 ->timeout(30)
-                ->get("{$this->baseUrl}/forms/{$formId}/answers", $filters);
+                ->get($url, $filters);
+
+            Log::info('Yandex Forms API: response', [
+                'status' => $response->status(),
+                'body' => substr($response->body(), 0, 500),
+            ]);
 
             if ($response->successful()) {
                 $json = $response->json();
-                // Handle different response formats
                 if (isset($json['data'])) {
                     return $json['data'];
                 }
