@@ -173,6 +173,11 @@ class AnonRegistration extends Component
         $response = $yandexApi->createAnswer($formId, $payload);
 
         if (!$response) {
+            \Illuminate\Support\Facades\Log::error('AnonRegistration: createAnswer returned null', [
+                'form_id' => $formId,
+                'token_set' => !empty(config('services.yandex.token')),
+                'payload_keys' => array_keys($payload),
+            ]);
             $this->errorMessage = 'Ошибка при регистрации. Попробуйте позже.';
             return;
         }
@@ -180,6 +185,10 @@ class AnonRegistration extends Component
         $answerId = $response['id'] ?? $response['answer_id'] ?? null;
 
         if (!$answerId) {
+            \Illuminate\Support\Facades\Log::error('AnonRegistration: answer_id not found in response', [
+                'response_keys' => array_keys($response),
+                'response' => $response,
+            ]);
             $this->errorMessage = 'Ошибка при регистрации. Попробуйте позже.';
             return;
         }
