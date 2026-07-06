@@ -187,36 +187,6 @@ class EventForm
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('Кастомные вопросы формы')
-                    ->collapsible()
-                    ->collapsed()
-                    ->schema([
-                        Repeater::make('questions')
-                            ->label('Вопросы')
-                            ->addActionLabel('Добавить вопрос')
-                            ->defaultItems(0)
-                            ->schema([
-                                TextInput::make('question')
-                                    ->label('Вопрос')
-                                    ->required()
-                                    ->maxLength(255),
-                                Select::make('type')
-                                    ->label('Тип поля')
-                                    ->options([
-                                        'text' => 'Текст',
-                                        'textarea' => 'Текстовая область',
-                                        'select' => 'Выпадающий список',
-                                        'radio' => 'Радио-кнопка',
-                                        'checkbox' => 'Чекбокс',
-                                    ])
-                                    ->default('text')
-                                    ->required(),
-                            ])
-                            ->collapsible()
-                            ->itemLabel(fn (array $state) => $state['question'] ?? 'Новый вопрос')
-                            ->columnSpanFull(),
-                    ]),
-
                 Section::make('Социальные сети')
                     ->collapsible()
                     ->collapsed()

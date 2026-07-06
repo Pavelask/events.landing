@@ -122,6 +122,16 @@ class YandexFormsApi
         }
     }
 
+    public function findAnswersByEmail(string $formId, string $email): array
+    {
+        $allAnswers = $this->getAnswers($formId);
+
+        return array_filter($allAnswers, function ($answer) use ($email) {
+            $answerEmail = $answer['answerer']['email'] ?? $answer['email'] ?? '';
+            return strtolower($answerEmail) === strtolower($email);
+        });
+    }
+
     public function clearCache(string $answerId): void
     {
         $keys = Cache::tags([])->getKeys();

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Mail\TicketMail;
 use App\Mail\VerificationCodeMail;
+use App\Models\AnonParticipant;
 use App\Models\Participant;
+use App\Services\YandexFormsApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -61,7 +63,7 @@ class RecoveryController extends Controller
         return view('recovery.code', compact('email'));
     }
 
-    public function verifyCode(Request $request)
+    public function verifyCode(Request $request, YandexFormsApi $yandexApi)
     {
         $request->validate([
             'code' => 'required|string|size:6',
@@ -91,21 +93,46 @@ class RecoveryController extends Controller
             ->where('verification_code_sent_at', '>=', now()->subMinutes(15))
             ->first();
 
-        if (!$participant) {
-            return back()->withErrors(['code' => 'Неверный или просроченный код.']);
+        if ($participant) {
+            $participant->update([
+                'verification_code' => null,
+                'verification_code_sent_at' => null,
+            ]);
+
+            $ticketUrl = route('ticket.show', $participant->checkin_token);
+            Mail::to($participant->email)->send(new TicketMail($participant, $ticketUrl));
+
+            Cache::forget("recovery_attempt_{$ip}");
+            session()->forget('recovery_email');
+
+            return redirect()->route('ticket.show', $participant->checkin_token);
         }
 
-        $participant->update([
-            'verification_code' => null,
-            'verification_code_sent_at' => null,
-        ]);
+        $formIds = \App\Models\FormTemplate::whereNotNull('yandex_form_id')
+            ->pluck('yandex_form_id')
+            ->unique()
+            ->toArray();
 
-        $ticketUrl = route('ticket.show', $participant->checkin_token);
-        Mail::to($participant->email)->send(new TicketMail($participant, $ticketUrl));
+        foreach ($formIds as $formId) {
+            $answers = $yandexApi->findAnswersByEmail($formId, $email);
+
+            foreach ($answers as $answer) {
+                $answerId = $answer['id'] ?? null;
+                if (!$answerId) {
+                    continue;
+                }
+
+                $anonParticipant = AnonParticipant::where('answer_id', $answerId)->first();
+                if ($anonParticipant) {
+                    $ticketUrl = route('ticket.show', $anonParticipant->checkin_token);
+                    Mail::to($email)->send(new TicketMail($anonParticipant, $ticketUrl));
+                }
+            }
+        }
 
         Cache::forget("recovery_attempt_{$ip}");
         session()->forget('recovery_email');
 
-        return redirect()->route('ticket.show', $participant->checkin_token);
+        return back()->with('message', 'Если билеты найдены, они отправлены на вашу почту.');
     }
 }

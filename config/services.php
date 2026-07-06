@@ -42,4 +42,9 @@ return [
         'yandex_secret' => env('YANDEX_WEBHOOK_SECRET'),
     ],
 
+    'hcaptcha' => [
+        'site_key' => env('HCAPTCHA_SITE_KEY'),
+        'secret_key' => env('HCAPTCHA_SECRET_KEY'),
+    ],
+
 ];

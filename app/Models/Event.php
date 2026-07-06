@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -40,6 +41,8 @@ class Event extends Model
     public function testimonials(): BelongsToMany { return $this->belongsToMany(Testimonial::class, 'event_testimonial')->withPivot(['sort_order','is_visible'])->withTimestamps()->orderByPivot('sort_order'); }
     public function scheduleEvents(): HasManyThrough { return $this->hasManyThrough(ScheduleEvent::class, EventDay::class); }
     public function participants(): HasMany { return $this->hasMany(Participant::class); }
+    public function anonParticipants(): HasMany { return $this->hasMany(AnonParticipant::class); }
+    public function formTemplate(): BelongsTo { return $this->belongsTo(FormTemplate::class); }
 
     public function getIsActiveAttribute(): bool
     {

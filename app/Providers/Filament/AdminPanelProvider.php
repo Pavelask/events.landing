@@ -3,6 +3,8 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Resources\Shield\Roles\RoleResource;
+use App\Filament\Resources\FormTemplates\FormTemplateResource;
+use App\Filament\Resources\AnonParticipants\AnonParticipantResource;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -46,6 +48,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->resources([
                 RoleResource::class,
+                FormTemplateResource::class,
+                AnonParticipantResource::class,
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),

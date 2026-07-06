@@ -56,6 +56,8 @@ Route::get('/archive', function () {
 
 Route::get('/events/{event:slug}/register', EventRegistration::class)->name('event.register');
 
+Route::get('/events/{event:slug}/register-anon', \App\Livewire\AnonRegistration::class)->name('event.register.anon');
+
 Route::prefix('ical')->name('ical.')->group(function (): void {
     Route::get('/event/{scheduleEvent}', [IcalController::class, 'singleEvent'])->name('single');
     Route::get('/day/{day}', [IcalController::class, 'fullDay'])->name('day');
