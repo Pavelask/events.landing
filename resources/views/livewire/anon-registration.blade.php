@@ -1,25 +1,4 @@
-<div class="min-h-screen" style="background-color: var(--color-background);"
-     x-data="{
-        errors: {},
-        validate() {
-            this.errors = {};
-            let valid = true;
-
-            if (!this.$wire.get('formData.name')?.trim()) {
-                this.errors['formData.name'] = 'Поле «Имя» обязательно для заполнения';
-                valid = false;
-            }
-            const email = this.$wire.get('formData.email')?.trim();
-            if (!email) {
-                this.errors['formData.email'] = 'Поле «Email» обязательно для заполнения';
-                valid = false;
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                this.errors['formData.email'] = 'Введите корректный email адрес';
-                valid = false;
-            }
-            return valid;
-        }
-     }">
+<div class="min-h-screen" style="background-color: var(--color-background);">
     <div class="max-w-2xl mx-auto px-6 py-12">
         <a href="{{ route('home') }}" class="inline-flex items-center gap-2 mb-6 transition-colors font-medium" style="color: var(--color-primary);">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -44,29 +23,51 @@
         @endif
 
         @if (!$submitted)
-            <form wire:submit.prevent="submit" class="rounded-2xl p-8" style="background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card);">
+            <form wire:submit.prevent="submit"
+                  x-data="{
+                      errs: {},
+                      check() {
+                          this.errs = {};
+                          let ok = true;
+                          const name = document.querySelector('[wire\\\\:model=\"formData.name\"]')?.value || '';
+                          if (!name.trim()) {
+                              this.errs['formData.name'] = 'Поле «Имя» обязательно для заполнения';
+                              ok = false;
+                          }
+                          const email = document.querySelector('[wire\\\\:model=\"formData.email\"]')?.value || '';
+                          if (!email.trim()) {
+                              this.errs['formData.email'] = 'Поле «Email» обязательно для заполнения';
+                              ok = false;
+                          } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                              this.errs['formData.email'] = 'Введите корректный email адрес';
+                              ok = false;
+                          }
+                          return ok;
+                      }
+                  }"
+                  class="rounded-2xl p-8" style="background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card);">
 
                 <div class="mb-7">
                     <label class="block text-sm font-semibold mb-2"
-                        :style="{ color: errors['formData.name'] ? '#ef4444' : '' }">Имя *</label>
+                        :style="{ color: errs['formData.name'] ? '#ef4444' : '' }">Имя *</label>
                     <input type="text" wire:model="formData.name"
                         class="w-full px-4 py-3 rounded-xl"
-                        :style="{ border: errors['formData.name'] ? '2px solid #ef4444' : '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)', outline: 'none' }"
+                        :style="{ border: errs['formData.name'] ? '2px solid #ef4444' : '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)', outline: 'none' }"
                         placeholder="Введите имя">
-                    <template x-if="errors['formData.name']">
-                        <p class="mt-1 text-sm" style="color: #ef4444;" x-text="errors['formData.name']"></p>
+                    <template x-if="errs['formData.name']">
+                        <p class="mt-1 text-sm" style="color: #ef4444;" x-text="errs['formData.name']"></p>
                     </template>
                 </div>
 
                 <div class="mb-7">
                     <label class="block text-sm font-semibold mb-2"
-                        :style="{ color: errors['formData.email'] ? '#ef4444' : '' }">Email *</label>
+                        :style="{ color: errs['formData.email'] ? '#ef4444' : '' }">Email *</label>
                     <input type="email" wire:model="formData.email"
                         class="w-full px-4 py-3 rounded-xl"
-                        :style="{ border: errors['formData.email'] ? '2px solid #ef4444' : '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)', outline: 'none' }"
+                        :style="{ border: errs['formData.email'] ? '2px solid #ef4444' : '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)', outline: 'none' }"
                         placeholder="email@example.com">
-                    <template x-if="errors['formData.email']">
-                        <p class="mt-1 text-sm" style="color: #ef4444;" x-text="errors['formData.email']"></p>
+                    <template x-if="errs['formData.email']">
+                        <p class="mt-1 text-sm" style="color: #ef4444;" x-text="errs['formData.email']"></p>
                     </template>
                 </div>
 
@@ -154,7 +155,7 @@
                     </div>
                 @endforeach
 
-                <button type="submit"
+                <button type="submit" x-on:click.prevent="if(check()) $wire.submit()"
                     class="w-full py-4 px-6 rounded-xl font-semibold text-white transition-colors mt-6"
                     style="background-color: var(--color-primary); border-radius: var(--radius-btn);"
                     wire:loading.attr="disabled">
