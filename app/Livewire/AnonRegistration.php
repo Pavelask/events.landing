@@ -80,7 +80,7 @@ class AnonRegistration extends Component
         return empty($this->fieldErrors);
     }
 
-    public function submit(YandexFormsApi $yandexApi): void
+    public function submit(): void
     {
         $this->errorMessage = null;
         $this->successMessage = null;
@@ -112,42 +112,8 @@ class AnonRegistration extends Component
             }
         }
 
-        $formId = $this->event->formTemplate->yandex_form_id ?? null;
-        if (!$formId) {
-            $this->errorMessage = 'Форма регистрации не настроена.';
-            return;
-        }
-
-        $payload = [
-            'event_id' => (string) $this->event->id,
-            'name' => $this->formData['name'],
-            'email' => $this->formData['email'],
-            'phone' => $this->formData['phone'] ?? '',
-        ];
-
-        foreach ($this->questions as $index => $question) {
-            $slot = 'custom_' . ($index + 1);
-            $payload[$slot] = $this->formData[$question['slug']] ?? '';
-        }
-
-        // ТЕСТОВЫЙ РЕЖИМ: пропускаем проверку дубликатов и API
-        $response = $yandexApi->createAnswer($formId, $payload);
-
-        if (!$response) {
-            // Тестовый режим: создаём участника без API
-            $answerId = 'TEST_' . time() . '_' . Str::random(10);
-            Log::info('AnonRegistration: TEST MODE - creating without API', [
-                'form_id' => $formId,
-                'email' => $this->formData['email'],
-            ]);
-        } else {
-            $answerId = $response['id'] ?? $response['answer_id'] ?? null;
-        }
-
-        if (!$answerId) {
-            $this->errorMessage = 'Ошибка при регистрации. Попробуйте позже.';
-            return;
-        }
+        // Генерируем уникальный answer_id локально
+        $answerId = 'LOCAL_' . time() . '_' . Str::random(10);
 
         AnonParticipant::create([
             'event_id' => $this->event->id,
