@@ -9,11 +9,22 @@ use Illuminate\Support\Facades\Log;
 class YandexFormsApi
 {
     private ?string $token;
+    private ?string $orgId;
     private string $baseUrl = 'https://api.forms.yandex.net/v1';
 
     public function __construct()
     {
         $this->token = config('services.yandex.token');
+        $this->orgId = config('services.yandex.org_id');
+    }
+
+    private function headers(): array
+    {
+        $headers = ['Authorization' => 'OAuth ' . $this->token];
+        if ($this->orgId) {
+            $headers['X-Cloud-Org-Id'] = $this->orgId;
+        }
+        return $headers;
     }
 
     public function createAnswer(string $formId, array $data): ?array
@@ -24,7 +35,7 @@ class YandexFormsApi
         }
 
         try {
-            $response = Http::withHeaders(['Authorization' => 'OAuth ' . $this->token])
+            $response = Http::withHeaders($this->headers())
                 ->timeout(30)
                 ->post("{$this->baseUrl}/forms/{$formId}/answers", $data);
 
@@ -57,7 +68,7 @@ class YandexFormsApi
 
         return Cache::remember($cacheKey, 600, function () use ($formId, $answerId) {
             try {
-                $response = Http::withHeaders(['Authorization' => 'OAuth ' . $this->token])
+                $response = Http::withHeaders($this->headers())
                     ->timeout(30)
                     ->get("{$this->baseUrl}/surveys/{$formId}/answers/{$answerId}");
 
@@ -94,7 +105,7 @@ class YandexFormsApi
 
             Log::info('Yandex Forms API: requesting', ['url' => $url, 'params' => $params]);
 
-            $response = Http::withHeaders(['Authorization' => 'OAuth ' . $this->token])
+            $response = Http::withHeaders($this->headers())
                 ->timeout(30)
                 ->get($url, $params);
 

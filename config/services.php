@@ -36,6 +36,7 @@ return [
     ],
     'yandex' => [
         'token' => env('YANDEX_OAUTH_TOKEN'),
+        'org_id' => env('YANDEX_ORG_ID'),
     ],
 
     'webhook' => [

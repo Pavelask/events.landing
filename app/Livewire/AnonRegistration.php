@@ -80,7 +80,7 @@ class AnonRegistration extends Component
         return empty($this->fieldErrors);
     }
 
-    public function submit(): void
+    public function submit(YandexFormsApi $yandexApi): void
     {
         $this->errorMessage = null;
         $this->successMessage = null;
@@ -112,8 +112,33 @@ class AnonRegistration extends Component
             }
         }
 
-        // Генерируем уникальный answer_id локально
-        $answerId = 'LOCAL_' . time() . '_' . Str::random(10);
+        $formId = $this->event->formTemplate->yandex_form_id ?? null;
+        if (!$formId) {
+            $this->errorMessage = 'Форма регистрации не настроена.';
+            return;
+        }
+
+        $payload = [
+            'event_id' => (string) $this->event->id,
+            'name' => $this->formData['name'],
+            'email' => $this->formData['email'],
+            'phone' => $this->formData['phone'] ?? '',
+        ];
+
+        foreach ($this->questions as $index => $question) {
+            $slot = 'custom_' . ($index + 1);
+            $payload[$slot] = $this->formData[$question['slug']] ?? '';
+        }
+
+        $response = $yandexApi->createAnswer($formId, $payload);
+
+        if ($response) {
+            $answerId = $response['id'] ?? $response['answer_id'] ?? null;
+        } else {
+            // API не работает — сохраняем локально с уникальным ID
+            $answerId = 'LOCAL_' . time() . '_' . Str::random(10);
+            Log::warning('AnonRegistration: API failed, saving locally', ['form_id' => $formId]);
+        }
 
         AnonParticipant::create([
             'event_id' => $this->event->id,
