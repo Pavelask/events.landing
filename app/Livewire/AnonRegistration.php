@@ -85,11 +85,6 @@ class AnonRegistration extends Component
         $this->successMessage = null;
         $this->fieldErrors = [];
 
-        if (!$this->verifyHcaptcha()) {
-            $this->errorMessage = 'Проверка captcha не пройдена. Попробуйте ещё раз.';
-            return;
-        }
-
         $elapsed = time() - $this->formLoadedAt;
         if ($elapsed < 3) {
             $this->errorMessage = 'Подозрительная активность. Попробуйте ещё раз.';
