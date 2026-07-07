@@ -24,7 +24,7 @@ class YandexFormsApi
         }
 
         try {
-            $response = Http::withToken($this->token)
+            $response = Http::withHeaders(['Authorization' => 'OAuth ' . $this->token])
                 ->timeout(30)
                 ->post("{$this->baseUrl}/forms/{$formId}/answers", $data);
 
@@ -57,7 +57,7 @@ class YandexFormsApi
 
         return Cache::remember($cacheKey, 600, function () use ($formId, $answerId) {
             try {
-                $response = Http::withToken($this->token)
+                $response = Http::withHeaders(['Authorization' => 'OAuth ' . $this->token])
                     ->timeout(30)
                     ->get("{$this->baseUrl}/surveys/{$formId}/answers/{$answerId}");
 
@@ -94,7 +94,7 @@ class YandexFormsApi
 
             Log::info('Yandex Forms API: requesting', ['url' => $url, 'params' => $params]);
 
-            $response = Http::withToken($this->token)
+            $response = Http::withHeaders(['Authorization' => 'OAuth ' . $this->token])
                 ->timeout(30)
                 ->get($url, $params);
 
