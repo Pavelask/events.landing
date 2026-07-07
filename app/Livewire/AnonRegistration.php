@@ -117,6 +117,18 @@ class AnonRegistration extends Component
             return;
         }
 
+        $payload = [
+            'event_id' => (string) $this->event->id,
+            'name' => $this->formData['name'],
+            'email' => $this->formData['email'],
+            'phone' => $this->formData['phone'] ?? '',
+        ];
+
+        foreach ($this->questions as $index => $question) {
+            $slot = 'custom_' . ($index + 1);
+            $payload[$slot] = $this->formData[$question['slug']] ?? '';
+        }
+
         // ТЕСТОВЫЙ РЕЖИМ: пропускаем проверку дубликатов и API
         $response = $yandexApi->createAnswer($formId, $payload);
 
@@ -132,50 +144,6 @@ class AnonRegistration extends Component
         }
 
         if (!$answerId) {
-            $this->errorMessage = 'Ошибка при регистрации. Попробуйте позже.';
-            return;
-        }
-
-        $existingAnswers = $yandexApi->findAnswersByEmail($formId, $this->formData['email']);
-        foreach ($existingAnswers as $answer) {
-            $answerEventId = $answer['answerer']['fields']['event_id'] ?? null;
-            if ($answerEventId == $this->event->id) {
-                $this->errorMessage = 'Вы уже зарегистрированы на это мероприятие.';
-                return;
-            }
-        }
-
-        $payload = [
-            'event_id' => (string) $this->event->id,
-            'name' => $this->formData['name'],
-            'email' => $this->formData['email'],
-            'phone' => $this->formData['phone'] ?? '',
-        ];
-
-        foreach ($this->questions as $index => $question) {
-            $slot = 'custom_' . ($index + 1);
-            $payload[$slot] = $this->formData[$question['slug']] ?? '';
-        }
-
-        $response = $yandexApi->createAnswer($formId, $payload);
-
-        if (!$response) {
-            \Illuminate\Support\Facades\Log::error('AnonRegistration: createAnswer returned null', [
-                'form_id' => $formId,
-                'token_set' => !empty(config('services.yandex.token')),
-                'payload_keys' => array_keys($payload),
-            ]);
-            $this->errorMessage = 'Ошибка при регистрации. Попробуйте позже.';
-            return;
-        }
-
-        $answerId = $response['id'] ?? $response['answer_id'] ?? null;
-
-        if (!$answerId) {
-            \Illuminate\Support\Facades\Log::error('AnonRegistration: answer_id not found in response', [
-                'response_keys' => array_keys($response),
-                'response' => $response,
-            ]);
             $this->errorMessage = 'Ошибка при регистрации. Попробуйте позже.';
             return;
         }
