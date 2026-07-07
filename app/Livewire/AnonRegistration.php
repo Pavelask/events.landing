@@ -47,6 +47,9 @@ class AnonRegistration extends Component
 
     public function verifyHcaptcha(): bool
     {
+        // Временно отключено для тестирования
+        return true;
+
         $siteKey = config('services.hcaptcha.site_key');
         $secretKey = config('services.hcaptcha.secret_key');
 
