@@ -35,9 +35,12 @@ class YandexFormsApi
         }
 
         try {
-            $response = Http::withHeaders($this->headers())
-                ->timeout(30)
-                ->post("{$this->baseUrl}/forms/{$formId}/answers", $data);
+            $response = Http::withHeaders(array_merge($this->headers(), [
+                'Content-Type' => 'application/json',
+            ]))
+            ->withBody(json_encode($data), 'application/json')
+            ->timeout(30)
+            ->post("{$this->baseUrl}/surveys/{$formId}/form");
 
             if ($response->successful()) {
                 return $response->json();
