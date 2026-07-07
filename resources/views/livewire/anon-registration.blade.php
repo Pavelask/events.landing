@@ -98,7 +98,7 @@
                 <input type="hidden" wire:model="formLoadedAt">
 
                 <div style="position:absolute;left:-9999px" aria-hidden="true">
-                    <input type="text" name="website" wire:model="honeypot" tabindex="-1" autocomplete="off">
+                    <input type="text" wire:model="honeypot" tabindex="-1" autocomplete="off">
                 </div>
 
                 @php
@@ -219,7 +219,7 @@
                                 @foreach ($question['options'] ?? [] as $option)
                                     <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer border transition-all hover:bg-gray-50 hover:scale-[1.01]"
                                         style="border-color: var(--color-border);">
-                                        <input type="radio" name="question_{{ $question['slug'] }}"
+                                        <input type="radio"
                                             value="{{ $option }}" wire:model="formData.{{ $question['slug'] }}"
                                             class="w-4 h-4"
                                             style="accent-color: var(--color-primary);"
@@ -237,7 +237,7 @@
                                 @foreach ($question['options'] ?? [] as $option)
                                     <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer border transition-all hover:bg-gray-50 hover:scale-[1.01]"
                                         style="border-color: var(--color-border);">
-                                        <input type="checkbox" name="question_{{ $question['slug'] }}[]"
+                                        <input type="checkbox"
                                             value="{{ $option }}" wire:model="formData.{{ $question['slug'] }}"
                                             class="w-4 h-4"
                                             style="accent-color: var(--color-primary);">
