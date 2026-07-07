@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\AnonParticipant;
 use App\Models\Event;
 use App\Services\YandexFormsApi;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Component;
@@ -17,10 +16,6 @@ class AnonRegistration extends Component
     public array $formData = [];
 
     public array $questions = [];
-
-    public ?string $honeypot = null;
-
-    public int $formLoadedAt = 0;
 
     public bool $submitted = false;
 
@@ -37,10 +32,7 @@ class AnonRegistration extends Component
         }
 
         $this->event = $event->load('formTemplate');
-
         $this->questions = $this->event->formTemplate->questions ?? [];
-
-        $this->formLoadedAt = time();
     }
 
     private function validateFields(): bool
@@ -86,12 +78,6 @@ class AnonRegistration extends Component
         $this->successMessage = null;
         $this->fieldErrors = [];
 
-        $elapsed = time() - $this->formLoadedAt;
-        if ($elapsed < 3) {
-            $this->errorMessage = 'Подозрительная активность. Попробуйте ещё раз.';
-            return;
-        }
-
         if (!$this->validateFields()) {
             return;
         }
@@ -133,9 +119,8 @@ class AnonRegistration extends Component
         $response = $yandexApi->createAnswer($formId, $payload);
 
         if ($response) {
-            $answerId = $response['id'] ?? $response['answer_id'] ?? null;
+            $answerId = $response['answer_id'] ?? $response['id'] ?? null;
         } else {
-            // API не работает — сохраняем локально с уникальным ID
             $answerId = 'LOCAL_' . time() . '_' . Str::random(10);
             Log::warning('AnonRegistration: API failed, saving locally', ['form_id' => $formId]);
         }
@@ -148,7 +133,7 @@ class AnonRegistration extends Component
         ]);
 
         $this->submitted = true;
-        $this->successMessage = 'Вы успешно зарегистрировались! Билет будет отправлен на вашу почту.';
+        $this->successMessage = 'Вы успешно зарегистрировались!';
     }
 
     public function render()

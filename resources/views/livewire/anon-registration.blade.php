@@ -8,8 +8,8 @@
         <h1 class="text-2xl font-bold mb-8" style="color: var(--color-text);">Регистрация на {{ $event->title }}</h1>
 
         @if ($successMessage)
-            <div class="mb-6 p-6 rounded-xl text-center" style="background-color: #d1fae5; border: 1px solid var(--color-success); color: #065f46;">
-                <svg class="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--color-success);">
+            <div class="mb-6 p-6 rounded-xl text-center" style="background-color: #d1fae5; border: 1px solid #16a34a; color: #065f46;">
+                <svg class="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #16a34a;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <p class="text-lg font-semibold">{{ $successMessage }}</p>
@@ -24,11 +24,6 @@
 
         @if (!$submitted)
             <form wire:submit="submit" class="rounded-2xl p-8" style="background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card);">
-                <input type="hidden" wire:model="formLoadedAt">
-
-                <div style="position:absolute;left:-9999px" aria-hidden="true">
-                    <input type="text" wire:model="honeypot" tabindex="-1" autocomplete="off">
-                </div>
 
                 @php
                     $nameErr = !empty($fieldErrors['formData.name']);
@@ -36,8 +31,8 @@
                 @endphp
 
                 <div class="mb-7">
-                    <label for="name" class="block text-sm font-semibold mb-2" style="color: {{ $nameErr ? '#ef4444' : 'var(--color-text)' }};">Имя *</label>
-                    <input type="text" id="name" wire:model="formData.name"
+                    <label class="block text-sm font-semibold mb-2" style="color: {{ $nameErr ? '#ef4444' : 'var(--color-text)' }};">Имя *</label>
+                    <input type="text" wire:model="formData.name"
                         class="w-full px-4 py-3 rounded-xl"
                         style="border: {{ $nameErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
                         placeholder="Введите имя"
@@ -48,8 +43,8 @@
                 </div>
 
                 <div class="mb-7">
-                    <label for="email" class="block text-sm font-semibold mb-2" style="color: {{ $emailErr ? '#ef4444' : 'var(--color-text)' }};">Email *</label>
-                    <input type="email" id="email" wire:model="formData.email"
+                    <label class="block text-sm font-semibold mb-2" style="color: {{ $emailErr ? '#ef4444' : 'var(--color-text)' }};">Email *</label>
+                    <input type="email" wire:model="formData.email"
                         class="w-full px-4 py-3 rounded-xl"
                         style="border: {{ $emailErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
                         placeholder="email@example.com"
@@ -60,8 +55,8 @@
                 </div>
 
                 <div class="mb-7">
-                    <label for="phone" class="block text-sm font-semibold mb-2" style="color: var(--color-text);">Телефон</label>
-                    <input type="text" id="phone" wire:model="formData.phone"
+                    <label class="block text-sm font-semibold mb-2" style="color: var(--color-text);">Телефон</label>
+                    <input type="text" wire:model="formData.phone"
                         class="w-full px-4 py-3 rounded-xl border"
                         style="border-color: var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;"
                         placeholder="+7 (999) 123-45-67">
@@ -97,48 +92,15 @@
                             @endif
 
                         @elseif ($question['type'] === 'select')
-                            @if ($question['searchable'] ?? false)
-                                <div x-data="{ search: '', open: false, selected: '' }" class="relative">
-                                    <input type="hidden" wire:model="formData.{{ $question['slug'] }}">
-                                    <div @click="open = !open" @click.outside="open = false"
-                                        class="w-full px-4 py-3 rounded-xl cursor-pointer flex justify-between items-center"
-                                        style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text);">
-                                        <span x-text="selected || 'Выберите...'"></span>
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                    </div>
-                                    @if($fieldErr)
-                                        <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
-                                    @endif
-                                    <div x-show="open" x-transition
-                                        class="absolute z-10 w-full mt-1 rounded-xl shadow-lg border overflow-hidden"
-                                        style="background-color: var(--color-surface); border-color: var(--color-border);">
-                                        <div class="p-2">
-                                            <input type="text" x-model="search" placeholder="Поиск..."
-                                                class="w-full px-3 py-2 rounded-lg border text-sm"
-                                                style="border-color: var(--color-border); background-color: var(--color-surface); color: var(--color-text);">
-                                        </div>
-                                        <div class="max-h-[252px] overflow-y-auto">
-                                            @foreach ($question['options'] ?? [] as $option)
-                                                <div class="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm"
-                                                    x-show="'{{ $option }}'.toLowerCase().includes(search.toLowerCase())"
-                                                    @click="selected = '{{ $option }}'; $wire.set('formData.{{ $question['slug'] }}', '{{ $option }}'); open = false; search = '';">
-                                                    {{ $option }}
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                            @else
-                                <select wire:model="formData.{{ $question['slug'] }}"
-                                    class="w-full px-4 py-3 rounded-xl"
-                                    style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
-                                    @if ($question['required']) required @endif>
-                                    <option value="">Выберите...</option>
-                                    @foreach ($question['options'] ?? [] as $option)
-                                        <option value="{{ $option }}">{{ $option }}</option>
-                                    @endforeach
-                                </select>
-                            @endif
+                            <select wire:model="formData.{{ $question['slug'] }}"
+                                class="w-full px-4 py-3 rounded-xl"
+                                style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
+                                @if ($question['required']) required @endif>
+                                <option value="">Выберите...</option>
+                                @foreach ($question['options'] ?? [] as $option)
+                                    <option value="{{ $option }}">{{ $option }}</option>
+                                @endforeach
+                            </select>
                             @if($fieldErr)
                                 <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
                             @endif
