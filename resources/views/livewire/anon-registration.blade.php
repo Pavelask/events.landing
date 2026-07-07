@@ -23,52 +23,24 @@
         @endif
 
         @if (!$submitted)
-            <form wire:submit.prevent="submit"
-                  x-data="{
-                      errs: {},
-                      check() {
-                          this.errs = {};
-                          let ok = true;
-                          const name = document.querySelector('[wire\\\\:model=\"formData.name\"]')?.value || '';
-                          if (!name.trim()) {
-                              this.errs['formData.name'] = 'Поле «Имя» обязательно для заполнения';
-                              ok = false;
-                          }
-                          const email = document.querySelector('[wire\\\\:model=\"formData.email\"]')?.value || '';
-                          if (!email.trim()) {
-                              this.errs['formData.email'] = 'Поле «Email» обязательно для заполнения';
-                              ok = false;
-                          } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                              this.errs['formData.email'] = 'Введите корректный email адрес';
-                              ok = false;
-                          }
-                          return ok;
-                      }
-                  }"
-                  class="rounded-2xl p-8" style="background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card);">
+            <form wire:submit.prevent="submit" id="regForm" class="rounded-2xl p-8" style="background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card);">
 
                 <div class="mb-7">
-                    <label class="block text-sm font-semibold mb-2"
-                        :style="{ color: errs['formData.name'] ? '#ef4444' : '' }">Имя *</label>
-                    <input type="text" wire:model="formData.name"
+                    <label id="lbl-name" class="block text-sm font-semibold mb-2" style="color: var(--color-text);">Имя *</label>
+                    <input type="text" wire:model="formData.name" id="field-name"
                         class="w-full px-4 py-3 rounded-xl"
-                        :style="{ border: errs['formData.name'] ? '2px solid #ef4444' : '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)', outline: 'none' }"
+                        style="border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;"
                         placeholder="Введите имя">
-                    <template x-if="errs['formData.name']">
-                        <p class="mt-1 text-sm" style="color: #ef4444;" x-text="errs['formData.name']"></p>
-                    </template>
+                    <p id="err-name" class="mt-1 text-sm" style="color: #ef4444; display:none;"></p>
                 </div>
 
                 <div class="mb-7">
-                    <label class="block text-sm font-semibold mb-2"
-                        :style="{ color: errs['formData.email'] ? '#ef4444' : '' }">Email *</label>
-                    <input type="email" wire:model="formData.email"
+                    <label id="lbl-email" class="block text-sm font-semibold mb-2" style="color: var(--color-text);">Email *</label>
+                    <input type="email" wire:model="formData.email" id="field-email"
                         class="w-full px-4 py-3 rounded-xl"
-                        :style="{ border: errs['formData.email'] ? '2px solid #ef4444' : '1px solid var(--color-border)', backgroundColor: 'var(--color-surface)', color: 'var(--color-text)', outline: 'none' }"
+                        style="border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;"
                         placeholder="email@example.com">
-                    <template x-if="errs['formData.email']">
-                        <p class="mt-1 text-sm" style="color: #ef4444;" x-text="errs['formData.email']"></p>
-                    </template>
+                    <p id="err-email" class="mt-1 text-sm" style="color: #ef4444; display:none;"></p>
                 </div>
 
                 <div class="mb-7">
@@ -155,14 +127,58 @@
                     </div>
                 @endforeach
 
-                <button type="submit" x-on:click.prevent="if(check()) $wire.submit()"
+                <button type="button" id="submitBtn"
                     class="w-full py-4 px-6 rounded-xl font-semibold text-white transition-colors mt-6"
-                    style="background-color: var(--color-primary); border-radius: var(--radius-btn);"
-                    wire:loading.attr="disabled">
-                    <span wire:loading.remove>Зарегистрироваться</span>
-                    <span wire:loading>Отправка...</span>
+                    style="background-color: var(--color-primary); border-radius: var(--radius-btn); cursor: pointer;">
+                    Зарегистрироваться
                 </button>
             </form>
+
+            <script>
+            document.getElementById('submitBtn').addEventListener('click', function() {
+                var valid = true;
+
+                var name = document.getElementById('field-name');
+                var lblName = document.getElementById('lbl-name');
+                var errName = document.getElementById('err-name');
+                name.style.borderColor = 'var(--color-border)';
+                lblName.style.color = 'var(--color-text)';
+                errName.style.display = 'none';
+
+                if (!name.value.trim()) {
+                    name.style.borderColor = '#ef4444';
+                    lblName.style.color = '#ef4444';
+                    errName.textContent = 'Поле «Имя» обязательно для заполнения';
+                    errName.style.display = 'block';
+                    valid = false;
+                }
+
+                var email = document.getElementById('field-email');
+                var lblEmail = document.getElementById('lbl-email');
+                var errEmail = document.getElementById('err-email');
+                email.style.borderColor = 'var(--color-border)';
+                lblEmail.style.color = 'var(--color-text)';
+                errEmail.style.display = 'none';
+
+                if (!email.value.trim()) {
+                    email.style.borderColor = '#ef4444';
+                    lblEmail.style.color = '#ef4444';
+                    errEmail.textContent = 'Поле «Email» обязательно для заполнения';
+                    errEmail.style.display = 'block';
+                    valid = false;
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+                    email.style.borderColor = '#ef4444';
+                    lblEmail.style.color = '#ef4444';
+                    errEmail.textContent = 'Введите корректный email адрес';
+                    errEmail.style.display = 'block';
+                    valid = false;
+                }
+
+                if (valid) {
+                    Livewire.dispatch('submit');
+                }
+            });
+            </script>
         @endif
     </div>
 </div>
