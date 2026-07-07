@@ -6,7 +6,6 @@
     <title>{{ $title ?? 'Регистрация' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
-    <script src="https://js.hcaptcha.com/1/api.js?render=explicit" async defer></script>
 </head>
 <body style="background-color: var(--color-surface); color: var(--color-text);">
     {{ $slot }}

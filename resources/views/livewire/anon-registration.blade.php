@@ -1,20 +1,4 @@
-<div class="min-h-screen" style="background-color: var(--color-background);" x-data="{
-    hcaptchaReady: false,
-    initHcaptcha() {
-        if (typeof hcaptcha !== 'undefined' && document.getElementById('hcaptcha-widget')) {
-            hcaptcha.render('hcaptcha-widget', {
-                sitekey: '{{ config("services.hcaptcha.site_key") }}',
-                callback: function(token) {
-                    $wire.set('hcaptchaToken', token);
-                },
-                'expired-callback': function() {
-                    $wire.set('hcaptchaToken', null);
-                }
-            });
-            this.hcaptchaReady = true;
-        }
-    }
-}" x-init="$nextTick(() => initHcaptcha())">
+<div class="min-h-screen" style="background-color: var(--color-background);">
     <div class="max-w-2xl mx-auto px-6 py-12">
         <a href="{{ route('home') }}" class="inline-flex items-center gap-2 mb-6 transition-colors font-medium" style="color: var(--color-primary);">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -215,12 +199,6 @@
                         @endif
                     </div>
                 @endforeach
-
-                @if(config('services.hcaptcha.site_key'))
-                    <div class="mb-6" wire:ignore>
-                        <div id="hcaptcha-widget"></div>
-                    </div>
-                @endif
 
                 <button type="submit"
                     class="w-full py-4 px-6 rounded-xl font-semibold text-white transition-colors mt-6"

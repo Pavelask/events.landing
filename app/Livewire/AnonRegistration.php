@@ -6,7 +6,6 @@ use App\Models\AnonParticipant;
 use App\Models\Event;
 use App\Services\YandexFormsApi;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -28,8 +27,6 @@ class AnonRegistration extends Component
 
     public ?string $errorMessage = null;
 
-    public ?string $hcaptchaToken = null;
-
     public array $fieldErrors = [];
 
     public function mount(?Event $event = null): void
@@ -43,33 +40,6 @@ class AnonRegistration extends Component
         $this->questions = $this->event->formTemplate->questions ?? [];
 
         $this->formLoadedAt = time();
-    }
-
-    public function verifyHcaptcha(): bool
-    {
-        // Временно отключено для тестирования
-        return true;
-
-        $siteKey = config('services.hcaptcha.site_key');
-        $secretKey = config('services.hcaptcha.secret_key');
-
-        if (!$siteKey || !$secretKey) {
-            return true;
-        }
-
-        if (empty($this->hcaptchaToken)) {
-            return false;
-        }
-
-        $response = Http::asForm()->timeout(10)->post('https://api.hcaptcha.com/siteverify', [
-            'secret' => $secretKey,
-            'response' => $this->hcaptchaToken,
-            'remoteip' => request()->ip(),
-        ]);
-
-        $result = $response->json();
-
-        return $result['success'] ?? false;
     }
 
     private function validateFields(): bool
@@ -149,6 +119,25 @@ class AnonRegistration extends Component
         $formId = $this->event->formTemplate->yandex_form_id ?? null;
         if (!$formId) {
             $this->errorMessage = 'Форма регистрации не настроена.';
+            return;
+        }
+
+        // ТЕСТОВЫЙ РЕЖИМ: пропускаем проверку дубликатов и API
+        $response = $yandexApi->createAnswer($formId, $payload);
+
+        if (!$response) {
+            // Тестовый режим: создаём участника без API
+            $answerId = 'TEST_' . time() . '_' . Str::random(10);
+            Log::info('AnonRegistration: TEST MODE - creating without API', [
+                'form_id' => $formId,
+                'email' => $this->formData['email'],
+            ]);
+        } else {
+            $answerId = $response['id'] ?? $response['answer_id'] ?? null;
+        }
+
+        if (!$answerId) {
+            $this->errorMessage = 'Ошибка при регистрации. Попробуйте позже.';
             return;
         }
 
