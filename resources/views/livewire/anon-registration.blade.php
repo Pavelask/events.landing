@@ -169,7 +169,7 @@
 
                         @elseif ($question['type'] === 'select')
                             @if ($question['searchable'] ?? false)
-                                <div x-data="{ search: '', open: false, selected: '' }" class="relative">
+                                <div x-data="{ search: '', open: false, selected: '' }" class="relative" style="z-index: 50;">
                                     <input type="hidden" wire:model="formData.{{ $question['slug'] }}">
                                     <div @click="open = !open" @click.outside="open = false"
                                         class="w-full px-4 py-3 rounded-xl cursor-pointer flex justify-between items-center input-focus transition-all"
@@ -181,14 +181,14 @@
                                         <p class="mt-1 text-sm animate-slide-down" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
                                     @endif
                                     <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform -translate-y-1" x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                                        class="absolute z-10 w-full mt-1 rounded-xl shadow-lg border overflow-hidden"
+                                        class="absolute z-[100] w-full mt-1 rounded-xl shadow-lg border overflow-hidden"
                                         style="background-color: var(--color-surface); border-color: var(--color-border);">
                                         <div class="p-2">
                                             <input type="text" x-model="search" placeholder="Поиск..."
                                                 class="w-full px-3 py-2 rounded-lg border text-sm input-focus"
                                                 style="border-color: var(--color-border); background-color: var(--color-surface); color: var(--color-text);">
                                         </div>
-                                        <div class="max-h-[252px] overflow-y-auto">
+                                        <div class="max-h-[200px] overflow-y-auto">
                                             @foreach ($question['options'] ?? [] as $option)
                                                 <div class="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm transition-colors"
                                                     x-show="'{{ $option }}'.toLowerCase().includes(search.toLowerCase())"
