@@ -6,6 +6,7 @@ use App\Models\AnonParticipant;
 use App\Models\Event;
 use App\Services\YandexFormsApi;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
