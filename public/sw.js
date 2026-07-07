@@ -1,13 +1,20 @@
-const CACHE_NAME = 'fifth-event-v6';
+const CACHE_NAME = 'fifth-event-v7';
 
 const OFFLINE_PAGE = '/offline';
+
+const PRECACHE_URLS = [
+    '/',
+    '/offline',
+];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.put(OFFLINE_PAGE, new Response('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Нет подключения</title></head><body>Offline</body></html>', {
-                headers: { 'Content-Type': 'text/html; charset=utf-8' }
-            }));
+            return cache.addAll(PRECACHE_URLS).then(() => {
+                return cache.put(OFFLINE_PAGE, new Response('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Нет подключения</title></head><body>Offline</body></html>', {
+                    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+                }));
+            });
         }).then(() => {
             return self.skipWaiting();
         })
@@ -36,8 +43,7 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(event.request.url);
 
-    const ignoredPaths = ['/favicon.ico', '/sw.js', '/health'];
-    if (ignoredPaths.some(path => url.pathname === path)) {
+    if (url.pathname === '/sw.js' || url.pathname === '/health') {
         return;
     }
 
@@ -130,7 +136,15 @@ self.addEventListener('fetch', (event) => {
                 if (cachedResponse) {
                     return cachedResponse;
                 }
-                return fetch(event.request).catch(() => {
+                return fetch(event.request).then((response) => {
+                    if (response.ok) {
+                        const responseClone = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, responseClone);
+                        });
+                    }
+                    return response;
+                }).catch(() => {
                     return null;
                 });
             })
