@@ -160,7 +160,7 @@ class EditAnonParticipant extends EditRecord
         $answerMap = [];
         foreach ($answerData as $item) {
             $label = $item['label'] ?? $item['id'] ?? '';
-            $answerMap[mb_mb_strtolower($label)] = $item['value'] ?? '';
+            $answerMap[mb_strtolower($label)] = $item['value'] ?? '';
         }
 
         $personalData = [

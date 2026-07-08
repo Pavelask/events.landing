@@ -144,7 +144,7 @@ class YandexFormsApi
             foreach ($answerData as $item) {
                 $label = mb_strtolower($item['label'] ?? '');
                 if (in_array($label, ['email', 'электронная почта', 'е-мейл'])) {
-                    return mb_strtolower($item['value'] ?? '') === mb_mb_strtolower($email);
+                    return mb_strtolower($item['value'] ?? '') === mb_strtolower($email);
                 }
             }
             return false;
