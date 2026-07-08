@@ -119,6 +119,7 @@ class AnonParticipantsTable
                     ->preload(),
                 SelectFilter::make('status')
                     ->label('Статус')
+                    ->placeholder('Все')
                     ->options([
                         'registered' => 'Зарегистрирован',
                         'arrived' => 'Прибыл',
@@ -133,6 +134,7 @@ class AnonParticipantsTable
                     })
                     ->form([
                         Select::make('value')
+                            ->placeholder('Все')
                             ->options([
                                 '1' => 'Отправлен',
                                 '0' => 'Не отправлен',
