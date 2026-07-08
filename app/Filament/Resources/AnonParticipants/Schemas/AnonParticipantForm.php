@@ -60,11 +60,6 @@ class AnonParticipantForm
                                 ->label('Телефон')
                                 ->placeholder('Загружается из Яндекс Формы'),
                         ]),
-                        KeyValue::make('custom_fields')
-                            ->label('Дополнительные поля')
-                            ->placeholder('Нет данных')
-                            ->dehydrated(false)
-                            ->visible(false),
                     ]),
 
                 Section::make('Чек-ин и билеты')
