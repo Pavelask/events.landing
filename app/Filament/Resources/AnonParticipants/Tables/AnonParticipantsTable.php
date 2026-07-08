@@ -72,11 +72,17 @@ class AnonParticipantsTable
                             ->boolean()
                             ->sortable(),
                         ToggleColumn::make('souvenir_given')
-                            ->label('Сувенир'),
+                            ->label('Сувенир')
+                            ->onColor('success')
+                            ->offColor('danger'),
                         ToggleColumn::make('documentation_given')
-                            ->label('Документы'),
+                            ->label('Документы')
+                            ->onColor('success')
+                            ->offColor('danger'),
                         ToggleColumn::make('clothing_given')
-                            ->label('Одежда'),
+                            ->label('Одежда')
+                            ->onColor('success')
+                            ->offColor('danger'),
                     ])->space(1)->visibleFrom('md'),
                 ])->from('lg'),
             ])
