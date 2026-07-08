@@ -249,7 +249,6 @@ class AnonParticipantsTable
                                 } else {
                                     $errors[] = "ID #{$record->id}: ошибка API (answer_id: {$record->answer_id})";
                                 }
-                                }
                             }
                         }
                         $msg = "Отправлено билетов: {$count}";
