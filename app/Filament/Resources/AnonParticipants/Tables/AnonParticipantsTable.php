@@ -332,6 +332,22 @@ class AnonParticipantsTable
                         }
                     })
                     ->visible(fn (AnonParticipant $record) => !$record->checked_in_at),
+                \Filament\Actions\Action::make('resetCheckin')
+                    ->label('')
+                    ->icon('heroicon-o-arrow-path')
+                    ->iconSize('md')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Сбросить чек-ин?')
+                    ->modalDescription('Участник сможет пройти чек-ин заново')
+                    ->action(function (AnonParticipant $record) {
+                        $record->update([
+                            'checked_in_at' => null,
+                            'status' => 'registered',
+                        ]);
+                        Notification::make()->title('Чек-ин сброшен')->success()->send();
+                    })
+                    ->visible(fn (AnonParticipant $record) => (bool) $record->checked_in_at),
                 \Filament\Actions\Action::make('cancel')
                     ->label('')
                     ->icon('heroicon-o-x-mark')
