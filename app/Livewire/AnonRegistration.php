@@ -163,12 +163,18 @@ class AnonRegistration extends Component
             ]);
         }
 
-        AnonParticipant::create([
+        $participant = AnonParticipant::create([
             'event_id' => $this->event->id,
             'answer_id' => $answerId,
             'checkin_token' => Str::random(40),
             'status' => 'registered',
         ]);
+
+        $email = $this->formData['email'] ?? '';
+        if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            \Illuminate\Support\Facades\Mail::to($email)
+                ->send(new \App\Mail\RegistrationConfirmationMail($participant, $this->event->title));
+        }
 
         $this->submitted = true;
         $this->successMessage = 'Вы успешно зарегистрировались!';
