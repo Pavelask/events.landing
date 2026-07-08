@@ -49,6 +49,7 @@ class YandexFormsApi
             Log::warning('Yandex Forms API: createAnswer failed', [
                 'status' => $response->status(),
                 'body' => $response->body(),
+                'sent_data' => $data,
             ]);
 
             return null;

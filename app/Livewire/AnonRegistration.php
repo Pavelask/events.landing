@@ -104,16 +104,27 @@ class AnonRegistration extends Component
             return;
         }
 
+        $phone = $this->formData['phone'] ?? '';
+        if ($phone) {
+            $phone = preg_replace('/[^\d+]/', '', $phone);
+        }
+
         $payload = [
             'event_id' => (string) $this->event->id,
             'name' => $this->formData['name'],
             'email' => $this->formData['email'],
-            'phone' => $this->formData['phone'] ?? '',
+            'phone' => $phone,
         ];
 
         foreach ($this->questions as $index => $question) {
             $slot = 'custom_' . ($index + 1);
-            $payload[$slot] = $this->formData[$question['slug']] ?? '';
+            $value = $this->formData[$question['slug']] ?? '';
+            if (is_array($value)) {
+                $value = implode(', ', $value);
+            } elseif (is_bool($value)) {
+                $value = $value ? 'Да' : 'Нет';
+            }
+            $payload[$slot] = $value;
         }
 
         $response = $yandexApi->createAnswer($formId, $payload);
@@ -122,7 +133,10 @@ class AnonRegistration extends Component
             $answerId = $response['answer_id'] ?? $response['id'] ?? null;
         } else {
             $answerId = 'LOCAL_' . time() . '_' . Str::random(10);
-            Log::warning('AnonRegistration: API failed, saving locally', ['form_id' => $formId]);
+            Log::warning('AnonRegistration: API failed, saving locally', [
+                'form_id' => $formId,
+                'payload' => $payload,
+            ]);
         }
 
         AnonParticipant::create([

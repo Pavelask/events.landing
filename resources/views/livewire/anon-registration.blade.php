@@ -64,7 +64,20 @@
                     <input type="text" id="phone" wire:model="formData.phone"
                         class="w-full px-4 py-3 rounded-xl border"
                         style="border-color: var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;"
-                        placeholder="+7 (999) 123-45-67">
+                        placeholder="+7 (999) 123-45-67"
+                        x-data
+                        x-on:input="
+                            let digits = $el.value.replace(/[^0-9]/g, '');
+                            if (digits.length > 0 && digits[0] !== '7') digits = '7' + digits;
+                            let formatted = '+7';
+                            if (digits.length > 1) formatted += ' (' + digits.substring(1, 4);
+                            if (digits.length > 4) formatted += ') ' + digits.substring(4, 7);
+                            if (digits.length > 7) formatted += '-' + digits.substring(7, 9);
+                            if (digits.length > 9) formatted += '-' + digits.substring(9, 11);
+                            $el.value = formatted;
+                            $wire.set('formData.phone', formatted);
+                        "
+                        maxlength="18">
                 </div>
 
                 @foreach ($questions as $question)
@@ -199,12 +212,6 @@
                         @endif
                     </div>
                 @endforeach
-
-                @if(config('services.hcaptcha.site_key'))
-                    <div class="mb-6" wire:ignore>
-                        <div id="hcaptcha-widget"></div>
-                    </div>
-                @endif
 
                 <button type="submit"
                     class="w-full py-4 px-6 rounded-xl font-semibold text-white transition-colors mt-6"

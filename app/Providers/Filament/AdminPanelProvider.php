@@ -49,7 +49,6 @@ class AdminPanelProvider extends PanelProvider
             ->resources([
                 RoleResource::class,
                 FormTemplateResource::class,
-                AnonParticipantResource::class,
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),
