@@ -247,10 +247,16 @@
 @script
 <script>
     Livewire.hook('morph.updated', ({ el }) => {
-        const firstErr = el.querySelector('[data-err]');
-        if (firstErr) {
-            firstErr.focus();
-            firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const form = el.querySelector('form');
+        if (!form) return;
+        const walker = document.createTreeWalker(form, NodeFilter.SHOW_ELEMENT);
+        while (walker.nextNode()) {
+            const node = walker.currentNode;
+            if (node.hasAttribute('data-err') && (node.tagName === 'INPUT' || node.tagName === 'TEXTAREA' || node.tagName === 'SELECT')) {
+                node.focus();
+                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                break;
+            }
         }
     });
 </script>
