@@ -69,6 +69,7 @@
                         x-data="{ phoneComplete: false }"
                         x-on:input="
                             let digits = $el.value.replace(/[^0-9]/g, '');
+                            if (digits.length > 0 && digits[0] === '8') digits = '7' + digits.substring(1);
                             if (digits.length > 0 && digits[0] !== '7') digits = '7' + digits;
                             let formatted = '+7';
                             if (digits.length > 1) formatted += ' (' + digits.substring(1, 4);
