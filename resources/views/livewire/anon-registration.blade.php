@@ -136,7 +136,8 @@
                                     <input type="hidden" wire:model="formData.{{ $question['slug'] }}">
                                     <div @click="open = !open" @click.outside="open = false"
                                         class="w-full px-4 py-3 rounded-xl cursor-pointer flex justify-between items-center"
-                                        style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text);">
+                                        style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text);"
+                                        @if($fieldErr) data-err @endif>
                                         <span x-text="selected || 'Выберите...'"></span>
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                     </div>
@@ -249,14 +250,11 @@
     function focusFirstError(el) {
         const form = el.querySelector('form');
         if (!form) return false;
-        const walker = document.createTreeWalker(form, NodeFilter.SHOW_ELEMENT);
-        while (walker.nextNode()) {
-            const node = walker.currentNode;
-            if (node.hasAttribute('data-err') && (node.tagName === 'INPUT' || node.tagName === 'TEXTAREA' || node.tagName === 'SELECT')) {
-                node.focus();
-                node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return true;
-            }
+        const target = form.querySelector('[data-err]');
+        if (target) {
+            target.focus();
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return true;
         }
         return false;
     }
