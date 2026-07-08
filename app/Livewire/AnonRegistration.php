@@ -114,7 +114,14 @@ class AnonRegistration extends Component
 
         $phone = $this->formData['phone'] ?? '';
         if ($phone) {
-            $phone = preg_replace('/[^\d+]/', '', $phone);
+            $digits = preg_replace('/\D/', '', $phone);
+            if (str_starts_with($digits, '8')) {
+                $digits = '7' . substr($digits, 1);
+            }
+            if (!str_starts_with($digits, '7')) {
+                $digits = '7' . $digits;
+            }
+            $phone = '+7' . substr($digits, 1, 10);
         }
 
         $payload = [
