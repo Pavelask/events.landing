@@ -10,6 +10,8 @@ use Filament\Actions\ExportBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
@@ -23,58 +25,64 @@ class AnonParticipantsTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('#')
-                    ->sortable()
-                    ->limit(5),
-                TextColumn::make('event.title')
-                    ->label('Мероприятие')
-                    ->sortable()
-                    ->searchable()
-                    ->limit(20),
-                TextColumn::make('status')
-                    ->label('Статус')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'registered' => 'Зарег.',
-                        'arrived' => 'Прибыл',
-                        'cancelled' => 'Отменён',
-                        default => $state,
-                    })
-                    ->color(fn (string $state): string => match ($state) {
-                        'registered' => 'gray',
-                        'arrived' => 'green',
-                        'cancelled' => 'red',
-                        default => 'gray',
-                    }),
-                TextColumn::make('created_at')
-                    ->label('Регистрация')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->limit(16),
-                TextColumn::make('checked_in_at')
-                    ->label('Чек-ин')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable()
-                    ->placeholder('—')
-                    ->limit(16),
-                IconColumn::make('ticket_sent_at')
-                    ->label('Билет')
-                    ->boolean()
-                    ->sortable(),
-                IconColumn::make('souvenir_given')
-                    ->label('Сув.')
-                    ->boolean(),
-                IconColumn::make('documentation_given')
-                    ->label('Док.')
-                    ->boolean(),
-                IconColumn::make('clothing_given')
-                    ->label('Оде.')
-                    ->boolean(),
+                Split::make([
+                    Stack::make([
+                        TextColumn::make('id')
+                            ->label('#')
+                            ->sortable()
+                            ->weight('bold'),
+                        TextColumn::make('event.title')
+                            ->label('Мероприятие')
+                            ->sortable()
+                            ->searchable()
+                            ->limit(25),
+                    ])->space(1),
+                    Stack::make([
+                        TextColumn::make('status')
+                            ->label('Статус')
+                            ->badge()
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'registered' => 'Зарег.',
+                                'arrived' => 'Прибыл',
+                                'cancelled' => 'Отменён',
+                                default => $state,
+                            })
+                            ->color(fn (string $state): string => match ($state) {
+                                'registered' => 'gray',
+                                'arrived' => 'green',
+                                'cancelled' => 'red',
+                                default => 'gray',
+                            }),
+                        TextColumn::make('created_at')
+                            ->label('Регистрация')
+                            ->dateTime('d.m.Y H:i')
+                            ->sortable()
+                            ->limit(16),
+                        TextColumn::make('checked_in_at')
+                            ->label('Чек-ин')
+                            ->dateTime('d.m.Y H:i')
+                            ->sortable()
+                            ->placeholder('—')
+                            ->limit(16),
+                    ])->space(1),
+                    Stack::make([
+                        IconColumn::make('ticket_sent_at')
+                            ->label('Билет')
+                            ->boolean()
+                            ->sortable(),
+                        IconColumn::make('souvenir_given')
+                            ->label('Сув.')
+                            ->boolean(),
+                        IconColumn::make('documentation_given')
+                            ->label('Док.')
+                            ->boolean(),
+                        IconColumn::make('clothing_given')
+                            ->label('Оде.')
+                            ->boolean(),
+                    ])->space(1)->visibleFrom('md'),
+                ])->from('lg'),
             ])
-            ->contentGrid([
-                'md' => 1,
-            ])
+            ->stackedOnMobile()
             ->filters([
                 SelectFilter::make('event_id')
                     ->label('Мероприятие')
