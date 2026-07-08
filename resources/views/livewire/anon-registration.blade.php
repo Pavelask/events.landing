@@ -28,6 +28,8 @@
                 x-data="{
                     nameTouched: false,
                     emailTouched: false,
+                    qTouched: {},
+                    qErrors: {},
                     get nameErr() {
                         if (!this.nameTouched) return '';
                         let v = document.getElementById('name').value.trim();
@@ -40,10 +42,41 @@
                         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Введите корректный email адрес';
                         return '';
                     },
+                    validateQuestions() {
+                        this.qErrors = {};
+                        let firstErr = null;
+                        document.querySelectorAll('[data-q-slug]').forEach(el => {
+                            let slug = el.dataset.qSlug;
+                            let type = el.dataset.qType;
+                            let required = el.dataset.qRequired === '1';
+                            let label = el.dataset.qLabel;
+                            if (!required) return;
+                            let err = '';
+                            if (type === 'checkbox') {
+                                if (!el.checked) err = 'Поле «' + label + '» обязательно';
+                            } else if (type === 'radio') {
+                                if (!el.checked) err = 'Выберите вариант';
+                            } else {
+                                if (!el.value || el.value.trim() === '') err = 'Поле «' + label + '» обязательно';
+                            }
+                            if (err) {
+                                this.qErrors[slug] = err;
+                                this.qTouched[slug] = true;
+                                if (!firstErr) firstErr = el;
+                            }
+                        });
+                        return firstErr;
+                    },
                     validate() {
                         this.nameTouched = true;
                         this.emailTouched = true;
-                        return this.nameErr === '' && this.emailErr === '';
+                        let firstErr = this.validateQuestions();
+                        let ok = this.nameErr === '' && this.emailErr === '' && Object.keys(this.qErrors).length === 0;
+                        if (!ok && firstErr) {
+                            firstErr.focus();
+                            firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        return ok;
                     }
                 }">
                 <input type="hidden" wire:model="formLoadedAt">
@@ -115,45 +148,46 @@
                 @foreach ($questions as $question)
                     @php $fieldErr = !empty($fieldErrors['formData.' . $question['slug']]); @endphp
                     <div class="mb-7">
-                        <label class="block text-sm font-semibold mb-2" style="color: {{ $fieldErr ? '#ef4444' : 'var(--color-text)' }};">
+                        <label class="block text-sm font-semibold mb-2"
+                            :style="(qErrors['{{ $question['slug'] }}'] || {{ $fieldErr ? 'true' : 'false' }}) ? 'color: #ef4444' : 'color: var(--color-text)'">
                             {{ $question['label'] }}
                             @if ($question['required']) * @endif
                         </label>
 
                         @if ($question['type'] === 'text')
                             <input type="text" wire:model="formData.{{ $question['slug'] }}"
+                                data-q-slug="{{ $question['slug'] }}" data-q-type="text"
+                                data-q-required="{{ $question['required'] ? '1' : '0' }}" data-q-label="{{ $question['label'] }}"
                                 class="w-full px-4 py-3 rounded-xl"
-                                style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
+                                :style="(qErrors['{{ $question['slug'] }}'] || {{ $fieldErr ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
                                 placeholder="Введите значение"
-                                @if ($question['required']) required @endif>
-                            @if($fieldErr)
-                                <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
-                            @endif
+                                x-on:blur="qTouched['{{ $question['slug'] }}'] = true; validateQuestions()">
+                            <p x-show="qErrors['{{ $question['slug'] }}']" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="qErrors['{{ $question['slug'] }}']"></p>
 
                         @elseif ($question['type'] === 'textarea')
                             <textarea wire:model="formData.{{ $question['slug'] }}"
+                                data-q-slug="{{ $question['slug'] }}" data-q-type="textarea"
+                                data-q-required="{{ $question['required'] ? '1' : '0' }}" data-q-label="{{ $question['label'] }}"
                                 class="w-full px-4 py-3 rounded-xl"
-                                style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
+                                :style="(qErrors['{{ $question['slug'] }}'] || {{ $fieldErr ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
                                 rows="3"
                                 placeholder="Введите текст"
-                                @if ($question['required']) required @endif></textarea>
-                            @if($fieldErr)
-                                <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
-                            @endif
+                                x-on:blur="qTouched['{{ $question['slug'] }}'] = true; validateQuestions()"></textarea>
+                            <p x-show="qErrors['{{ $question['slug'] }}']" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="qErrors['{{ $question['slug'] }}']"></p>
 
                         @elseif ($question['type'] === 'select')
                             @if ($question['searchable'] ?? false)
                                 <div x-data="{ search: '', open: false, selected: '' }" class="relative">
-                                    <input type="hidden" wire:model="formData.{{ $question['slug'] }}">
-                                    <div @click="open = !open" @click.outside="open = false"
+                                    <input type="hidden" wire:model="formData.{{ $question['slug'] }}"
+                                        data-q-slug="{{ $question['slug'] }}" data-q-type="select"
+                                        data-q-required="{{ $question['required'] ? '1' : '0' }}" data-q-label="{{ $question['label'] }}">
+                                    <div @click="open = !open" @click.outside="open = false; $el.parentNode.querySelector('input[type=hidden]').dispatchEvent(new Event('blur'))"
                                         class="w-full px-4 py-3 rounded-xl cursor-pointer flex justify-between items-center"
-                                        style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text);">
+                                        :style="(qErrors['{{ $question['slug'] }}'] || {{ $fieldErr ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text);' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text);'">
                                         <span x-text="selected || 'Выберите...'"></span>
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                     </div>
-                                    @if($fieldErr)
-                                        <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
-                                    @endif
+                                    <p x-show="qErrors['{{ $question['slug'] }}']" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="qErrors['{{ $question['slug'] }}']"></p>
                                     <div x-show="open" x-transition
                                         class="absolute z-10 w-full mt-1 rounded-xl shadow-lg border overflow-hidden"
                                         style="background-color: var(--color-surface); border-color: var(--color-border);">
@@ -166,7 +200,7 @@
                                             @foreach ($question['options'] ?? [] as $option)
                                                 <div class="px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm"
                                                     x-show="'{{ $option }}'.toLowerCase().includes(search.toLowerCase())"
-                                                    @click="selected = '{{ $option }}'; $wire.set('formData.{{ $question['slug'] }}', '{{ $option }}'); open = false; search = '';">
+                                                    @click="selected = '{{ $option }}'; $wire.set('formData.{{ $question['slug'] }}', '{{ $option }}'); open = false; search = ''; qTouched['{{ $question['slug'] }}'] = true; validateQuestions()">
                                                     {{ $option }}
                                                 </div>
                                             @endforeach
@@ -175,18 +209,18 @@
                                 </div>
                             @else
                                 <select wire:model="formData.{{ $question['slug'] }}"
+                                    data-q-slug="{{ $question['slug'] }}" data-q-type="select"
+                                    data-q-required="{{ $question['required'] ? '1' : '0' }}" data-q-label="{{ $question['label'] }}"
                                     class="w-full px-4 py-3 rounded-xl"
-                                    style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
-                                    @if ($question['required']) required @endif>
+                                    :style="(qErrors['{{ $question['slug'] }}'] || {{ $fieldErr ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
+                                    x-on:change="qTouched['{{ $question['slug'] }}'] = true; validateQuestions()">
                                     <option value="">Выберите...</option>
                                     @foreach ($question['options'] ?? [] as $option)
                                         <option value="{{ $option }}">{{ $option }}</option>
                                     @endforeach
                                 </select>
                             @endif
-                            @if($fieldErr)
-                                <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
-                            @endif
+                            <p x-show="qErrors['{{ $question['slug'] }}']" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="qErrors['{{ $question['slug'] }}']"></p>
 
                         @elseif ($question['type'] === 'radio')
                             <div class="space-y-2">
@@ -195,38 +229,41 @@
                                         style="border-color: var(--color-border);">
                                         <input type="radio" name="question_{{ $question['slug'] }}"
                                             value="{{ $option }}" wire:model="formData.{{ $question['slug'] }}"
+                                            data-q-slug="{{ $question['slug'] }}" data-q-type="radio"
+                                            data-q-required="{{ $question['required'] ? '1' : '0' }}" data-q-label="{{ $question['label'] }}"
                                             class="w-4 h-4"
                                             style="accent-color: var(--color-primary);"
-                                            @if ($question['required']) required @endif>
+                                            x-on:change="qTouched['{{ $question['slug'] }}'] = true; validateQuestions()">
                                         <span style="color: var(--color-text);">{{ $option }}</span>
                                     </label>
                                 @endforeach
                             </div>
-                            @if($fieldErr)
-                                <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
-                            @endif
+                            <p x-show="qErrors['{{ $question['slug'] }}']" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="qErrors['{{ $question['slug'] }}']"></p>
 
                         @elseif ($question['type'] === 'checkbox')
                             <div class="space-y-2">
                                 @foreach ($question['options'] ?? [] as $option)
                                     <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer border transition-colors hover:bg-gray-50"
-                                        style="border-color: var(--color-border);">
+                                        :style="(qErrors['{{ $question['slug'] }}'] || {{ $fieldErr ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444;' : 'border-color: var(--color-border);'">
                                         <input type="checkbox" name="question_{{ $question['slug'] }}[]"
                                             value="{{ $option }}" wire:model="formData.{{ $question['slug'] }}"
+                                            data-q-slug="{{ $question['slug'] }}" data-q-type="checkbox"
+                                            data-q-required="{{ $question['required'] ? '1' : '0' }}" data-q-label="{{ $question['label'] }}"
                                             class="w-4 h-4"
-                                            style="accent-color: var(--color-primary);">
+                                            style="accent-color: var(--color-primary);"
+                                            x-on:change="qTouched['{{ $question['slug'] }}'] = true; validateQuestions()">
                                         <span style="color: var(--color-text);">{{ $option }}</span>
                                     </label>
                                 @endforeach
                             </div>
-                            @if($fieldErr)
-                                <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
-                            @endif
+                            <p x-show="qErrors['{{ $question['slug'] }}']" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="qErrors['{{ $question['slug'] }}']"></p>
 
                         @elseif ($question['type'] === 'date')
                             <input type="text" wire:model="formData.{{ $question['slug'] }}"
+                                data-q-slug="{{ $question['slug'] }}" data-q-type="date"
+                                data-q-required="{{ $question['required'] ? '1' : '0' }}" data-q-label="{{ $question['label'] }}"
                                 class="w-full px-4 py-3 rounded-xl"
-                                style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
+                                :style="(qErrors['{{ $question['slug'] }}'] || {{ $fieldErr ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
                                 placeholder="ДД.ММ.ГГГГ"
                                 maxlength="10"
                                 x-data
@@ -237,10 +274,9 @@
                                     $el.value = v.substring(0, 10);
                                     $wire.set('formData.{{ $question['slug'] }}', $el.value);
                                 "
+                                x-on:blur="qTouched['{{ $question['slug'] }}'] = true; validateQuestions()"
                                 @if ($question['required']) required @endif>
-                            @if($fieldErr)
-                                <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
-                            @endif
+                            <p x-show="qErrors['{{ $question['slug'] }}']" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="qErrors['{{ $question['slug'] }}']"></p>
                         @endif
                     </div>
                 @endforeach
