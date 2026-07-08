@@ -82,7 +82,7 @@ class AnonParticipantsTable
                                 ->onColor('success')
                                 ->offColor('danger')
                                 ->grow(false),
-                        ])->space(2),
+                        ]),
                         Split::make([
                             TextColumn::make('documentation_text')
                                 ->label('Документы')
@@ -94,7 +94,7 @@ class AnonParticipantsTable
                                 ->onColor('success')
                                 ->offColor('danger')
                                 ->grow(false),
-                        ])->space(2),
+                        ]),
                         Split::make([
                             TextColumn::make('clothing_text')
                                 ->label('Одежда')
@@ -106,7 +106,7 @@ class AnonParticipantsTable
                                 ->onColor('success')
                                 ->offColor('danger')
                                 ->grow(false),
-                        ])->space(2),
+                        ]),
                     ])->space(1)->visibleFrom('md'),
                 ])->from('lg'),
             ])
