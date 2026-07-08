@@ -10,7 +10,6 @@ use Filament\Actions\ExportBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
@@ -71,42 +70,6 @@ class AnonParticipantsTable
                             ->label('Билет')
                             ->boolean()
                             ->sortable(),
-                        Split::make([
-                            TextColumn::make('souvenir_text')
-                                ->label('Сувенир')
-                                ->getStateUsing(fn () => 'Сувенир')
-                                ->grow(false)
-                                ->size('sm'),
-                            ToggleColumn::make('souvenir_given')
-                                ->label('Сувенир')
-                                ->onColor('success')
-                                ->offColor('danger')
-                                ->grow(false),
-                        ]),
-                        Split::make([
-                            TextColumn::make('documentation_text')
-                                ->label('Документы')
-                                ->getStateUsing(fn () => 'Документы')
-                                ->grow(false)
-                                ->size('sm'),
-                            ToggleColumn::make('documentation_given')
-                                ->label('Документы')
-                                ->onColor('success')
-                                ->offColor('danger')
-                                ->grow(false),
-                        ]),
-                        Split::make([
-                            TextColumn::make('clothing_text')
-                                ->label('Одежда')
-                                ->getStateUsing(fn () => 'Одежда')
-                                ->grow(false)
-                                ->size('sm'),
-                            ToggleColumn::make('clothing_given')
-                                ->label('Одежда')
-                                ->onColor('success')
-                                ->offColor('danger')
-                                ->grow(false),
-                        ]),
                     ])->space(1)->visibleFrom('md'),
                 ])->from('lg'),
             ])
