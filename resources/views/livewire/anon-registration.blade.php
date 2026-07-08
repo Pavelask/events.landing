@@ -60,12 +60,13 @@
                 </div>
 
                 <div class="mb-7">
-                    <label for="phone" class="block text-sm font-semibold mb-2" style="color: var(--color-text);">Телефон</label>
+                    @php $phoneErr = !empty($fieldErrors['formData.phone']); @endphp
+                    <label for="phone" class="block text-sm font-semibold mb-2" style="color: {{ $phoneErr ? '#ef4444' : 'var(--color-text)' }};">Телефон</label>
                     <input type="text" id="phone" wire:model="formData.phone"
                         class="w-full px-4 py-3 rounded-xl border"
-                        style="border-color: var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;"
+                        style="border: {{ $phoneErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
                         placeholder="+7 (999) 123-45-67"
-                        x-data
+                        x-data="{ phoneComplete: false }"
                         x-on:input="
                             let digits = $el.value.replace(/[^0-9]/g, '');
                             if (digits.length > 0 && digits[0] !== '7') digits = '7' + digits;
@@ -75,9 +76,22 @@
                             if (digits.length > 7) formatted += '-' + digits.substring(7, 9);
                             if (digits.length > 9) formatted += '-' + digits.substring(9, 11);
                             $el.value = formatted;
+                            phoneComplete = digits.length >= 11;
                             $wire.set('formData.phone', formatted);
                         "
+                        x-on:blur="
+                            let digits = $el.value.replace(/[^0-9]/g, '');
+                            if (digits.length > 0 && digits.length < 11) {
+                                phoneComplete = false;
+                                $el.value = '';
+                                $wire.set('formData.phone', '');
+                            }
+                        "
                         maxlength="18">
+                    @if($phoneErr)
+                        <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.phone'] }}</p>
+                    @endif
+                    <p x-show="!phoneComplete && $el.value.length > 0" x-cloak class="mt-1 text-sm" style="color: #ef4444;">Введите полный номер телефона</p>
                 </div>
 
                 @foreach ($questions as $question)
