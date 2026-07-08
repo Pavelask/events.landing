@@ -168,6 +168,14 @@ class AnonRegistration extends Component
             'answer_id' => $answerId,
             'checkin_token' => Str::random(40),
             'status' => 'registered',
+            'local_data' => [
+                'yandex_name' => $this->formData['name'] ?? '',
+                'yandex_email' => $this->formData['email'] ?? '',
+                'yandex_phone' => $this->formData['phone'] ?? '',
+                ...collect($this->questions)->mapWithKeys(fn ($q, $i) => [
+                    'custom_' . $q['slug'] => $this->formData[$q['slug']] ?? '',
+                ])->toArray(),
+            ],
         ]);
 
         $email = $this->formData['email'] ?? '';

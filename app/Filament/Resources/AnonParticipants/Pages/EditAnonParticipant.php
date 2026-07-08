@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\AnonParticipants\Pages;
 
 use App\Filament\Resources\AnonParticipants\AnonParticipantResource;
-use App\Services\YandexFormsApi;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Section;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 
 class EditAnonParticipant extends EditRecord
 {
@@ -26,14 +28,13 @@ class EditAnonParticipant extends EditRecord
         $customFields = [];
         foreach ($questions as $question) {
             $customFields[] = TextInput::make('custom_' . $question['slug'])
-                ->label($question['label'])
-                ->placeholder('Загружается из Яндекс Формы');
+                ->label($question['label']);
         }
 
         return [
             Section::make('Основная информация')
                 ->schema([
-                    \Filament\Forms\Components\Select::make('event_id')
+                    Select::make('event_id')
                         ->label('Мероприятие')
                         ->relationship('event', 'title')
                         ->searchable()
@@ -42,7 +43,7 @@ class EditAnonParticipant extends EditRecord
                         ->disabled()
                         ->columnSpanFull(),
                     Grid::make(2)->schema([
-                        \Filament\Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->label('Статус')
                             ->options([
                                 'registered' => 'Зарегистрирован',
@@ -58,21 +59,18 @@ class EditAnonParticipant extends EditRecord
                     ]),
                 ]),
 
-            Section::make('Данные из Яндекс Формы')
-                ->description('Временная выгрузка персональных данных. Изменения сохраняются локально.')
-                ->icon('heroicon-o-cloud-arrow-down')
+            Section::make('Данные участника')
+                ->description('Персональные данные, сохранённые при регистрации.')
+                ->icon('heroicon-o-user')
                 ->schema([
                     Grid::make(1)->schema([
                         TextInput::make('yandex_name')
-                            ->label('ФИО')
-                            ->placeholder('Загружается из Яндекс Формы'),
+                            ->label('ФИО'),
                         TextInput::make('yandex_email')
                             ->label('Email')
-                            ->email()
-                            ->placeholder('Загружается из Яндекс Формы'),
+                            ->email(),
                         TextInput::make('yandex_phone')
-                            ->label('Телефон')
-                            ->placeholder('Загружается из Яндекс Формы'),
+                            ->label('Телефон'),
                     ]),
                     Grid::make(1)->schema($customFields),
                 ]),
@@ -80,11 +78,11 @@ class EditAnonParticipant extends EditRecord
             Section::make('Чек-ин и билеты')
                 ->schema([
                     Grid::make(3)->schema([
-                        \Filament\Forms\Components\DateTimePicker::make('checked_in_at')
+                        DateTimePicker::make('checked_in_at')
                             ->label('Время чек-ина')
                             ->nullable()
                             ->disabled(),
-                        \Filament\Forms\Components\DateTimePicker::make('ticket_sent_at')
+                        DateTimePicker::make('ticket_sent_at')
                             ->label('Билет отправлен')
                             ->nullable()
                             ->disabled(),
@@ -98,13 +96,13 @@ class EditAnonParticipant extends EditRecord
             Section::make('Отметки о выдаче')
                 ->schema([
                     Grid::make(3)->schema([
-                        \Filament\Forms\Components\Toggle::make('souvenir_given')
+                        Toggle::make('souvenir_given')
                             ->label('Сувенир')
                             ->default(false),
-                        \Filament\Forms\Components\Toggle::make('documentation_given')
+                        Toggle::make('documentation_given')
                             ->label('Документация')
                             ->default(false),
-                        \Filament\Forms\Components\Toggle::make('clothing_given')
+                        Toggle::make('clothing_given')
                             ->label('Одежда')
                             ->default(false),
                     ]),
@@ -117,27 +115,11 @@ class EditAnonParticipant extends EditRecord
         parent::fillForm();
 
         $record = $this->record;
-        $yandexApi = app(YandexFormsApi::class);
-
-        $formId = $record->event->formTemplate->yandex_form_id ?? null;
-        $yandexData = null;
-
-        if ($formId && $record->answer_id && !str_starts_with($record->answer_id, 'LOCAL_')) {
-            $yandexData = $yandexApi->getAnswer($formId, $record->answer_id);
-        }
-
         $localData = $record->local_data ?? [];
-        $questions = $record->event->formTemplate->questions ?? [];
 
-        $personalData = [
-            'yandex_name' => $yandexData['answerer']['fields']['name'] ?? ($localData['yandex_name'] ?? ''),
-            'yandex_email' => $yandexData['answerer']['email'] ?? ($localData['yandex_email'] ?? ''),
-            'yandex_phone' => $yandexData['answerer']['fields']['phone'] ?? ($localData['yandex_phone'] ?? ''),
-        ];
-
-        foreach ($questions as $index => $question) {
-            $slot = 'custom_' . ($index + 1);
-            $personalData['custom_' . $question['slug']] = $yandexData['answerer']['fields'][$slot] ?? ($localData['custom_' . $question['slug']] ?? '');
+        $personalData = [];
+        foreach ($localData as $key => $value) {
+            $personalData[$key] = $value;
         }
 
         $this->form->fill([
