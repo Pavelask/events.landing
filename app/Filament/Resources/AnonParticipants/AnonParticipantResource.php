@@ -38,6 +38,7 @@ class AnonParticipantResource extends Resource
     {
         return [
             'index' => ListAnonParticipants::route('/'),
+            'edit' => \App\Filament\Resources\AnonParticipants\Pages\EditAnonParticipant::route('/{record}/edit'),
         ];
     }
 }

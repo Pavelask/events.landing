@@ -104,6 +104,7 @@ class AnonParticipantsTable
                     ]),
             ])
             ->defaultSort('created_at', 'desc')
+            ->recordUrl(fn (AnonParticipant $record): string => \App\Filament\Resources\AnonParticipants\AnonParticipantResource::getUrl('edit', ['record' => $record]))
             ->headerActions([
                 \Filament\Actions\Action::make('importFromYandex')
                     ->label('Импорт из Яндекс Формы')
@@ -307,11 +308,6 @@ class AnonParticipantsTable
                         Notification::make()->title('Регистрация отменена')->success()->send();
                     })
                     ->visible(fn (AnonParticipant $record) => $record->status !== 'cancelled'),
-                \Filament\Actions\EditAction::make()
-                    ->label('')
-                    ->icon('heroicon-o-pencil')
-                    ->iconSize('md')
-                    ->color('info'),
             ]);
     }
 }
