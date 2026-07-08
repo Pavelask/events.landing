@@ -10,6 +10,7 @@ use Filament\Actions\ExportBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
@@ -70,15 +71,12 @@ class AnonParticipantsTable
                             ->label('Билет')
                             ->boolean()
                             ->sortable(),
-                        IconColumn::make('souvenir_given')
-                            ->label('Сув.')
-                            ->boolean(),
-                        IconColumn::make('documentation_given')
-                            ->label('Док.')
-                            ->boolean(),
-                        IconColumn::make('clothing_given')
-                            ->label('Оде.')
-                            ->boolean(),
+                        ToggleColumn::make('souvenir_given')
+                            ->label('Сув.'),
+                        ToggleColumn::make('documentation_given')
+                            ->label('Док.'),
+                        ToggleColumn::make('clothing_given')
+                            ->label('Оде.'),
                     ])->space(1)->visibleFrom('md'),
                 ])->from('lg'),
             ])
