@@ -18,6 +18,7 @@ class AnonParticipant extends Model
         'souvenir_given',
         'documentation_given',
         'clothing_given',
+        'local_data',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class AnonParticipant extends Model
             'souvenir_given' => 'boolean',
             'documentation_given' => 'boolean',
             'clothing_given' => 'boolean',
+            'local_data' => 'array',
         ];
     }
 

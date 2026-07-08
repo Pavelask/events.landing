@@ -3,11 +3,12 @@
 namespace App\Filament\Resources\AnonParticipants\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class AnonParticipantForm
@@ -42,6 +43,29 @@ class AnonParticipantForm
                                 ->disabled()
                                 ->dehydrated(false),
                         ]),
+                    ]),
+
+                Section::make('Данные из Яндекс Формы')
+                    ->description('Временная выгрузка персональных данных. Изменения сохраняются локально.')
+                    ->icon('heroicon-o-cloud-arrow-down')
+                    ->schema([
+                        Grid::make(1)->schema([
+                            TextInput::make('yandex_name')
+                                ->label('ФИО')
+                                ->placeholder('Загружается из Яндекс Формы'),
+                            TextInput::make('yandex_email')
+                                ->label('Email')
+                                ->email()
+                                ->placeholder('Загружается из Яндекс Формы'),
+                            TextInput::make('yandex_phone')
+                                ->label('Телефон')
+                                ->placeholder('Загружается из Яндекс Формы'),
+                        ]),
+                        KeyValue::make('custom_fields')
+                            ->label('Дополнительные поля')
+                            ->placeholder('Нет данных')
+                            ->dehydrated(false)
+                            ->visible(false),
                     ]),
 
                 Section::make('Чек-ин и билеты')
