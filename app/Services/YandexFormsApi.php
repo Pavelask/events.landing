@@ -22,7 +22,7 @@ class YandexFormsApi
     {
         $headers = ['Authorization' => 'OAuth ' . $this->token];
         if ($this->orgId) {
-            $headers['X-Cloud-Org-Id'] = $this->orgId;
+            $headers['X-Org-Id'] = $this->orgId;
         }
         return $headers;
     }
@@ -68,13 +68,15 @@ class YandexFormsApi
             return null;
         }
 
-        $cacheKey = "yandex_answer_{$formId}_{$answerId}";
+        $cacheKey = "yandex_answer_{$answerId}";
 
-        return Cache::remember($cacheKey, 600, function () use ($formId, $answerId) {
+        return Cache::remember($cacheKey, 600, function () use ($answerId) {
             try {
                 $response = Http::withHeaders($this->headers())
                     ->timeout(30)
-                    ->get("{$this->baseUrl}/surveys/{$formId}/answers/{$answerId}");
+                    ->get("{$this->baseUrl}/answers", [
+                        'answer_id' => $answerId,
+                    ]);
 
                 if ($response->successful()) {
                     return $response->json();
@@ -82,6 +84,7 @@ class YandexFormsApi
 
                 Log::warning('Yandex Forms API: getAnswer failed', [
                     'status' => $response->status(),
+                    'body' => $response->body(),
                     'answer_id' => $answerId,
                 ]);
 
@@ -107,16 +110,9 @@ class YandexFormsApi
             $url = "{$this->baseUrl}/surveys/{$formId}/answers";
             $params = array_merge(['page_size' => 100], $filters);
 
-            Log::info('Yandex Forms API: requesting', ['url' => $url, 'params' => $params]);
-
             $response = Http::withHeaders($this->headers())
                 ->timeout(30)
                 ->get($url, $params);
-
-            Log::info('Yandex Forms API: response', [
-                'status' => $response->status(),
-                'body' => substr($response->body(), 0, 500),
-            ]);
 
             if ($response->successful()) {
                 $json = $response->json();
@@ -126,12 +122,14 @@ class YandexFormsApi
             Log::warning('Yandex Forms API: getAnswers failed', [
                 'status' => $response->status(),
                 'body' => $response->body(),
+                'form_id' => $formId,
             ]);
 
             return [];
         } catch (\Exception $e) {
             Log::error('Yandex Forms API: getAnswers exception', [
                 'message' => $e->getMessage(),
+                'form_id' => $formId,
             ]);
             return [];
         }
@@ -142,19 +140,19 @@ class YandexFormsApi
         $allAnswers = $this->getAnswers($formId);
 
         return array_filter($allAnswers, function ($answer) use ($email) {
-            $answerEmail = $answer['answerer']['email'] ?? $answer['email'] ?? '';
-            return strtolower($answerEmail) === strtolower($email);
+            $answerData = $answer['data'] ?? [];
+            foreach ($answerData as $item) {
+                $label = strtolower($item['label'] ?? '');
+                if (in_array($label, ['email', 'электронная почта', 'е-мейл'])) {
+                    return strtolower($item['value'] ?? '') === strtolower($email);
+                }
+            }
+            return false;
         });
     }
 
     public function clearCache(string $answerId): void
     {
-        $keys = Cache::tags([])->getKeys();
-
-        foreach ($keys as $key) {
-            if (str_contains($key, $answerId)) {
-                Cache::forget($key);
-            }
-        }
+        Cache::forget("yandex_answer_{$answerId}");
     }
 }
