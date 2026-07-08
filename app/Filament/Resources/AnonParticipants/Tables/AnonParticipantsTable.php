@@ -71,18 +71,42 @@ class AnonParticipantsTable
                             ->label('Билет')
                             ->boolean()
                             ->sortable(),
-                        ToggleColumn::make('souvenir_given')
-                            ->label('Сувенир')
-                            ->onColor('success')
-                            ->offColor('danger'),
-                        ToggleColumn::make('documentation_given')
-                            ->label('Документы')
-                            ->onColor('success')
-                            ->offColor('danger'),
-                        ToggleColumn::make('clothing_given')
-                            ->label('Одежда')
-                            ->onColor('success')
-                            ->offColor('danger'),
+                        Split::make([
+                            TextColumn::make('souvenir_text')
+                                ->label('Сувенир')
+                                ->getStateUsing(fn () => 'Сувенир')
+                                ->weight('bold')
+                                ->grow(false),
+                            ToggleColumn::make('souvenir_given')
+                                ->label('Сувенир')
+                                ->onColor('success')
+                                ->offColor('danger')
+                                ->grow(false),
+                        ])->space(2),
+                        Split::make([
+                            TextColumn::make('documentation_text')
+                                ->label('Документы')
+                                ->getStateUsing(fn () => 'Документы')
+                                ->weight('bold')
+                                ->grow(false),
+                            ToggleColumn::make('documentation_given')
+                                ->label('Документы')
+                                ->onColor('success')
+                                ->offColor('danger')
+                                ->grow(false),
+                        ])->space(2),
+                        Split::make([
+                            TextColumn::make('clothing_text')
+                                ->label('Одежда')
+                                ->getStateUsing(fn () => 'Одежда')
+                                ->weight('bold')
+                                ->grow(false),
+                            ToggleColumn::make('clothing_given')
+                                ->label('Одежда')
+                                ->onColor('success')
+                                ->offColor('danger')
+                                ->grow(false),
+                        ])->space(2),
                     ])->space(1)->visibleFrom('md'),
                 ])->from('lg'),
             ])
