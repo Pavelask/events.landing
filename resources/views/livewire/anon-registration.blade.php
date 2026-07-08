@@ -52,37 +52,26 @@
                     <input type="text" name="website" wire:model="honeypot" tabindex="-1" autocomplete="off">
                 </div>
 
-                @php
-                    $nameErrSrv = !empty($fieldErrors['formData.name']);
-                    $emailErrSrv = !empty($fieldErrors['formData.email']);
-                @endphp
-
                 <div class="mb-7">
                     <label for="name" class="block text-sm font-semibold mb-2"
-                        :style="nameErr || {{ $nameErrSrv ? 'true' : 'false' }} ? 'color: #ef4444' : 'color: var(--color-text)'">ФИО *</label>
+                        :style="nameErr ? 'color: #ef4444' : 'color: var(--color-text)'">ФИО *</label>
                     <input type="text" id="name" wire:model="formData.name"
                         class="w-full px-4 py-3 rounded-xl"
-                        :style="(nameErr || {{ $nameErrSrv ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
+                        :style="nameErr ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
                         placeholder="Введите имя"
                         x-on:blur="nameTouched = true">
                     <p x-show="nameErr" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="nameErr"></p>
-                    @if($nameErrSrv && !$nameErr)
-                        <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.name'] }}</p>
-                    @endif
                 </div>
 
                 <div class="mb-7">
                     <label for="email" class="block text-sm font-semibold mb-2"
-                        :style="emailErr || {{ $emailErrSrv ? 'true' : 'false' }} ? 'color: #ef4444' : 'color: var(--color-text)'">Email *</label>
+                        :style="emailErr ? 'color: #ef4444' : 'color: var(--color-text)'">Email *</label>
                     <input type="email" id="email" wire:model="formData.email"
                         class="w-full px-4 py-3 rounded-xl"
-                        :style="(emailErr || {{ $emailErrSrv ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
+                        :style="emailErr ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
                         placeholder="email@example.com"
                         x-on:blur="emailTouched = true">
                     <p x-show="emailErr" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="emailErr"></p>
-                    @if($emailErrSrv && !$emailErr)
-                        <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.email'] }}</p>
-                    @endif
                 </div>
 
                 <div class="mb-7" x-data="{ phoneComplete: false, phoneVal: '' }">

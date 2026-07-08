@@ -39,16 +39,6 @@ class AnonRegistration extends Component
     {
         $this->fieldErrors = [];
 
-        if (empty($this->formData['name'] ?? null)) {
-            $this->fieldErrors['formData.name'] = 'Поле «ФИО» обязательно для заполнения';
-        }
-
-        if (empty($this->formData['email'] ?? null)) {
-            $this->fieldErrors['formData.email'] = 'Поле «Email» обязательно для заполнения';
-        } elseif (!filter_var($this->formData['email'], FILTER_VALIDATE_EMAIL)) {
-            $this->fieldErrors['formData.email'] = 'Введите корректный email адрес';
-        }
-
         $phone = $this->formData['phone'] ?? '';
         if ($phone) {
             $digits = preg_replace('/[^0-9]/', '', $phone);
