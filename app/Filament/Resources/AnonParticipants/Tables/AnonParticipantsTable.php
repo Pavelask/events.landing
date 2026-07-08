@@ -24,17 +24,19 @@ class AnonParticipantsTable
         return $table
             ->columns([
                 TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
+                    ->label('#')
+                    ->sortable()
+                    ->limit(5),
                 TextColumn::make('event.title')
                     ->label('Мероприятие')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->limit(20),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'registered' => 'Зарегистрирован',
+                        'registered' => 'Зарег.',
                         'arrived' => 'Прибыл',
                         'cancelled' => 'Отменён',
                         default => $state,
@@ -46,27 +48,32 @@ class AnonParticipantsTable
                         default => 'gray',
                     }),
                 TextColumn::make('created_at')
-                    ->label('Дата регистрации')
-                    ->date('d.m.Y')
-                    ->sortable(),
+                    ->label('Регистрация')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable()
+                    ->limit(16),
                 TextColumn::make('checked_in_at')
                     ->label('Чек-ин')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->limit(16),
                 IconColumn::make('ticket_sent_at')
                     ->label('Билет')
                     ->boolean()
                     ->sortable(),
                 IconColumn::make('souvenir_given')
-                    ->label('Сувенир')
+                    ->label('Сув.')
                     ->boolean(),
                 IconColumn::make('documentation_given')
-                    ->label('Документы')
+                    ->label('Док.')
                     ->boolean(),
                 IconColumn::make('clothing_given')
-                    ->label('Одежда')
+                    ->label('Оде.')
                     ->boolean(),
+            ])
+            ->contentGrid([
+                'md' => 1,
             ])
             ->filters([
                 SelectFilter::make('event_id')
@@ -300,11 +307,13 @@ class AnonParticipantsTable
                         Notification::make()->title('Регистрация отменена')->success()->send();
                     })
                     ->visible(fn (AnonParticipant $record) => $record->status !== 'cancelled'),
+            ])
+            ->editAction(
                 \Filament\Actions\EditAction::make()
                     ->label('')
                     ->icon('heroicon-o-pencil')
                     ->iconSize('md')
                     ->color('info'),
-            ]);
+            );
     }
 }
