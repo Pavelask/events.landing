@@ -170,6 +170,15 @@ class AnonParticipantsTable
 
                         $answers = $yandexApi->getAnswers($formId);
 
+                        if (empty($answers)) {
+                            Notification::make()
+                                ->title('Ошибка получения ответов')
+                                ->body('Не удалось получить ответы из Яндекс Формы. Проверьте токен и права доступа к форме. Form ID: ' . $formId)
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
                         $imported = 0;
                         $skipped = 0;
 
@@ -216,11 +225,13 @@ class AnonParticipantsTable
                     ->icon('heroicon-o-envelope')
                     ->action(function ($records) {
                         $count = 0;
+                        $errors = [];
                         foreach ($records as $record) {
                             if (!$record->ticket_sent_at && $record->event) {
                                 $yandexApi = app(YandexFormsApi::class);
                                 $formId = $record->event->formTemplate->yandex_form_id ?? null;
                                 if (!$formId) {
+                                    $errors[] = "ID #{$record->id}: нет form_id";
                                     continue;
                                 }
                                 $answer = $yandexApi->getAnswer($formId, $record->answer_id);
@@ -232,13 +243,23 @@ class AnonParticipantsTable
                                         Mail::to($email)->send(new \App\Mail\TicketMail($record, $ticketUrl));
                                         $record->update(['ticket_sent_at' => now()]);
                                         $count++;
+                                    } else {
+                                        $errors[] = "ID #{$record->id}: нет email в ответе";
                                     }
+                                } else {
+                                    $errors[] = "ID #{$record->id}: ошибка API (answer_id: {$record->answer_id})";
+                                }
                                 }
                             }
                         }
+                        $msg = "Отправлено билетов: {$count}";
+                        if (!empty($errors)) {
+                            $msg .= ". Ошибки: " . implode('; ', $errors);
+                        }
                         Notification::make()
-                            ->success()
-                            ->title("Отправлено билетов: {$count}")
+                            ->title($msg)
+                            ->danger(!empty($errors))
+                            ->success(empty($errors))
                             ->send();
                     }),
                 BulkAction::make('markArrived')
@@ -313,7 +334,19 @@ class AnonParticipantsTable
                                 $record->update(['ticket_sent_at' => now()]);
                                 $label = $record->ticket_sent_at ? 'Билет отправлен повторно' : 'Билет отправлен';
                                 Notification::make()->title($label)->success()->send();
+                            } else {
+                                Notification::make()
+                                    ->title('Ошибка: нет email')
+                                    ->body('В ответе Яндекс Формы не найден email. Answer ID: ' . $record->answer_id)
+                                    ->danger()
+                                    ->send();
                             }
+                        } else {
+                            Notification::make()
+                                ->title('Ошибка API Яндекс Форм')
+                                ->body('Не удалось получить данные ответа. Answer ID: ' . $record->answer_id . ', Form ID: ' . $formId)
+                                ->danger()
+                                ->send();
                         }
                     })
                     ->visible(fn (AnonParticipant $record) => !$record->ticket_sent_at),
