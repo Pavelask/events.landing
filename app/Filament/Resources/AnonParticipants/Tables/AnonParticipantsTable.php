@@ -116,7 +116,8 @@ class AnonParticipantsTable
                     ->label('Мероприятие')
                     ->relationship('event', 'title')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->placeholder('Все'),
                 SelectFilter::make('status')
                     ->label('Статус')
                     ->placeholder('Все')
@@ -124,21 +125,6 @@ class AnonParticipantsTable
                         'registered' => 'Зарегистрирован',
                         'arrived' => 'Прибыл',
                         'cancelled' => 'Отменён',
-                    ]),
-                Filter::make('ticket_sent')
-                    ->label('Билет')
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $data['value']
-                            ? $query->whereNotNull('ticket_sent_at')
-                            : $query->whereNull('ticket_sent_at');
-                    })
-                    ->form([
-                        Select::make('value')
-                            ->placeholder('Все')
-                            ->options([
-                                '1' => 'Отправлен',
-                                '0' => 'Не отправлен',
-                            ]),
                     ]),
             ])
             ->defaultSort('created_at', 'desc')
