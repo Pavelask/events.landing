@@ -185,10 +185,19 @@ class AnonParticipantsTable
                         foreach ($answers as $answer) {
                             $answerData = $answer['data'] ?? [];
                             $answerEventId = null;
-                            foreach ($answerData as $item) {
-                                if (mb_strtolower($item['label'] ?? '') === 'event_id' || mb_strtolower($item['id'] ?? '') === 'event_id') {
-                                    $answerEventId = $item['value'] ?? null;
-                                    break;
+
+                            // Формат getAnswers: data = [{value: ...}, ...] (без label/id)
+                            // Формат getAnswer: data = [{id, label, value}, ...]
+                            if (isset($answerData[0]['value']) && !isset($answerData[0]['label'])) {
+                                // Список: первое значение = event_id
+                                $answerEventId = $answerData[0]['value'] ?? null;
+                            } else {
+                                // Одиночный ответ: ищем по label/id
+                                foreach ($answerData as $item) {
+                                    if (mb_strtolower($item['label'] ?? '') === 'event_id' || mb_strtolower($item['id'] ?? '') === 'event_id') {
+                                        $answerEventId = $item['value'] ?? null;
+                                        break;
+                                    }
                                 }
                             }
                             if ($answerEventId != $data['event_id']) {
