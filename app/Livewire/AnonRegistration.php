@@ -40,7 +40,7 @@ class AnonRegistration extends Component
         $this->fieldErrors = [];
 
         if (empty($this->formData['name'] ?? null)) {
-            $this->fieldErrors['formData.name'] = 'Поле «Имя» обязательно для заполнения';
+            $this->fieldErrors['formData.name'] = 'Поле «ФИО» обязательно для заполнения';
         }
 
         if (empty($this->formData['email'] ?? null)) {
@@ -65,14 +65,20 @@ class AnonRegistration extends Component
                 continue;
             }
 
-            if ($question['type'] === 'date' && !empty($value)) {
-                if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $value)) {
-                    $this->fieldErrors['formData.' . $question['slug']] = "Формат даты: ДД.ММ.ГГГГ";
-                    continue;
+            if (!empty($value)) {
+                if ($question['type'] === 'date') {
+                    if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $value)) {
+                        $this->fieldErrors['formData.' . $question['slug']] = "Формат даты: ДД.ММ.ГГГГ";
+                        continue;
+                    }
+                    $parts = explode('.', $value);
+                    if (!checkdate((int)$parts[1], (int)$parts[0], (int)$parts[2])) {
+                        $this->fieldErrors['formData.' . $question['slug']] = "Некорректная дата";
+                    }
                 }
-                $parts = explode('.', $value);
-                if (!checkdate((int)$parts[1], (int)$parts[0], (int)$parts[2])) {
-                    $this->fieldErrors['formData.' . $question['slug']] = "Некорректная дата";
+
+                if ($question['type'] === 'select' && !empty($question['options']) && !in_array($value, $question['options'])) {
+                    $this->fieldErrors['formData.' . $question['slug']] = "Выберите значение из списка";
                 }
             }
         }

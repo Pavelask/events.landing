@@ -31,7 +31,7 @@
                     get nameErr() {
                         if (!this.nameTouched) return '';
                         let v = document.getElementById('name').value.trim();
-                        return v === '' ? 'Поле «Имя» обязательно для заполнения' : '';
+                        return v === '' ? 'Поле «ФИО» обязательно для заполнения' : '';
                     },
                     get emailErr() {
                         if (!this.emailTouched) return '';
@@ -59,7 +59,7 @@
 
                 <div class="mb-7">
                     <label for="name" class="block text-sm font-semibold mb-2"
-                        :style="nameErr || {{ $nameErrSrv ? 'true' : 'false' }} ? 'color: #ef4444' : 'color: var(--color-text)'">Имя *</label>
+                        :style="nameErr || {{ $nameErrSrv ? 'true' : 'false' }} ? 'color: #ef4444' : 'color: var(--color-text)'">ФИО *</label>
                     <input type="text" id="name" wire:model="formData.name"
                         class="w-full px-4 py-3 rounded-xl"
                         :style="(nameErr || {{ $nameErrSrv ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
@@ -270,3 +270,15 @@
         @endif
     </div>
 </div>
+
+@script
+<script>
+    Livewire.hook('morph.updated', ({ el }) => {
+        const firstErr = el.querySelector('input[style*="2px solid #ef4444"], textarea[style*="2px solid #ef4444"], select[style*="2px solid #ef4444"]');
+        if (firstErr) {
+            firstErr.focus();
+            firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+</script>
+@endscript
