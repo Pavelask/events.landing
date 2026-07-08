@@ -183,7 +183,14 @@ class AnonParticipantsTable
                         $skipped = 0;
 
                         foreach ($answers as $answer) {
-                            $answerEventId = $answer['answerer']['fields']['event_id'] ?? null;
+                            $answerData = $answer['data'] ?? [];
+                            $answerEventId = null;
+                            foreach ($answerData as $item) {
+                                if (strtolower($item['label'] ?? '') === 'event_id' || strtolower($item['id'] ?? '') === 'event_id') {
+                                    $answerEventId = $item['value'] ?? null;
+                                    break;
+                                }
+                            }
                             if ($answerEventId != $data['event_id']) {
                                 $skipped++;
                                 continue;
@@ -237,7 +244,14 @@ class AnonParticipantsTable
                                 $answer = $yandexApi->getAnswer($formId, $record->answer_id);
 
                                 if ($answer) {
-                                    $email = $answer['answerer']['email'] ?? null;
+                                    $email = null;
+                                    foreach ($answer['data'] ?? [] as $item) {
+                                        $label = strtolower($item['label'] ?? '');
+                                        if (in_array($label, ['почта', 'email', 'электронная почта'])) {
+                                            $email = $item['value'] ?? null;
+                                            break;
+                                        }
+                                    }
                                     if ($email) {
                                         $ticketUrl = route('ticket.show', $record->checkin_token);
                                         Mail::to($email)->send(new \App\Mail\TicketMail($record, $ticketUrl));
@@ -326,7 +340,14 @@ class AnonParticipantsTable
                         $answer = $yandexApi->getAnswer($formId, $record->answer_id);
 
                         if ($answer) {
-                            $email = $answer['answerer']['email'] ?? null;
+                            $email = null;
+                            foreach ($answer['data'] ?? [] as $item) {
+                                $label = strtolower($item['label'] ?? '');
+                                if (in_array($label, ['почта', 'email', 'электронная почта'])) {
+                                    $email = $item['value'] ?? null;
+                                    break;
+                                }
+                            }
                             if ($email) {
                                 $ticketUrl = route('ticket.show', $record->checkin_token);
                                 Mail::to($email)->send(new \App\Mail\TicketMail($record, $ticketUrl));

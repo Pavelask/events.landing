@@ -38,9 +38,21 @@ class TicketController extends Controller
             $formId = $anonParticipant->event->formTemplate->yandex_form_id ?? null;
             $answer = $yandexApi->getAnswer($formId, $anonParticipant->answer_id);
 
+            $answerData = $answer['data'] ?? [];
+            $name = 'Участник';
+            $email = '';
+            foreach ($answerData as $item) {
+                $label = strtolower($item['label'] ?? '');
+                if (in_array($label, ['фио участника', 'имя', 'name', 'фио'])) {
+                    $name = $item['value'] ?? 'Участник';
+                }
+                if (in_array($label, ['почта', 'email', 'электронная почта'])) {
+                    $email = $item['value'] ?? '';
+                }
+            }
             $participantData = [
-                'name' => $answer['answerer']['fields']['name'] ?? 'Участник',
-                'email' => $answer['answerer']['email'] ?? '',
+                'name' => $name,
+                'email' => $email,
                 'event_title' => $eventName,
             ];
 

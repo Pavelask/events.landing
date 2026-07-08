@@ -88,8 +88,8 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
                 'Статус' => $participant->status_label,
                 'Дата регистрации' => $participant->created_at->format('d.m.Y H:i'),
                 'Чек-ин' => $participant->checked_in_at?->format('d.m.Y H:i') ?? '',
-                'Имя' => $answerMap['имя'] ?? $answerMap['name'] ?? $answerMap['фио'] ?? '',
-                'Email' => $answerMap['email'] ?? $answerMap['электронная почта'] ?? '',
+                'Имя' => $answerMap['фио участника'] ?? $answerMap['имя'] ?? $answerMap['name'] ?? $answerMap['фио'] ?? '',
+                'Email' => $answerMap['почта'] ?? $answerMap['email'] ?? $answerMap['электронная почта'] ?? '',
                 'Телефон' => $answerMap['телефон'] ?? $answerMap['phone'] ?? '',
             ];
 

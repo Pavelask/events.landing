@@ -164,8 +164,8 @@ class EditAnonParticipant extends EditRecord
         }
 
         $personalData = [
-            'yandex_name' => $answerMap['имя'] ?? $answerMap['name'] ?? $answerMap['фио'] ?? '',
-            'yandex_email' => $answerMap['email'] ?? $answerMap['электронная почта'] ?? '',
+            'yandex_name' => $answerMap['фио участника'] ?? $answerMap['имя'] ?? $answerMap['name'] ?? $answerMap['фио'] ?? '',
+            'yandex_email' => $answerMap['почта'] ?? $answerMap['email'] ?? $answerMap['электронная почта'] ?? '',
             'yandex_phone' => $answerMap['телефон'] ?? $answerMap['phone'] ?? '',
         ];
 
