@@ -75,8 +75,8 @@ class AnonParticipantsTable
                             TextColumn::make('souvenir_text')
                                 ->label('Сувенир')
                                 ->getStateUsing(fn () => 'Сувенир')
-                                ->weight('bold')
-                                ->grow(false),
+                                ->grow(false)
+                                ->size('sm'),
                             ToggleColumn::make('souvenir_given')
                                 ->label('Сувенир')
                                 ->onColor('success')
@@ -87,8 +87,8 @@ class AnonParticipantsTable
                             TextColumn::make('documentation_text')
                                 ->label('Документы')
                                 ->getStateUsing(fn () => 'Документы')
-                                ->weight('bold')
-                                ->grow(false),
+                                ->grow(false)
+                                ->size('sm'),
                             ToggleColumn::make('documentation_given')
                                 ->label('Документы')
                                 ->onColor('success')
@@ -99,8 +99,8 @@ class AnonParticipantsTable
                             TextColumn::make('clothing_text')
                                 ->label('Одежда')
                                 ->getStateUsing(fn () => 'Одежда')
-                                ->weight('bold')
-                                ->grow(false),
+                                ->grow(false)
+                                ->size('sm'),
                             ToggleColumn::make('clothing_given')
                                 ->label('Одежда')
                                 ->onColor('success')
