@@ -42,7 +42,8 @@
                     <input type="text" id="name" wire:model="formData.name"
                         class="w-full px-4 py-3 rounded-xl"
                         style="border: {{ $nameErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
-                        placeholder="Введите имя">
+                        placeholder="Введите имя"
+                        @if($nameErr) data-err @endif>
                     @if($nameErr)
                         <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.name'] }}</p>
                     @endif
@@ -54,7 +55,8 @@
                     <input type="email" id="email" wire:model="formData.email"
                         class="w-full px-4 py-3 rounded-xl"
                         style="border: {{ $emailErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
-                        placeholder="email@example.com">
+                        placeholder="email@example.com"
+                        @if($emailErr) data-err @endif>
                     @if($emailErr)
                         <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.email'] }}</p>
                     @endif
@@ -111,7 +113,8 @@
                             <input type="text" wire:model="formData.{{ $question['slug'] }}"
                                 class="w-full px-4 py-3 rounded-xl"
                                 style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
-                                placeholder="Введите значение">
+                                placeholder="Введите значение"
+                                @if($fieldErr) data-err @endif>
                             @if($fieldErr)
                                 <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
                             @endif
@@ -121,7 +124,8 @@
                                 class="w-full px-4 py-3 rounded-xl"
                                 style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
                                 rows="3"
-                                placeholder="Введите текст"></textarea>
+                                placeholder="Введите текст"
+                                @if($fieldErr) data-err @endif></textarea>
                             @if($fieldErr)
                                 <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.' . $question['slug']] }}</p>
                             @endif
@@ -158,7 +162,8 @@
                             @else
                                 <select wire:model="formData.{{ $question['slug'] }}"
                                     class="w-full px-4 py-3 rounded-xl"
-                                    style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;">
+                                    style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
+                                    @if($fieldErr) data-err @endif>
                                     <option value="">Выберите...</option>
                                     @foreach ($question['options'] ?? [] as $option)
                                         <option value="{{ $option }}">{{ $option }}</option>
@@ -209,6 +214,7 @@
                                 style="border: {{ $fieldErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
                                 placeholder="ДД.ММ.ГГГГ"
                                 maxlength="10"
+                                @if($fieldErr) data-err @endif
                                 x-data
                                 x-on:input="
                                     let v = $el.value.replace(/[^0-9]/g, '');
@@ -241,7 +247,7 @@
 @script
 <script>
     Livewire.hook('morph.updated', ({ el }) => {
-        const firstErr = el.querySelector('input[style*="2px solid #ef4444"], textarea[style*="2px solid #ef4444"], select[style*="2px solid #ef4444"]');
+        const firstErr = el.querySelector('[data-err]');
         if (firstErr) {
             firstErr.focus();
             firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
