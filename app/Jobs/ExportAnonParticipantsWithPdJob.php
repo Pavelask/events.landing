@@ -10,9 +10,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\AnonParticipantWithPdExport;
 
 class ExportAnonParticipantsWithPdJob implements ShouldQueue
 {
@@ -25,7 +24,7 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
 
     public function handle(YandexFormsApi $yandexApi): void
     {
-        $query = AnonParticipant::with('event');
+        $query = AnonParticipant::with('event.formTemplate');
 
         if (!empty($this->filters['event_id'])) {
             $query->where('event_id', $this->filters['event_id']);
@@ -44,17 +43,43 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
 
         $data = [];
         $allSlugs = collect();
+        $errors = [];
+        $skippedNoForm = 0;
+        $skippedNoAnswer = 0;
+        $skippedLocalOnly = 0;
 
         foreach ($participants as $participant) {
             $formId = $participant->event->formTemplate->yandex_form_id ?? null;
             if (!$formId) {
+                $skippedNoForm++;
+                $errors[] = "ID #{$participant->id}: нет form_id у мероприятия";
+                continue;
+            }
+
+            if (str_starts_with($participant->answer_id, 'LOCAL_')) {
+                $skippedLocalOnly++;
+                $errors[] = "ID #{$participant->id}: локальный ответ ({$participant->answer_id}), данные не в Яндекс Форме";
                 continue;
             }
 
             $answer = $yandexApi->getAnswer($formId, $participant->answer_id);
 
             if (!$answer) {
+                $skippedNoAnswer++;
+                $errors[] = "ID #{$participant->id}: API вернул ошибку (answer_id: {$participant->answer_id}, form_id: {$formId})";
+                Log::warning('ExportAnonParticipantsWithPdJob: getAnswer failed', [
+                    'participant_id' => $participant->id,
+                    'answer_id' => $participant->answer_id,
+                    'form_id' => $formId,
+                ]);
                 continue;
+            }
+
+            $answerData = $answer['data'] ?? [];
+            $answerMap = [];
+            foreach ($answerData as $item) {
+                $label = $item['label'] ?? $item['id'] ?? '';
+                $answerMap[strtolower($label)] = $item['value'] ?? '';
             }
 
             $row = [
@@ -63,19 +88,32 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
                 'Статус' => $participant->status_label,
                 'Дата регистрации' => $participant->created_at->format('d.m.Y H:i'),
                 'Чек-ин' => $participant->checked_in_at?->format('d.m.Y H:i') ?? '',
-                'Имя' => $answer['answerer']['fields']['name'] ?? '',
-                'Email' => $answer['answerer']['email'] ?? '',
-                'Телефон' => $answer['answerer']['fields']['phone'] ?? '',
+                'Имя' => $answerMap['имя'] ?? $answerMap['name'] ?? $answerMap['фио'] ?? '',
+                'Email' => $answerMap['email'] ?? $answerMap['электронная почта'] ?? '',
+                'Телефон' => $answerMap['телефон'] ?? $answerMap['phone'] ?? '',
             ];
 
             $eventQuestions = $participant->event->questions ?? [];
             foreach ($eventQuestions as $index => $question) {
                 $slug = $question['slug'] ?? "custom_" . ($index + 1);
+                $label = strtolower($question['label'] ?? '');
                 $allSlugs->push($slug);
-                $row[$slug] = $answer['answerer']['fields']["custom_" . ($index + 1)] ?? '';
+                $row[$slug] = $answerMap[$label] ?? '';
             }
 
             $data[] = $row;
+        }
+
+        if (empty($data)) {
+            $errorMsg = "Нет данных для экспорта.";
+            if (!empty($errors)) {
+                $errorMsg .= " Ошибки: " . implode('; ', array_slice($errors, 0, 5));
+                if (count($errors) > 5) {
+                    $errorMsg .= "... (всего " . count($errors) . ")";
+                }
+            }
+            $this->notifyAdmin($errorMsg);
+            return;
         }
 
         $allSlugs = $allSlugs->unique()->values();
@@ -115,9 +153,17 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
 
         Excel::store($export, $path, 'local');
 
+        $body = "Файл {$filename} готов. Экспортировано: " . count($data) . " из " . $participants->count();
+        if (!empty($errors)) {
+            $body .= ". Пропущено/ошибки (" . count($errors) . "): " . implode('; ', array_slice($errors, 0, 3));
+            if (count($errors) > 3) {
+                $body .= "...";
+            }
+        }
+
         Notification::make()
             ->title('Экспорт с ПД готов')
-            ->body("Файл {$filename} готов к скачиванию. Ссылка действительна 1 час.")
+            ->body($body)
             ->success()
             ->send();
     }
@@ -127,7 +173,7 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
         Notification::make()
             ->title('Экспорт с ПД')
             ->body($message)
-            ->warning()
+            ->danger()
             ->send();
     }
 }
