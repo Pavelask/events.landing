@@ -307,13 +307,11 @@ class AnonParticipantsTable
                         Notification::make()->title('Регистрация отменена')->success()->send();
                     })
                     ->visible(fn (AnonParticipant $record) => $record->status !== 'cancelled'),
-            ])
-            ->editAction(
                 \Filament\Actions\EditAction::make()
                     ->label('')
                     ->icon('heroicon-o-pencil')
                     ->iconSize('md')
                     ->color('info'),
-            );
+            ]);
     }
 }
