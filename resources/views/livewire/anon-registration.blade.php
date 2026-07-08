@@ -23,7 +23,29 @@
         @endif
 
         @if (!$submitted)
-            <form wire:submit="submit" class="rounded-2xl p-8" style="background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card);">
+            <form wire:submit="submit" class="rounded-2xl p-8" style="background-color: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card);"
+                x-on:submit="if (!validate()) $event.preventDefault()"
+                x-data="{
+                    nameTouched: false,
+                    emailTouched: false,
+                    get nameErr() {
+                        if (!this.nameTouched) return '';
+                        let v = document.getElementById('name').value.trim();
+                        return v === '' ? 'Поле «Имя» обязательно для заполнения' : '';
+                    },
+                    get emailErr() {
+                        if (!this.emailTouched) return '';
+                        let v = document.getElementById('email').value.trim();
+                        if (v === '') return 'Поле «Email» обязательно для заполнения';
+                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'Введите корректный email адрес';
+                        return '';
+                    },
+                    validate() {
+                        this.nameTouched = true;
+                        this.emailTouched = true;
+                        return this.nameErr === '' && this.emailErr === '';
+                    }
+                }">
                 <input type="hidden" wire:model="formLoadedAt">
 
                 <div style="position:absolute;left:-9999px" aria-hidden="true">
@@ -31,30 +53,34 @@
                 </div>
 
                 @php
-                    $nameErr = !empty($fieldErrors['formData.name']);
-                    $emailErr = !empty($fieldErrors['formData.email']);
+                    $nameErrSrv = !empty($fieldErrors['formData.name']);
+                    $emailErrSrv = !empty($fieldErrors['formData.email']);
                 @endphp
 
                 <div class="mb-7">
-                    <label for="name" class="block text-sm font-semibold mb-2" style="color: {{ $nameErr ? '#ef4444' : 'var(--color-text)' }};">Имя *</label>
+                    <label for="name" class="block text-sm font-semibold mb-2"
+                        :style="nameErr || {{ $nameErrSrv ? 'true' : 'false' }} ? 'color: #ef4444' : 'color: var(--color-text)'">Имя *</label>
                     <input type="text" id="name" wire:model="formData.name"
                         class="w-full px-4 py-3 rounded-xl"
-                        style="border: {{ $nameErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
+                        :style="(nameErr || {{ $nameErrSrv ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
                         placeholder="Введите имя"
-                        required>
-                    @if($nameErr)
+                        x-on:blur="nameTouched = true">
+                    <p x-show="nameErr" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="nameErr"></p>
+                    @if($nameErrSrv && !$nameErr)
                         <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.name'] }}</p>
                     @endif
                 </div>
 
                 <div class="mb-7">
-                    <label for="email" class="block text-sm font-semibold mb-2" style="color: {{ $emailErr ? '#ef4444' : 'var(--color-text)' }};">Email *</label>
+                    <label for="email" class="block text-sm font-semibold mb-2"
+                        :style="emailErr || {{ $emailErrSrv ? 'true' : 'false' }} ? 'color: #ef4444' : 'color: var(--color-text)'">Email *</label>
                     <input type="email" id="email" wire:model="formData.email"
                         class="w-full px-4 py-3 rounded-xl"
-                        style="border: {{ $emailErr ? '2px solid #ef4444' : '1px solid var(--color-border)' }}; background-color: var(--color-surface); color: var(--color-text); outline: none;"
+                        :style="(emailErr || {{ $emailErrSrv ? 'true' : 'false' }}) ? 'border: 2px solid #ef4444; background-color: var(--color-surface); color: var(--color-text); outline: none;' : 'border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); outline: none;'"
                         placeholder="email@example.com"
-                        required>
-                    @if($emailErr)
+                        x-on:blur="emailTouched = true">
+                    <p x-show="emailErr" x-cloak class="mt-1 text-sm" style="color: #ef4444;" x-text="emailErr"></p>
+                    @if($emailErrSrv && !$emailErr)
                         <p class="mt-1 text-sm" style="color: #ef4444;">{{ $fieldErrors['formData.email'] }}</p>
                     @endif
                 </div>
@@ -235,7 +261,8 @@
                     style="background-color: var(--color-primary); border-radius: var(--radius-btn);"
                     onmouseover="this.style.backgroundColor='var(--color-primary-hover)'"
                     onmouseout="this.style.backgroundColor='var(--color-primary)'"
-                    wire:loading.attr="disabled">
+                    wire:loading.attr="disabled"
+                    x-on:click="if (!validate()) { $event.preventDefault(); }">
                     <span wire:loading.remove>Зарегистрироваться</span>
                     <span wire:loading>Отправка...</span>
                 </button>
