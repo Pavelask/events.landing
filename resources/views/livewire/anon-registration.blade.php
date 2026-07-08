@@ -246,18 +246,27 @@
 
 @script
 <script>
-    Livewire.hook('morph.updated', ({ el }) => {
+    function focusFirstError(el) {
         const form = el.querySelector('form');
-        if (!form) return;
+        if (!form) return false;
         const walker = document.createTreeWalker(form, NodeFilter.SHOW_ELEMENT);
         while (walker.nextNode()) {
             const node = walker.currentNode;
             if (node.hasAttribute('data-err') && (node.tagName === 'INPUT' || node.tagName === 'TEXTAREA' || node.tagName === 'SELECT')) {
                 node.focus();
                 node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                break;
+                return true;
             }
         }
+        return false;
+    }
+
+    Livewire.hook('morph.updated', ({ el }) => {
+        requestAnimationFrame(() => {
+            if (!focusFirstError(el)) {
+                setTimeout(() => focusFirstError(el), 100);
+            }
+        });
     });
 </script>
 @endscript
