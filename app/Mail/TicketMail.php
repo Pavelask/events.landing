@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\AnonParticipant;
 use App\Models\Participant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -15,7 +16,7 @@ class TicketMail extends Mailable
     use SerializesModels;
 
     public function __construct(
-        public Participant $participant,
+        public Participant|AnonParticipant $participant,
         public string $ticketUrl
     ) {}
 
