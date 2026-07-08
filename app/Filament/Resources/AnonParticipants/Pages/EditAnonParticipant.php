@@ -159,8 +159,8 @@ class EditAnonParticipant extends EditRecord
         $answerData = $answer['data'] ?? [];
         $answerMap = [];
         foreach ($answerData as $item) {
-            $label = strtolower($item['label'] ?? $item['id'] ?? '');
-            $answerMap[$label] = $item['value'] ?? '';
+            $label = $item['label'] ?? $item['id'] ?? '';
+            $answerMap[mb_mb_strtolower($label)] = $item['value'] ?? '';
         }
 
         $personalData = [
@@ -171,7 +171,7 @@ class EditAnonParticipant extends EditRecord
 
         $questions = $record->event->formTemplate->questions ?? [];
         foreach ($questions as $question) {
-            $label = strtolower($question['label'] ?? '');
+            $label = mb_strtolower($question['label'] ?? '');
             $personalData['custom_' . $question['slug']] = $answerMap[$label] ?? '';
         }
 

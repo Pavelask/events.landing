@@ -42,7 +42,7 @@ class TicketController extends Controller
             $name = 'Участник';
             $email = '';
             foreach ($answerData as $item) {
-                $label = strtolower($item['label'] ?? '');
+                $label = mb_strtolower($item['label'] ?? '');
                 if (in_array($label, ['фио участника', 'имя', 'name', 'фио'])) {
                     $name = $item['value'] ?? 'Участник';
                 }

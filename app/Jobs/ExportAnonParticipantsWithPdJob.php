@@ -79,7 +79,7 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
             $answerMap = [];
             foreach ($answerData as $item) {
                 $label = $item['label'] ?? $item['id'] ?? '';
-                $answerMap[strtolower($label)] = $item['value'] ?? '';
+                $answerMap[mb_strtolower($label)] = $item['value'] ?? '';
             }
 
             $row = [
@@ -96,7 +96,7 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
             $eventQuestions = $participant->event->questions ?? [];
             foreach ($eventQuestions as $index => $question) {
                 $slug = $question['slug'] ?? "custom_" . ($index + 1);
-                $label = strtolower($question['label'] ?? '');
+                $label = mb_strtolower($question['label'] ?? '');
                 $allSlugs->push($slug);
                 $row[$slug] = $answerMap[$label] ?? '';
             }

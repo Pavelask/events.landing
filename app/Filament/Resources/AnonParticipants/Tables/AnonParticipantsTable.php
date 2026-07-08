@@ -186,7 +186,7 @@ class AnonParticipantsTable
                             $answerData = $answer['data'] ?? [];
                             $answerEventId = null;
                             foreach ($answerData as $item) {
-                                if (strtolower($item['label'] ?? '') === 'event_id' || strtolower($item['id'] ?? '') === 'event_id') {
+                                if (mb_strtolower($item['label'] ?? '') === 'event_id' || mb_strtolower($item['id'] ?? '') === 'event_id') {
                                     $answerEventId = $item['value'] ?? null;
                                     break;
                                 }
@@ -246,7 +246,7 @@ class AnonParticipantsTable
                                 if ($answer) {
                                     $email = null;
                                     foreach ($answer['data'] ?? [] as $item) {
-                                        $label = strtolower($item['label'] ?? '');
+                                        $label = mb_strtolower($item['label'] ?? '');
                                         if (in_array($label, ['почта', 'email', 'электронная почта'])) {
                                             $email = $item['value'] ?? null;
                                             break;
@@ -342,7 +342,7 @@ class AnonParticipantsTable
                         if ($answer) {
                             $email = null;
                             foreach ($answer['data'] ?? [] as $item) {
-                                $label = strtolower($item['label'] ?? '');
+                                $label = mb_strtolower($item['label'] ?? '');
                                 if (in_array($label, ['почта', 'email', 'электронная почта'])) {
                                     $email = $item['value'] ?? null;
                                     break;

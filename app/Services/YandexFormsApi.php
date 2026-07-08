@@ -142,9 +142,9 @@ class YandexFormsApi
         return array_filter($allAnswers, function ($answer) use ($email) {
             $answerData = $answer['data'] ?? [];
             foreach ($answerData as $item) {
-                $label = strtolower($item['label'] ?? '');
+                $label = mb_strtolower($item['label'] ?? '');
                 if (in_array($label, ['email', 'электронная почта', 'е-мейл'])) {
-                    return strtolower($item['value'] ?? '') === strtolower($email);
+                    return mb_strtolower($item['value'] ?? '') === mb_mb_strtolower($email);
                 }
             }
             return false;
