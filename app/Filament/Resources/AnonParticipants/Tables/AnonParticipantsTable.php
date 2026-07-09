@@ -347,6 +347,56 @@ class AnonParticipantsTable
                             ->info()
                             ->send();
                     }),
+                \Filament\Actions\BulkAction::make('sendTickets')
+                    ->label('Отправить билеты')
+                    ->icon('heroicon-o-envelope')
+                    ->requiresConfirmation()
+                    ->modalHeading('Отправить билеты?')
+                    ->modalDescription('Билеты будут отправлены выделенным участникам')
+                    ->action(function ($records) {
+                        $count = 0;
+                        $errors = [];
+                        foreach ($records as $record) {
+                            if (!$record->ticket_sent_at && $record->event) {
+                                $yandexApi = app(YandexFormsApi::class);
+                                $formId = $record->event->formTemplate->yandex_form_id ?? null;
+                                if (!$formId) {
+                                    $errors[] = "ID #{$record->id}: нет form_id";
+                                    continue;
+                                }
+                                $answer = $yandexApi->getAnswer($formId, $record->answer_id);
+                                if ($answer) {
+                                    $email = null;
+                                    foreach ($answer['data'] ?? [] as $item) {
+                                        $label = mb_strtolower($item['label'] ?? '');
+                                        if (in_array($label, ['почта', 'email', 'электронная почта'])) {
+                                            $email = $item['value'] ?? null;
+                                            break;
+                                        }
+                                    }
+                                    if ($email) {
+                                        try {
+                                            $ticketUrl = route('ticket.show', $record->checkin_token);
+                                            Mail::to($email)->send(new \App\Mail\TicketMail($record, $ticketUrl));
+                                            $record->update(['ticket_sent_at' => now()]);
+                                            $count++;
+                                        } catch (\Exception $e) {
+                                            $errors[] = "ID #{$record->id}: " . $e->getMessage();
+                                        }
+                                    } else {
+                                        $errors[] = "ID #{$record->id}: нет email";
+                                    }
+                                } else {
+                                    $errors[] = "ID #{$record->id}: ошибка API";
+                                }
+                            }
+                        }
+                        $msg = "Отправлено билетов: {$count}";
+                        if (!empty($errors)) {
+                            $msg .= ". Ошибки: " . implode('; ', $errors);
+                        }
+                        Notification::make()->title($msg)->danger(!empty($errors))->success(empty($errors))->send();
+                    }),
                 \Filament\Actions\BulkAction::make('markArrived')
                     ->label('Отметить прибывших')
                     ->icon('heroicon-o-check-badge')
