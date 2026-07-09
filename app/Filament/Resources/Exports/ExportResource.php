@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Exports;
 
 use App\Filament\Resources\Exports\Pages\ListExports;
 use App\Models\Export;
+use BackedEnum;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\TextEntry;
@@ -13,10 +14,19 @@ use Filament\Tables;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ExportResource extends Resource
 {
     protected static ?string $model = Export::class;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Мероприятия';
+
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-arrow-down';
+
+    protected static ?int $navigationSort = 6;
+
+    protected static ?string $navigationLabel = 'Экспорты';
 
     protected static ?string $slug = 'exports';
 
