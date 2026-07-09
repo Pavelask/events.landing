@@ -27,6 +27,11 @@ class ExportStatus extends Component
         $this->checkExportStatus();
     }
 
+    public static function canView(): bool
+    {
+        return true;
+    }
+
     public function startExport(?int $eventId = null): void
     {
         $this->isExporting = true;
