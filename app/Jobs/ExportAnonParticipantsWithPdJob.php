@@ -26,7 +26,9 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
     {
         $query = AnonParticipant::with('event.formTemplate');
 
-        if (!empty($this->filters['event_id'])) {
+        if (!empty($this->filters['ids'])) {
+            $query->whereIn('id', $this->filters['ids']);
+        } elseif (!empty($this->filters['event_id'])) {
             $query->where('event_id', $this->filters['event_id']);
         }
 

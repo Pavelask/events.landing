@@ -177,36 +177,6 @@ class AnonParticipantsTable
             ->recordUrl(fn (AnonParticipant $record): string => \App\Filament\Resources\AnonParticipants\AnonParticipantResource::getUrl('edit', ['record' => $record]))
             ->headerActions([
                 \Filament\Actions\ActionGroup::make([
-                    \Filament\Actions\Action::make('exportAll')
-                        ->label('Экспорт участников')
-                        ->icon('heroicon-o-document-arrow-down')
-                        ->requiresConfirmation()
-                        ->modalHeading('Экспорт участников')
-                        ->modalDescription('Файл будет сформирован в фоне и скачан автоматически')
-                        ->form([
-                            Select::make('event_id')
-                                ->label('Мероприятие')
-                                ->options(fn () => Event::pluck('title', 'id'))
-                                ->searchable()
-                                ->preload()
-                                ->nullable(),
-                        ])
-                        ->action(function (array $data) {
-                            $filters = [];
-                            if (!empty($data['event_id'])) {
-                                $filters['event_id'] = $data['event_id'];
-                            }
-
-                            \App\Jobs\ExportAnonParticipantsWithPdJob::dispatch($filters, auth()->id());
-
-                            session(['export_started_at' => now()->timestamp]);
-
-                            Notification::make()
-                                ->title('Экспорт запущен')
-                                ->body('Формируется файл экспорта...')
-                                ->info()
-                                ->send();
-                        }),
                     \Filament\Actions\Action::make('sendTicketsAll')
                         ->label('Отправить билеты')
                         ->icon('heroicon-o-envelope')
@@ -446,25 +416,23 @@ class AnonParticipantsTable
             ])
             ->bulkActions([
                 \Filament\Actions\BulkAction::make('exportSelected')
-                    ->label('')
+                    ->label('Экспорт участников')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->requiresConfirmation()
+                    ->modalHeading('Экспорт участников')
+                    ->modalDescription('Файл будет сформирован в фоне и скачан автоматически')
                     ->action(function ($records) {
-                        $data = [];
-                        foreach ($records as $record) {
-                            $data[] = [
-                                'ID' => $record->id,
-                                'Мероприятие' => $record->event->title ?? '',
-                                'Answer ID' => $record->answer_id,
-                                'Статус' => $record->status_label,
-                                'Дата' => $record->created_at->format('d.m.Y H:i'),
-                            ];
-                        }
-                        $filename = 'selected_' . now()->format('Y-m-d_H-i') . '.xlsx';
-                        $export = new class($data) implements \Maatwebsite\Excel\Concerns\FromCollection {
-                            public function __construct(private array $data) {}
-                            public function collection() { return collect($this->data); }
-                        };
-                        (new \Maatwebsite\Excel\Excel)->store($export, "exports/{$filename}", 'private');
-                        return response()->download(storage_path("app/private/exports/{$filename}"))->deleteFileAfterSend(true);
+                        $ids = $records->pluck('id')->toArray();
+
+                        \App\Jobs\ExportAnonParticipantsWithPdJob::dispatch(['ids' => $ids], auth()->id());
+
+                        session(['export_started_at' => now()->timestamp]);
+
+                        Notification::make()
+                            ->title('Экспорт запущен')
+                            ->body('Формируется файл экспорта...')
+                            ->info()
+                            ->send();
                     }),
             ])
             ->actions([
