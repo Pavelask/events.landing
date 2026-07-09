@@ -153,6 +153,17 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
 
         Excel::store($export, $path, 'local');
 
+        \App\Models\Export::create([
+            'file_disk' => 'local',
+            'file_name' => $filename,
+            'exporter' => 'App\\Exports\\AnonParticipantExport',
+            'total_rows' => $participants->count(),
+            'successful_rows' => count($data),
+            'processed_rows' => count($data),
+            'user_id' => $this->adminId,
+            'completed_at' => now(),
+        ]);
+
         $body = "Файл {$filename} готов. Экспортировано: " . count($data) . " из " . $participants->count();
         if (!empty($errors)) {
             $body .= ". Пропущено/ошибки (" . count($errors) . "): " . implode('; ', array_slice($errors, 0, 3));

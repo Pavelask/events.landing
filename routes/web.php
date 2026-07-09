@@ -121,7 +121,7 @@ Route::post('/recovery/code', [RecoveryController::class, 'verifyCode'])->name('
 
 // Export download
 Route::get('/exports/{filename}', function (string $filename) {
-    $path = storage_path("app/exports/{$filename}");
+    $path = storage_path("app/private/exports/{$filename}");
 
     if (!file_exists($path)) {
         abort(404);
