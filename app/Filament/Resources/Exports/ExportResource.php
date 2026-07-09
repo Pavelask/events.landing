@@ -18,14 +18,6 @@ class ExportResource extends Resource
 {
     protected static ?string $model = Export::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-arrow-down';
-
-    protected static ?string $navigationGroup = 'Система';
-
-    protected static ?string $navigationLabel = 'Экспорты';
-
-    protected static ?string $navigationSort = 10;
-
     protected static ?string $slug = 'exports';
 
     public static function table(Table $table): Table
