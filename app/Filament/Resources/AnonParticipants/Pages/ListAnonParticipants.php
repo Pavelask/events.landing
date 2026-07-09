@@ -8,4 +8,11 @@ use Filament\Resources\Pages\ListRecords;
 class ListAnonParticipants extends ListRecords
 {
     protected static string $resource = AnonParticipantResource::class;
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Livewire\ExportStatus::class,
+        ];
+    }
 }

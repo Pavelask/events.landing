@@ -180,8 +180,32 @@ class AnonParticipantsTable
                     \Filament\Actions\Action::make('exportAll')
                         ->label('Экспорт участников')
                         ->icon('heroicon-o-document-arrow-down')
-                        ->action(function () {
-                            return \App\Exports\AnonParticipantExport::class;
+                        ->requiresConfirmation()
+                        ->modalHeading('Экспорт участников')
+                        ->modalDescription('Файл будет сформирован в фоне и скачан автоматически')
+                        ->form([
+                            Select::make('event_id')
+                                ->label('Мероприятие')
+                                ->options(fn () => Event::pluck('title', 'id'))
+                                ->searchable()
+                                ->preload()
+                                ->nullable(),
+                        ])
+                        ->action(function (array $data) {
+                            $filters = [];
+                            if (!empty($data['event_id'])) {
+                                $filters['event_id'] = $data['event_id'];
+                            }
+
+                            \App\Jobs\ExportAnonParticipantsWithPdJob::dispatch($filters, auth()->id());
+
+                            session(['export_started_at' => now()->timestamp]);
+
+                            Notification::make()
+                                ->title('Экспорт запущен')
+                                ->body('Формируется файл экспорта...')
+                                ->info()
+                                ->send();
                         }),
                     \Filament\Actions\Action::make('sendTicketsAll')
                         ->label('Отправить билеты')
