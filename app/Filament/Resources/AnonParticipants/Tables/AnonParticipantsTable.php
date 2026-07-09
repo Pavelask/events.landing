@@ -295,10 +295,14 @@ class AnonParticipantsTable
                                         }
                                     }
                                     if ($email) {
-                                        $ticketUrl = route('ticket.show', $record->checkin_token);
-                                        Mail::to($email)->send(new \App\Mail\TicketMail($record, $ticketUrl));
-                                        $record->update(['ticket_sent_at' => now()]);
-                                        $count++;
+                                        try {
+                                            $ticketUrl = route('ticket.show', $record->checkin_token);
+                                            Mail::to($email)->send(new \App\Mail\TicketMail($record, $ticketUrl));
+                                            $record->update(['ticket_sent_at' => now()]);
+                                            $count++;
+                                        } catch (\Exception $e) {
+                                            $errors[] = "ID #{$record->id}: " . $e->getMessage();
+                                        }
                                     } else {
                                         $errors[] = "ID #{$record->id}: нет email в ответе";
                                     }
@@ -329,6 +333,58 @@ class AnonParticipantsTable
                                 ]);
                             }
                         }
+                    }),
+                BulkAction::make('cancelArrival')
+                    ->label('Отменить прибытие')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->requiresConfirmation()
+                    ->modalHeading('Отменить прибытие?')
+                    ->modalDescription('Статус будет изменён на "Зарегистрирован"')
+                    ->action(function ($records) {
+                        $count = 0;
+                        foreach ($records as $record) {
+                            if ($record->checked_in_at) {
+                                $record->update([
+                                    'checked_in_at' => null,
+                                    'status' => 'registered',
+                                ]);
+                                $count++;
+                            }
+                        }
+                        Notification::make()->title("Отменено прибытие: {$count}")->success()->send();
+                    }),
+                BulkAction::make('resetTickets')
+                    ->label('Сбросить билеты')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->requiresConfirmation()
+                    ->modalHeading('Сбросить билеты?')
+                    ->modalDescription('Билеты можно будет отправить повторно')
+                    ->action(function ($records) {
+                        $count = 0;
+                        foreach ($records as $record) {
+                            if ($record->ticket_sent_at) {
+                                $record->update(['ticket_sent_at' => null]);
+                                $count++;
+                            }
+                        }
+                        Notification::make()->title("Сброшено билетов: {$count}")->success()->send();
+                    }),
+                BulkAction::make('cancelRegistration')
+                    ->label('Отменить регистрацию')
+                    ->icon('heroicon-o-x-mark')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Отменить регистрацию?')
+                    ->modalDescription('Участники будут отменены')
+                    ->action(function ($records) {
+                        $count = 0;
+                        foreach ($records as $record) {
+                            if ($record->status !== 'cancelled') {
+                                $record->update(['status' => 'cancelled']);
+                                $count++;
+                            }
+                        }
+                        Notification::make()->title("Отменено регистраций: {$count}")->success()->send();
                     }),
                 BulkAction::make('exportWithPd')
                     ->label('Экспорт с ПД')
