@@ -12,11 +12,13 @@
         .ticket-header h1 { font-size: 18px; margin-bottom: 8px; }
         .ticket-header p { font-size: 14px; opacity: 0.9; }
         .ticket-body { padding: 24px; }
-        .ticket-info { margin-bottom: 20px; }
-        .ticket-info label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
-        .ticket-info span { font-size: 16px; font-weight: 500; color: #333; }
+        .ticket-info { margin-bottom: 20px; text-align: center; }
+        .ticket-info label { display: block; font-size: 24px; color: #666; margin-bottom: 4px; font-weight: 600; }
+        .ticket-info span { font-size: 28px; font-weight: 500; color: #333; }
         .qr-code { text-align: center; padding: 20px; background: #f9f9f9; border-radius: 8px; margin: 20px 0; }
         .qr-code svg { max-width: 100%; height: auto; }
+        .ticket-number { text-align: center; margin-top: 16px; font-size: 18px; color: #666; }
+        .ticket-number span { font-weight: 700; color: #333; font-size: 22px; }
     </style>
 </head>
 <body>
@@ -27,7 +29,7 @@
         </div>
         <div class="ticket-body">
             <div class="ticket-info">
-                <label>Участник</label>
+                <label>Участник мероприятия</label>
                 <span>{{ $participant->name }}</span>
             </div>
             @if($participant->email)
@@ -44,6 +46,9 @@
             @endif
             <div class="qr-code">
                 {!! $qrcode !!}
+            </div>
+            <div class="ticket-number">
+                <span>{{ $participant->answer_id }}</span>
             </div>
         </div>
     </div>

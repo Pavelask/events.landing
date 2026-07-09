@@ -9,11 +9,13 @@
         .header h1 { font-size: 20px; margin: 0 0 10px 0; font-weight: 700; }
         .header p { font-size: 14px; margin: 0; }
         .body { padding: 32px; }
-        .info { margin-bottom: 16px; }
-        .info label { display: block; font-size: 11px; color: #666; margin-bottom: 4px; text-transform: uppercase; }
-        .info span { font-size: 16px; color: #333; font-weight: 600; }
+        .info { margin-bottom: 16px; text-align: center; }
+        .info label { display: block; font-size: 24px; color: #666; margin-bottom: 4px; text-transform: uppercase; font-weight: 700; }
+        .info span { font-size: 30px; color: #333; font-weight: 600; }
         .qr { text-align: center; padding: 24px; background: #f9f9f9; border-radius: 8px; margin: 24px 0; }
         .qr img { width: 200px; height: 200px; }
+        .ticket-number { text-align: center; margin-top: 16px; font-size: 18px; color: #666; }
+        .ticket-number span { font-weight: 700; color: #333; font-size: 24px; }
         .footer { padding: 16px 32px; background: #f9f9f9; text-align: center; font-size: 12px; color: #666; }
     </style>
 </head>
@@ -28,7 +30,7 @@
         </div>
         <div class="body">
             <div class="info">
-                <label>Участник</label>
+                <label>Участник мероприятия</label>
                 <span>{{ $participant->name }}</span>
             </div>
             @if($participant->email)
@@ -45,6 +47,9 @@
             @endif
             <div class="qr">
                 <img src="{{ $qrDataUrl }}" alt="QR Code">
+            </div>
+            <div class="ticket-number">
+                <span>{{ $participant->answer_id }}</span>
             </div>
         </div>
         <div class="footer">

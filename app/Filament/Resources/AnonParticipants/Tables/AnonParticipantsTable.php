@@ -9,71 +9,142 @@ use Filament\Actions\BulkAction;
 use Filament\Actions\ExportBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\IconSize;
+use Filament\Support\Enums\TextSize;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\Layout\Split;
-use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
 class AnonParticipantsTable
 {
+    protected static function getCachedAnswerData(AnonParticipant $record): ?array
+    {
+        $cacheKey = "anon_answer_{$record->answer_id}";
+
+        return Cache::remember($cacheKey, 600, function () use ($record) {
+            $yandexApi = app(YandexFormsApi::class);
+            $formId = $record->event->formTemplate->yandex_form_id ?? null;
+
+            if (!$formId || !$record->answer_id) {
+                return null;
+            }
+
+            return $yandexApi->getAnswer($formId, $record->answer_id);
+        });
+    }
+
+    protected static function extractField(array $answerData, array $labels): ?string
+    {
+        foreach ($answerData['data'] ?? [] as $item) {
+            $label = mb_strtolower($item['label'] ?? '');
+            if (in_array($label, $labels)) {
+                return $item['value'] ?? null;
+            }
+        }
+        return null;
+    }
+
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                Split::make([
-                    Stack::make([
-                        TextColumn::make('id')
-                            ->label('#')
-                            ->sortable()
-                            ->weight('bold'),
-                        TextColumn::make('event.title')
-                            ->label('Мероприятие')
-                            ->sortable()
-                            ->searchable()
-                            ->limit(25),
-                    ])->space(1),
-                    Stack::make([
-                        TextColumn::make('status')
-                            ->label('Статус')
-                            ->badge()
-                            ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'registered' => 'Зарег.',
-                                'arrived' => 'Прибыл',
-                                'cancelled' => 'Отменён',
-                                default => $state,
-                            })
-                            ->color(fn (string $state): string => match ($state) {
-                                'registered' => 'gray',
-                                'arrived' => 'green',
-                                'cancelled' => 'red',
-                                default => 'gray',
-                            }),
-                        TextColumn::make('created_at')
-                            ->label('Регистрация')
-                            ->dateTime('d.m.Y H:i')
-                            ->sortable()
-                            ->limit(16),
-                        TextColumn::make('checked_in_at')
-                            ->label('Чек-ин')
-                            ->dateTime('d.m.Y H:i')
-                            ->sortable()
-                            ->placeholder('—')
-                            ->limit(16),
-                    ])->space(1),
-                    Stack::make([
-                        IconColumn::make('ticket_sent_at')
-                            ->label('Билет')
-                            ->boolean()
-                            ->sortable(),
-                    ])->space(1)->visibleFrom('md'),
-                ])->from('lg'),
+                TextColumn::make('id')
+                    ->label('#')
+                    ->sortable()
+                    ->searchable()
+                    ->weight('bold')
+                    ->size(TextSize::Small)
+                    ->toggleable(),
+                TextColumn::make('participant_info')
+                    ->label('Участник')
+                    ->size(TextSize::Small)
+                    ->toggleable()
+                    ->state(function (AnonParticipant $record): ?string {
+                        $data = static::getCachedAnswerData($record);
+                        if (!$data) {
+                            return $record->answer_id;
+                        }
+
+                        $name = static::extractField($data, ['фио участника', 'фамилия имя отчество', 'имя', 'name']);
+                        $email = static::extractField($data, ['почта', 'email', 'электронная почта']);
+                        $phone = static::extractField($data, ['телефон', 'phone', 'номер телефона']);
+
+                        $lines = [];
+                        if ($name) $lines[] = '<strong>' . e($name) . '</strong>';
+                        if ($email) $lines[] = '<span class="text-gray-500">' . e($email) . '</span>';
+                        if ($phone) $lines[] = '<span class="text-gray-500">' . e($phone) . '</span>';
+
+                        return !empty($lines) ? implode('<br>', $lines) : $record->answer_id;
+                    })
+                    ->html(),
+                TextColumn::make('status')
+                    ->label('Статус')
+                    ->badge()
+                    ->size(TextSize::Small)
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'registered' => 'Зарег.',
+                        'arrived' => 'Прибыл',
+                        'cancelled' => 'Отменён',
+                        default => $state,
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'registered' => 'gray',
+                        'arrived' => 'green',
+                        'cancelled' => 'red',
+                        default => 'gray',
+                    })
+                    ->toggleable(),
+                TextColumn::make('created_at')
+                    ->label('Дата')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable()
+                    ->size(TextSize::Small)
+                    ->toggleable(),
+                TextColumn::make('checked_in_at')
+                    ->label('Чек-ин')
+                    ->dateTime('d.m.Y H:i')
+                    ->sortable()
+                    ->placeholder('—')
+                    ->size(TextSize::Small)
+                    ->toggleable(),
+                IconColumn::make('ticket_sent_at')
+                    ->label('Билет')
+                    ->boolean()
+                    ->sortable()
+                    ->size(IconSize::Small)
+                    ->toggleable(),
+                IconColumn::make('souvenir_given')
+                    ->label('Сувень')
+                    ->boolean()
+                    ->trueIcon('heroicon-s-check-circle')
+                    ->falseIcon('heroicon-s-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->size(IconSize::Small)
+                    ->toggleable(),
+                IconColumn::make('documentation_given')
+                    ->label('Докум.')
+                    ->boolean()
+                    ->trueIcon('heroicon-s-check-circle')
+                    ->falseIcon('heroicon-s-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->size(IconSize::Small)
+                    ->toggleable(),
+                IconColumn::make('clothing_given')
+                    ->label('Одежда')
+                    ->boolean()
+                    ->trueIcon('heroicon-s-check-circle')
+                    ->falseIcon('heroicon-s-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->size(IconSize::Small)
+                    ->toggleable(),
             ])
-            ->stackedOnMobile()
             ->filters([
                 SelectFilter::make('event_id')
                     ->label('Мероприятие')
@@ -89,6 +160,17 @@ class AnonParticipantsTable
                         'arrived' => 'Прибыл',
                         'cancelled' => 'Отменён',
                     ]),
+                SelectFilter::make('ticket_sent')
+                    ->label('Билет')
+                    ->placeholder('Все')
+                    ->options([
+                        '1' => 'Отправлен',
+                        '0' => 'Не отправлен',
+                    ])
+                    ->query(fn (Builder $query, array $state) => $query
+                        ->when($state['value'] === '1', fn (Builder $q) => $q->whereNotNull('ticket_sent_at'))
+                        ->when($state['value'] === '0', fn (Builder $q) => $q->whereNull('ticket_sent_at'))
+                    ),
             ])
             ->defaultSort('created_at', 'desc')
             ->recordUrl(fn (AnonParticipant $record): string => \App\Filament\Resources\AnonParticipants\AnonParticipantResource::getUrl('edit', ['record' => $record]))
@@ -286,6 +368,7 @@ class AnonParticipantsTable
                     ->icon('heroicon-o-envelope')
                     ->iconSize('md')
                     ->color('primary')
+                    ->tooltip('Отправить билет')
                     ->action(function (AnonParticipant $record) {
                         $yandexApi = app(YandexFormsApi::class);
                         $formId = $record->event->formTemplate->yandex_form_id ?? null;
@@ -335,6 +418,7 @@ class AnonParticipantsTable
                     ->icon('heroicon-o-check-badge')
                     ->iconSize('md')
                     ->color('success')
+                    ->tooltip('Отметить прибытие')
                     ->action(function (AnonParticipant $record) {
                         if (!$record->checked_in_at) {
                             $record->update([
@@ -350,6 +434,7 @@ class AnonParticipantsTable
                     ->icon('heroicon-o-arrow-path')
                     ->iconSize('md')
                     ->color('warning')
+                    ->tooltip('Сбросить чек-ин')
                     ->requiresConfirmation()
                     ->modalHeading('Сбросить чек-ин?')
                     ->modalDescription('Участник сможет пройти чек-ин заново')
@@ -361,11 +446,26 @@ class AnonParticipantsTable
                         Notification::make()->title('Чек-ин сброшен')->success()->send();
                     })
                     ->visible(fn (AnonParticipant $record) => (bool) $record->checked_in_at),
+                \Filament\Actions\Action::make('resetTicket')
+                    ->label('')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->iconSize('md')
+                    ->color('warning')
+                    ->tooltip('Сбросить билет')
+                    ->requiresConfirmation()
+                    ->modalHeading('Сбросить билет?')
+                    ->modalDescription('Билет можно будет отправить повторно')
+                    ->action(function (AnonParticipant $record) {
+                        $record->update(['ticket_sent_at' => null]);
+                        Notification::make()->title('Билет сброшен')->success()->send();
+                    })
+                    ->visible(fn (AnonParticipant $record) => (bool) $record->ticket_sent_at),
                 \Filament\Actions\Action::make('cancel')
                     ->label('')
                     ->icon('heroicon-o-x-mark')
                     ->iconSize('md')
                     ->color('danger')
+                    ->tooltip('Отменить регистрацию')
                     ->requiresConfirmation()
                     ->modalHeading('Отменить регистрацию?')
                     ->action(function (AnonParticipant $record) {
