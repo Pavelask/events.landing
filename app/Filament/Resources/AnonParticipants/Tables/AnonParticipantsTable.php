@@ -262,31 +262,18 @@ class AnonParticipantsTable
                             ->success()
                             ->send();
                     }),
-                \Filament\Actions\ActionGroup::make([
-                    \Filament\Actions\Action::make('sendTicketsAll')
-                        ->label('Отправить билеты')
-                        ->icon('heroicon-o-envelope')
-                        ->requiresConfirmation()
-                        ->modalHeading('Отправить билеты?')
-                        ->modalDescription('Билеты будут отправлены всем участникам без билета')
-                        ->form([
-                            Select::make('event_id')
-                                ->label('Мероприятие')
-                                ->options(fn () => Event::pluck('title', 'id'))
-                                ->searchable()
-                                ->preload()
-                                ->nullable(),
-                        ])
-                        ->action(function (array $data) {
-                            $query = AnonParticipant::whereNull('ticket_sent_at')->whereHas('event.formTemplate');
-                            if (!empty($data['event_id'])) {
-                                $query->where('event_id', $data['event_id']);
-                            }
-                            $records = $query->get();
-
-                            $count = 0;
-                            $errors = [];
-                            foreach ($records as $record) {
+            ])
+            ->bulkActions([
+                ExportBulkAction::make()
+                    ->exporter(\App\Exports\AnonParticipantExport::class),
+                BulkAction::make('sendTickets')
+                    ->label('Отправить билеты')
+                    ->icon('heroicon-o-envelope')
+                    ->action(function ($records) {
+                        $count = 0;
+                        $errors = [];
+                        foreach ($records as $record) {
+                            if (!$record->ticket_sent_at && $record->event) {
                                 $yandexApi = app(YandexFormsApi::class);
                                 $formId = $record->event->formTemplate->yandex_form_id ?? null;
                                 if (!$formId) {
@@ -319,104 +306,80 @@ class AnonParticipantsTable
                                     $errors[] = "ID #{$record->id}: ошибка API";
                                 }
                             }
-                            $msg = "Отправлено билетов: {$count}";
-                            if (!empty($errors)) {
-                                $msg .= ". Ошибки: " . implode('; ', $errors);
+                        }
+                        $msg = "Отправлено билетов: {$count}";
+                        if (!empty($errors)) {
+                            $msg .= ". Ошибки: " . implode('; ', $errors);
+                        }
+                        Notification::make()->title($msg)->danger(!empty($errors))->success(empty($errors))->send();
+                    }),
+                BulkAction::make('markArrived')
+                    ->label('Отметить прибывших')
+                    ->icon('heroicon-o-check-badge')
+                    ->action(function ($records) {
+                        $count = 0;
+                        foreach ($records as $record) {
+                            if (!$record->checked_in_at) {
+                                $record->update([
+                                    'checked_in_at' => now(),
+                                    'status' => 'arrived',
+                                ]);
+                                $count++;
                             }
-                            Notification::make()->title($msg)->danger(!empty($errors))->success(empty($errors))->send();
-                        }),
-                    \Filament\Actions\Action::make('markArrivedAll')
-                        ->label('Отметить прибывших')
-                        ->icon('heroicon-o-check-badge')
-                        ->requiresConfirmation()
-                        ->modalHeading('Отметить прибывших?')
-                        ->form([
-                            Select::make('event_id')
-                                ->label('Мероприятие')
-                                ->options(fn () => Event::pluck('title', 'id'))
-                                ->searchable()
-                                ->preload()
-                                ->nullable(),
-                        ])
-                        ->action(function (array $data) {
-                            $query = AnonParticipant::whereNull('checked_in_at')->where('status', '!=', 'cancelled');
-                            if (!empty($data['event_id'])) {
-                                $query->where('event_id', $data['event_id']);
+                        }
+                        Notification::make()->title("Отмечено прибывших: {$count}")->success()->send();
+                    }),
+                BulkAction::make('cancelArrival')
+                    ->label('Отменить прибытие')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->requiresConfirmation()
+                    ->modalHeading('Отменить прибытие?')
+                    ->action(function ($records) {
+                        $count = 0;
+                        foreach ($records as $record) {
+                            if ($record->checked_in_at) {
+                                $record->update([
+                                    'checked_in_at' => null,
+                                    'status' => 'registered',
+                                ]);
+                                $count++;
                             }
-                            $count = $query->update(['checked_in_at' => now(), 'status' => 'arrived']);
-                            Notification::make()->title("Отмечено прибывших: {$count}")->success()->send();
-                        }),
-                    \Filament\Actions\Action::make('cancelArrivalAll')
-                        ->label('Отменить прибытие')
-                        ->icon('heroicon-o-arrow-uturn-left')
-                        ->requiresConfirmation()
-                        ->modalHeading('Отменить прибытие?')
-                        ->form([
-                            Select::make('event_id')
-                                ->label('Мероприятие')
-                                ->options(fn () => Event::pluck('title', 'id'))
-                                ->searchable()
-                                ->preload()
-                                ->nullable(),
-                        ])
-                        ->action(function (array $data) {
-                            $query = AnonParticipant::whereNotNull('checked_in_at');
-                            if (!empty($data['event_id'])) {
-                                $query->where('event_id', $data['event_id']);
+                        }
+                        Notification::make()->title("Отменено прибытие: {$count}")->success()->send();
+                    }),
+                BulkAction::make('resetTickets')
+                    ->label('Сбросить билеты')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->requiresConfirmation()
+                    ->modalHeading('Сбросить билеты?')
+                    ->modalDescription('Билеты можно будет отправить повторно')
+                    ->action(function ($records) {
+                        $count = 0;
+                        foreach ($records as $record) {
+                            if ($record->ticket_sent_at) {
+                                $record->update(['ticket_sent_at' => null]);
+                                $count++;
                             }
-                            $count = $query->update(['checked_in_at' => null, 'status' => 'registered']);
-                            Notification::make()->title("Отменено прибытие: {$count}")->success()->send();
-                        }),
-                    \Filament\Actions\Action::make('resetTicketsAll')
-                        ->label('Сбросить билеты')
-                        ->icon('heroicon-o-arrow-uturn-left')
-                        ->requiresConfirmation()
-                        ->modalHeading('Сбросить билеты?')
-                        ->modalDescription('Билеты можно будет отправить повторно')
-                        ->form([
-                            Select::make('event_id')
-                                ->label('Мероприятие')
-                                ->options(fn () => Event::pluck('title', 'id'))
-                                ->searchable()
-                                ->preload()
-                                ->nullable(),
-                        ])
-                        ->action(function (array $data) {
-                            $query = AnonParticipant::whereNotNull('ticket_sent_at');
-                            if (!empty($data['event_id'])) {
-                                $query->where('event_id', $data['event_id']);
+                        }
+                        Notification::make()->title("Сброшено билетов: {$count}")->success()->send();
+                    }),
+                BulkAction::make('cancelRegistration')
+                    ->label('Отменить регистрацию')
+                    ->icon('heroicon-o-x-mark')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Отменить регистрацию?')
+                    ->modalDescription('Участники будут отменены')
+                    ->action(function ($records) {
+                        $count = 0;
+                        foreach ($records as $record) {
+                            if ($record->status !== 'cancelled') {
+                                $record->update(['status' => 'cancelled']);
+                                $count++;
                             }
-                            $count = $query->update(['ticket_sent_at' => null]);
-                            Notification::make()->title("Сброшено билетов: {$count}")->success()->send();
-                        }),
-                    \Filament\Actions\Action::make('cancelAll')
-                        ->label('Отменить регистрацию')
-                        ->icon('heroicon-o-x-mark')
-                        ->color('danger')
-                        ->requiresConfirmation()
-                        ->modalHeading('Отменить регистрацию?')
-                        ->modalDescription('Участники будут отменены')
-                        ->form([
-                            Select::make('event_id')
-                                ->label('Мероприятие')
-                                ->options(fn () => Event::pluck('title', 'id'))
-                                ->searchable()
-                                ->preload()
-                                ->nullable(),
-                        ])
-                        ->action(function (array $data) {
-                            $query = AnonParticipant::where('status', '!=', 'cancelled');
-                            if (!empty($data['event_id'])) {
-                                $query->where('event_id', $data['event_id']);
-                            }
-                            $count = $query->update(['status' => 'cancelled']);
-                            Notification::make()->title("Отменено регистраций: {$count}")->success()->send();
-                        }),
-                ])->label('Массовые действия')->icon('heroicon-o-bars-3'),
-            ])
-            ->bulkActions([
-                ExportBulkAction::make()
-                    ->exporter(\App\Exports\AnonParticipantExport::class),
+                        }
+                        Notification::make()->title("Отменено регистраций: {$count}")->success()->send();
+                    }),
             ])
             ->actions([
                 \Filament\Actions\ActionGroup::make([
