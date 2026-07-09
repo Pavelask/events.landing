@@ -420,6 +420,10 @@ class AnonParticipantsTable
                         }),
                 ])->label('Действия')->icon('heroicon-o-bars-3'),
             ])
+            ->bulkActions([
+                ExportBulkAction::make()
+                    ->exporter(\App\Exports\AnonParticipantExport::class),
+            ])
             ->actions([
                 \Filament\Actions\ActionGroup::make([
                     \Filament\Actions\Action::make('sendTicket')
