@@ -444,7 +444,30 @@ class AnonParticipantsTable
                         }),
                 ])->label('Действия')->icon('heroicon-o-bars-3'),
             ])
-            ->bulkActions([])
+            ->bulkActions([
+                \Filament\Actions\BulkAction::make('exportSelected')
+                    ->label('Экспорт выбранных')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function ($records) {
+                        $data = [];
+                        foreach ($records as $record) {
+                            $data[] = [
+                                'ID' => $record->id,
+                                'Мероприятие' => $record->event->title ?? '',
+                                'Answer ID' => $record->answer_id,
+                                'Статус' => $record->status_label,
+                                'Дата' => $record->created_at->format('d.m.Y H:i'),
+                            ];
+                        }
+                        $filename = 'selected_' . now()->format('Y-m-d_H-i') . '.xlsx';
+                        $export = new class($data) implements \Maatwebsite\Excel\Concerns\FromCollection {
+                            public function __construct(private array $data) {}
+                            public function collection() { return collect($this->data); }
+                        };
+                        (new \Maatwebsite\Excel\Excel)->store($export, "exports/{$filename}", 'private');
+                        return response()->download(storage_path("app/private/exports/{$filename}"))->deleteFileAfterSend(true);
+                    }),
+            ])
             ->actions([
                 \Filament\Actions\ActionGroup::make([
                     \Filament\Actions\Action::make('sendTicket')
