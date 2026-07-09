@@ -119,6 +119,17 @@ Route::post('/recovery', [RecoveryController::class, 'sendCode'])->name('recover
 Route::get('/recovery/code', [RecoveryController::class, 'showCodeForm'])->name('recovery.code.form');
 Route::post('/recovery/code', [RecoveryController::class, 'verifyCode'])->name('recovery.code.verify');
 
+// Export download
+Route::get('/exports/{filename}', function (string $filename) {
+    $path = storage_path("app/exports/{$filename}");
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->download($path)->deleteFileAfterSend(true);
+})->name('export.download')->middleware('auth');
+
 // Redirect login to Filament admin
 Route::get('/login', fn () => redirect('/admin/login'))->name('login');
 

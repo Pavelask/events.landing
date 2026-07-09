@@ -161,10 +161,18 @@ class ExportAnonParticipantsWithPdJob implements ShouldQueue
             }
         }
 
+        $downloadUrl = route('export.download', $filename);
+
         Notification::make()
             ->title('Экспорт с ПД готов')
             ->body($body)
             ->success()
+            ->actions([
+                \Filament\Actions\Action::make('download')
+                    ->label('Скачать файл')
+                    ->url($downloadUrl)
+                    ->openUrlInNewTab(),
+            ])
             ->send();
     }
 
