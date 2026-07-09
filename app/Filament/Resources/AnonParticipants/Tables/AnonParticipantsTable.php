@@ -448,6 +448,7 @@ class AnonParticipantsTable
                 \Filament\Actions\BulkAction::make('exportSelected')
                     ->label('Экспорт выбранных')
                     ->icon('heroicon-o-document-arrow-down')
+                    ->hidden()
                     ->action(function ($records) {
                         $data = [];
                         foreach ($records as $record) {
