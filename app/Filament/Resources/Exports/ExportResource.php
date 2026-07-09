@@ -73,7 +73,7 @@ class ExportResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\Action::make('download')
+                \Filament\Actions\Action::make('download')
                     ->label('')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->iconSize('md')
