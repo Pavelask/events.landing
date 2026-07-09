@@ -187,9 +187,4 @@ class AnonRegistration extends Component
         $this->submitted = true;
         $this->successMessage = 'Вы успешно зарегистрировались!';
     }
-
-    public function render()
-    {
-        return view('livewire.anon-registration')->layout('components.layouts.app');
-    }
 }
