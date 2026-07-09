@@ -8,24 +8,24 @@
     <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 32px; text-align: center;">
             <h1 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 700;">{{ $participant->event->title }}</h1>
-            <p style="margin: 0; font-size: 16px; font-weight: 600;">
-                {{ $participant->event->start_date->format('d.m') }} — {{ $participant->event->end_date->format('d.m.Y') }}
+            <p style="margin: 0; font-size: 18px; font-weight: 600;">
+                {{ $participant->event->start_date->format('d.m.Y') }} — {{ $participant->event->end_date->format('d.m.Y') }}
             </p>
         </div>
         <div style="padding: 32px;">
-            <p style="font-size: 16px; color: #333; margin-bottom: 16px;">Здравствуйте, {{ $participant->name }}!</p>
+            <p style="font-size: 16px; color: #333; margin-bottom: 16px;">Уважаемый участник мероприятия</p>
             <p style="font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 24px;">
                 Ваш билет на мероприятие <strong>{{ $participant->event->title }}</strong> готов.
                 Предъявите QR-код на входе.
             </p>
             @if($participant->event->venue_name || $participant->event->venue_address)
-            <div style="background: #f9f9f9; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-                <p style="margin: 0 0 8px 0; font-size: 12px; color: #666; text-transform: uppercase;">Место проведения</p>
+            <div style="background: #f9f9f9; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                <p style="margin: 0 0 12px 0; font-size: 14px; color: #666; text-transform: uppercase; font-weight: 600;">Место проведения</p>
                 @if($participant->event->venue_name)
-                <p style="margin: 0 0 4px 0; font-size: 14px; color: #333; font-weight: 500;">{{ $participant->event->venue_name }}</p>
+                <p style="margin: 0 0 6px 0; font-size: 18px; color: #333; font-weight: 600;">{{ $participant->event->venue_name }}</p>
                 @endif
                 @if($participant->event->venue_address)
-                <p style="margin: 0; font-size: 13px; color: #666;">{{ $participant->event->venue_address }}</p>
+                <p style="margin: 0; font-size: 16px; color: #666;">{{ $participant->event->venue_address }}</p>
                 @endif
             </div>
             @endif
