@@ -1,10 +1,5 @@
 <div class="min-h-screen" style="background-color: var(--color-background);">
     <div class="max-w-2xl mx-auto px-6 py-12">
-        <a href="{{ route('home') }}" class="inline-flex items-center gap-2 mb-6 transition-colors font-medium" style="color: var(--color-primary);">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            На главную
-        </a>
-
         <h1 class="text-2xl font-bold mb-8" style="color: var(--color-text);">Регистрация на {{ $event->title }}</h1>
 
         @if ($successMessage)

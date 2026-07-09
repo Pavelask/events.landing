@@ -35,6 +35,14 @@ class AnonRegistration extends Component
         $this->questions = $this->event->formTemplate->questions ?? [];
     }
 
+    public function render()
+    {
+        return view('livewire.anon-registration')->layout('components.layouts.app', [
+            'title' => 'Регистрация — ' . $this->event->title,
+            'event' => $this->event,
+        ]);
+    }
+
     private function validateFields(): bool
     {
         $this->fieldErrors = [];
