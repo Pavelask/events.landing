@@ -13,7 +13,7 @@
             </p>
         </div>
         <div style="padding: 32px;">
-            <p style="font-size: 16px; color: #333; margin-bottom: 16px;">Уважаемый участник мероприятия</p>
+            <p style="font-size: 16px; color: #333; margin-bottom: 16px;">Уважаемый участник мероприятия!</p>
             <p style="font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 24px;">
                 Ваш билет на мероприятие <strong>{{ $participant->event->title }}</strong> готов.
                 Предъявите QR-код на входе.
