@@ -95,6 +95,32 @@ class ExportResource extends Resource
                     )
                     ->openUrlInNewTab()
                     ->visible(fn (Export $record): bool => (bool) $record->file_name),
+                \Filament\Actions\DeleteAction::make()
+                    ->label('')
+                    ->icon('heroicon-o-trash')
+                    ->iconSize('md')
+                    ->tooltip('Удалить'),
+            ])
+            ->bulkActions([
+                \Filament\Actions\BulkAction::make('delete')
+                    ->label('Удалить выбранные')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Удалить экспорт?')
+                    ->modalDescription('Файл будет удалён безвозвратно')
+                    ->action(function ($records) {
+                        foreach ($records as $record) {
+                            if ($record->file_name) {
+                                $path = storage_path("app/private/exports/{$record->file_name}");
+                                if (file_exists($path)) {
+                                    unlink($path);
+                                }
+                            }
+                            $record->delete();
+                        }
+                    })
+                    ->deselectRecordsAfterCompletion(),
             ]);
     }
 
