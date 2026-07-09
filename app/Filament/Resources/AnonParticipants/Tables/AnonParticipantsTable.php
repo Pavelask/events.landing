@@ -5,6 +5,7 @@ namespace App\Filament\Resources\AnonParticipants\Tables;
 use App\Models\AnonParticipant;
 use App\Models\Event;
 use App\Services\YandexFormsApi;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\ExportBulkAction;
 use Filament\Forms\Components\Select;
@@ -419,116 +420,111 @@ class AnonParticipantsTable
                     }),
             ])
             ->actions([
-                \Filament\Actions\Action::make('sendTicket')
-                    ->label('')
-                    ->icon('heroicon-o-envelope')
-                    ->iconSize('md')
-                    ->color('primary')
-                    ->tooltip('Отправить билет')
-                    ->action(function (AnonParticipant $record) {
-                        $yandexApi = app(YandexFormsApi::class);
-                        $formId = $record->event->formTemplate->yandex_form_id ?? null;
-                        if (!$formId) {
-                            Notification::make()
-                                ->title('Ошибка')
-                                ->body('Для этого мероприятия не задан шаблон формы')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
-                        $answer = $yandexApi->getAnswer($formId, $record->answer_id);
-
-                        if ($answer) {
-                            $email = null;
-                            foreach ($answer['data'] ?? [] as $item) {
-                                $label = mb_strtolower($item['label'] ?? '');
-                                if (in_array($label, ['почта', 'email', 'электронная почта'])) {
-                                    $email = $item['value'] ?? null;
-                                    break;
-                                }
+                \Filament\Actions\ActionGroup::make([
+                    \Filament\Actions\Action::make('sendTicket')
+                        ->label('Отправить билет')
+                        ->icon('heroicon-o-envelope')
+                        ->action(function (AnonParticipant $record) {
+                            $yandexApi = app(YandexFormsApi::class);
+                            $formId = $record->event->formTemplate->yandex_form_id ?? null;
+                            if (!$formId) {
+                                Notification::make()
+                                    ->title('Ошибка')
+                                    ->body('Для этого мероприятия не задан шаблон формы')
+                                    ->danger()
+                                    ->send();
+                                return;
                             }
-                            if ($email) {
-                                $ticketUrl = route('ticket.show', $record->checkin_token);
-                                Mail::to($email)->send(new \App\Mail\TicketMail($record, $ticketUrl));
-                                $record->update(['ticket_sent_at' => now()]);
-                                $label = $record->ticket_sent_at ? 'Билет отправлен повторно' : 'Билет отправлен';
-                                Notification::make()->title($label)->success()->send();
+                            $answer = $yandexApi->getAnswer($formId, $record->answer_id);
+
+                            if ($answer) {
+                                $email = null;
+                                foreach ($answer['data'] ?? [] as $item) {
+                                    $label = mb_strtolower($item['label'] ?? '');
+                                    if (in_array($label, ['почта', 'email', 'электронная почта'])) {
+                                        $email = $item['value'] ?? null;
+                                        break;
+                                    }
+                                }
+                                if ($email) {
+                                    try {
+                                        $ticketUrl = route('ticket.show', $record->checkin_token);
+                                        Mail::to($email)->send(new \App\Mail\TicketMail($record, $ticketUrl));
+                                        $record->update(['ticket_sent_at' => now()]);
+                                        Notification::make()->title('Билет отправлен')->success()->send();
+                                    } catch (\Exception $e) {
+                                        Notification::make()
+                                            ->title('Ошибка отправки')
+                                            ->body($e->getMessage())
+                                            ->danger()
+                                            ->send();
+                                    }
+                                } else {
+                                    Notification::make()
+                                        ->title('Ошибка: нет email')
+                                        ->body('В ответе Яндекс Формы не найден email. Answer ID: ' . $record->answer_id)
+                                        ->danger()
+                                        ->send();
+                                }
                             } else {
                                 Notification::make()
-                                    ->title('Ошибка: нет email')
-                                    ->body('В ответе Яндекс Формы не найден email. Answer ID: ' . $record->answer_id)
+                                    ->title('Ошибка API Яндекс Форм')
+                                    ->body('Не удалось получить данные ответа. Answer ID: ' . $record->answer_id . ', Form ID: ' . $formId)
                                     ->danger()
                                     ->send();
                             }
-                        } else {
-                            Notification::make()
-                                ->title('Ошибка API Яндекс Форм')
-                                ->body('Не удалось получить данные ответа. Answer ID: ' . $record->answer_id . ', Form ID: ' . $formId)
-                                ->danger()
-                                ->send();
-                        }
-                    })
-                    ->visible(fn (AnonParticipant $record) => !$record->ticket_sent_at),
-                \Filament\Actions\Action::make('markArrived')
-                    ->label('')
-                    ->icon('heroicon-o-check-badge')
-                    ->iconSize('md')
-                    ->color('success')
-                    ->tooltip('Отметить прибытие')
-                    ->action(function (AnonParticipant $record) {
-                        if (!$record->checked_in_at) {
+                        })
+                        ->visible(fn (AnonParticipant $record) => !$record->ticket_sent_at),
+                    \Filament\Actions\Action::make('markArrived')
+                        ->label('Отметить прибытие')
+                        ->icon('heroicon-o-check-badge')
+                        ->action(function (AnonParticipant $record) {
+                            if (!$record->checked_in_at) {
+                                $record->update([
+                                    'checked_in_at' => now(),
+                                    'status' => 'arrived',
+                                ]);
+                                Notification::make()->title('Участник отмечен как прибывший')->success()->send();
+                            }
+                        })
+                        ->visible(fn (AnonParticipant $record) => !$record->checked_in_at),
+                    \Filament\Actions\Action::make('resetCheckin')
+                        ->label('Сбросить чек-ин')
+                        ->icon('heroicon-o-arrow-path')
+                        ->requiresConfirmation()
+                        ->modalHeading('Сбросить чек-ин?')
+                        ->modalDescription('Участник сможет пройти чек-ин заново')
+                        ->action(function (AnonParticipant $record) {
                             $record->update([
-                                'checked_in_at' => now(),
-                                'status' => 'arrived',
+                                'checked_in_at' => null,
+                                'status' => 'registered',
                             ]);
-                            Notification::make()->title('Участник отмечен как прибывший')->success()->send();
-                        }
-                    })
-                    ->visible(fn (AnonParticipant $record) => !$record->checked_in_at),
-                \Filament\Actions\Action::make('resetCheckin')
-                    ->label('')
-                    ->icon('heroicon-o-arrow-path')
-                    ->iconSize('md')
-                    ->color('warning')
-                    ->tooltip('Сбросить чек-ин')
-                    ->requiresConfirmation()
-                    ->modalHeading('Сбросить чек-ин?')
-                    ->modalDescription('Участник сможет пройти чек-ин заново')
-                    ->action(function (AnonParticipant $record) {
-                        $record->update([
-                            'checked_in_at' => null,
-                            'status' => 'registered',
-                        ]);
-                        Notification::make()->title('Чек-ин сброшен')->success()->send();
-                    })
-                    ->visible(fn (AnonParticipant $record) => (bool) $record->checked_in_at),
-                \Filament\Actions\Action::make('resetTicket')
-                    ->label('')
-                    ->icon('heroicon-o-arrow-uturn-left')
-                    ->iconSize('md')
-                    ->color('warning')
-                    ->tooltip('Сбросить билет')
-                    ->requiresConfirmation()
-                    ->modalHeading('Сбросить билет?')
-                    ->modalDescription('Билет можно будет отправить повторно')
-                    ->action(function (AnonParticipant $record) {
-                        $record->update(['ticket_sent_at' => null]);
-                        Notification::make()->title('Билет сброшен')->success()->send();
-                    })
-                    ->visible(fn (AnonParticipant $record) => (bool) $record->ticket_sent_at),
-                \Filament\Actions\Action::make('cancel')
-                    ->label('')
-                    ->icon('heroicon-o-x-mark')
-                    ->iconSize('md')
-                    ->color('danger')
-                    ->tooltip('Отменить регистрацию')
-                    ->requiresConfirmation()
-                    ->modalHeading('Отменить регистрацию?')
-                    ->action(function (AnonParticipant $record) {
-                        $record->update(['status' => 'cancelled']);
-                        Notification::make()->title('Регистрация отменена')->success()->send();
-                    })
-                    ->visible(fn (AnonParticipant $record) => $record->status !== 'cancelled'),
+                            Notification::make()->title('Чек-ин сброшен')->success()->send();
+                        })
+                        ->visible(fn (AnonParticipant $record) => (bool) $record->checked_in_at),
+                    \Filament\Actions\Action::make('resetTicket')
+                        ->label('Сбросить билет')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->requiresConfirmation()
+                        ->modalHeading('Сбросить билет?')
+                        ->modalDescription('Билет можно будет отправить повторно')
+                        ->action(function (AnonParticipant $record) {
+                            $record->update(['ticket_sent_at' => null]);
+                            Notification::make()->title('Билет сброшен')->success()->send();
+                        })
+                        ->visible(fn (AnonParticipant $record) => (bool) $record->ticket_sent_at),
+                    \Filament\Actions\Action::make('cancel')
+                        ->label('Отменить регистрацию')
+                        ->icon('heroicon-o-x-mark')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Отменить регистрацию?')
+                        ->action(function (AnonParticipant $record) {
+                            $record->update(['status' => 'cancelled']);
+                            Notification::make()->title('Регистрация отменена')->success()->send();
+                        })
+                        ->visible(fn (AnonParticipant $record) => $record->status !== 'cancelled'),
+                ])->icon('heroicon-o-ellipsis-vertical'),
             ]);
     }
 }
