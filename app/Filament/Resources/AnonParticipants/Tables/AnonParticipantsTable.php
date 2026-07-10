@@ -328,142 +328,144 @@ class AnonParticipantsTable
                 ])->label('Действия')->icon('heroicon-o-bars-3'),
             ])
             ->bulkActions([
-                \Filament\Actions\BulkAction::make('exportSelected')
-                    ->label('Экспорт участников')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->requiresConfirmation()
-                    ->modalHeading('Экспорт участников')
-                    ->modalDescription('Файл будет сформирован в фоне и скачан автоматически')
-                    ->action(function ($records) {
-                        $ids = $records->pluck('id')->toArray();
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\BulkAction::make('exportSelected')
+                        ->label('Экспорт участников')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->requiresConfirmation()
+                        ->modalHeading('Экспорт участников')
+                        ->modalDescription('Файл будет сформирован в фоне и скачан автоматически')
+                        ->action(function ($records) {
+                            $ids = $records->pluck('id')->toArray();
 
-                        \App\Jobs\ExportAnonParticipantsWithPdJob::dispatch(['ids' => $ids], auth()->id());
+                            \App\Jobs\ExportAnonParticipantsWithPdJob::dispatch(['ids' => $ids], auth()->id());
 
-                        session(['export_started_at' => now()->timestamp]);
+                            session(['export_started_at' => now()->timestamp]);
 
-                        Notification::make()
-                            ->title('Экспорт запущен')
-                            ->body('Формируется файл экспорта...')
-                            ->info()
-                            ->send();
-                    }),
-                \Filament\Actions\BulkAction::make('sendTickets')
-                    ->label('Отправить билеты')
-                    ->icon('heroicon-o-envelope')
-                    ->requiresConfirmation()
-                    ->modalHeading('Отправить билеты?')
-                    ->modalDescription('Билеты будут отправлены выделенным участникам')
-                    ->action(function ($records) {
-                        $count = 0;
-                        $errors = [];
-                        foreach ($records as $record) {
-                            if (!$record->ticket_sent_at && $record->event) {
-                                $yandexApi = app(YandexFormsApi::class);
-                                $formId = $record->event->formTemplate->yandex_form_id ?? null;
-                                if (!$formId) {
-                                    $errors[] = "ID #{$record->id}: нет form_id";
-                                    continue;
-                                }
-                                $answer = $yandexApi->getAnswer($formId, $record->answer_id);
-                                if ($answer) {
-                                    $email = null;
-                                    foreach ($answer['data'] ?? [] as $item) {
-                                        $label = mb_strtolower($item['label'] ?? '');
-                                        if (in_array($label, ['почта', 'email', 'электронная почта'])) {
-                                            $email = $item['value'] ?? null;
-                                            break;
-                                        }
+                            Notification::make()
+                                ->title('Экспорт запущен')
+                                ->body('Формируется файл экспорта...')
+                                ->info()
+                                ->send();
+                        }),
+                    \Filament\Actions\BulkAction::make('sendTickets')
+                        ->label('Отправить билеты')
+                        ->icon('heroicon-o-envelope')
+                        ->requiresConfirmation()
+                        ->modalHeading('Отправить билеты?')
+                        ->modalDescription('Билеты будут отправлены выделенным участникам')
+                        ->action(function ($records) {
+                            $count = 0;
+                            $errors = [];
+                            foreach ($records as $record) {
+                                if (!$record->ticket_sent_at && $record->event) {
+                                    $yandexApi = app(YandexFormsApi::class);
+                                    $formId = $record->event->formTemplate->yandex_form_id ?? null;
+                                    if (!$formId) {
+                                        $errors[] = "ID #{$record->id}: нет form_id";
+                                        continue;
                                     }
-                                    if ($email) {
-                                        try {
-                                            $ticketUrl = route('ticket.show', $record->checkin_token);
-                                            Mail::to($email)->send(new \App\Mail\TicketMail($record, $ticketUrl));
-                                            $record->update(['ticket_sent_at' => now()]);
-                                            $count++;
-                                        } catch (\Exception $e) {
-                                            $errors[] = "ID #{$record->id}: " . $e->getMessage();
+                                    $answer = $yandexApi->getAnswer($formId, $record->answer_id);
+                                    if ($answer) {
+                                        $email = null;
+                                        foreach ($answer['data'] ?? [] as $item) {
+                                            $label = mb_strtolower($item['label'] ?? '');
+                                            if (in_array($label, ['почта', 'email', 'электронная почта'])) {
+                                                $email = $item['value'] ?? null;
+                                                break;
+                                            }
+                                        }
+                                        if ($email) {
+                                            try {
+                                                $ticketUrl = route('ticket.show', $record->checkin_token);
+                                                Mail::to($email)->send(new \App\Mail\TicketMail($record, $ticketUrl));
+                                                $record->update(['ticket_sent_at' => now()]);
+                                                $count++;
+                                            } catch (\Exception $e) {
+                                                $errors[] = "ID #{$record->id}: " . $e->getMessage();
+                                            }
+                                        } else {
+                                            $errors[] = "ID #{$record->id}: нет email";
                                         }
                                     } else {
-                                        $errors[] = "ID #{$record->id}: нет email";
+                                        $errors[] = "ID #{$record->id}: ошибка API";
                                     }
-                                } else {
-                                    $errors[] = "ID #{$record->id}: ошибка API";
                                 }
                             }
-                        }
-                        $msg = "Отправлено билетов: {$count}";
-                        if (!empty($errors)) {
-                            $msg .= ". Ошибки: " . implode('; ', $errors);
-                        }
-                        Notification::make()->title($msg)->danger(!empty($errors))->success(empty($errors))->send();
-                    }),
-                \Filament\Actions\BulkAction::make('markArrived')
-                    ->label('Отметить прибывших')
-                    ->icon('heroicon-o-check-badge')
-                    ->action(function ($records) {
-                        $count = 0;
-                        foreach ($records as $record) {
-                            if (!$record->checked_in_at) {
-                                $record->update([
-                                    'checked_in_at' => now(),
-                                    'status' => 'arrived',
-                                ]);
-                                $count++;
+                            $msg = "Отправлено билетов: {$count}";
+                            if (!empty($errors)) {
+                                $msg .= ". Ошибки: " . implode('; ', $errors);
                             }
-                        }
-                        Notification::make()->title("Отмечено прибывших: {$count}")->success()->send();
-                    }),
-                \Filament\Actions\BulkAction::make('cancelArrival')
-                    ->label('Отменить прибытие')
-                    ->icon('heroicon-o-arrow-uturn-left')
-                    ->requiresConfirmation()
-                    ->modalHeading('Отменить прибытие?')
-                    ->action(function ($records) {
-                        $count = 0;
-                        foreach ($records as $record) {
-                            if ($record->checked_in_at) {
-                                $record->update([
-                                    'checked_in_at' => null,
-                                    'status' => 'registered',
-                                ]);
-                                $count++;
+                            Notification::make()->title($msg)->danger(!empty($errors))->success(empty($errors))->send();
+                        }),
+                    \Filament\Actions\BulkAction::make('markArrived')
+                        ->label('Отметить прибывших')
+                        ->icon('heroicon-o-check-badge')
+                        ->action(function ($records) {
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if (!$record->checked_in_at) {
+                                    $record->update([
+                                        'checked_in_at' => now(),
+                                        'status' => 'arrived',
+                                    ]);
+                                    $count++;
+                                }
                             }
-                        }
-                        Notification::make()->title("Отменено прибытие: {$count}")->success()->send();
-                    }),
-                \Filament\Actions\BulkAction::make('resetTickets')
-                    ->label('Сбросить билеты')
-                    ->icon('heroicon-o-arrow-uturn-left')
-                    ->requiresConfirmation()
-                    ->modalHeading('Сбросить билеты?')
-                    ->modalDescription('Билеты можно будет отправить повторно')
-                    ->action(function ($records) {
-                        $count = 0;
-                        foreach ($records as $record) {
-                            if ($record->ticket_sent_at) {
-                                $record->update(['ticket_sent_at' => null]);
-                                $count++;
+                            Notification::make()->title("Отмечено прибывших: {$count}")->success()->send();
+                        }),
+                    \Filament\Actions\BulkAction::make('cancelArrival')
+                        ->label('Отменить прибытие')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->requiresConfirmation()
+                        ->modalHeading('Отменить прибытие?')
+                        ->action(function ($records) {
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if ($record->checked_in_at) {
+                                    $record->update([
+                                        'checked_in_at' => null,
+                                        'status' => 'registered',
+                                    ]);
+                                    $count++;
+                                }
                             }
-                        }
-                        Notification::make()->title("Сброшено билетов: {$count}")->success()->send();
-                    }),
-                \Filament\Actions\BulkAction::make('cancelRegistration')
-                    ->label('Отменить регистрацию')
-                    ->icon('heroicon-o-x-mark')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->modalHeading('Отменить регистрацию?')
-                    ->modalDescription('Участники будут отменены')
-                    ->action(function ($records) {
-                        $count = 0;
-                        foreach ($records as $record) {
-                            if ($record->status !== 'cancelled') {
-                                $record->update(['status' => 'cancelled']);
-                                $count++;
+                            Notification::make()->title("Отменено прибытие: {$count}")->success()->send();
+                        }),
+                    \Filament\Actions\BulkAction::make('resetTickets')
+                        ->label('Сбросить билеты')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->requiresConfirmation()
+                        ->modalHeading('Сбросить билеты?')
+                        ->modalDescription('Билеты можно будет отправить повторно')
+                        ->action(function ($records) {
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if ($record->ticket_sent_at) {
+                                    $record->update(['ticket_sent_at' => null]);
+                                    $count++;
+                                }
                             }
-                        }
-                        Notification::make()->title("Отменено регистраций: {$count}")->success()->send();
-                    }),
+                            Notification::make()->title("Сброшено билетов: {$count}")->success()->send();
+                        }),
+                    \Filament\Actions\BulkAction::make('cancelRegistration')
+                        ->label('Отменить регистрацию')
+                        ->icon('heroicon-o-x-mark')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Отменить регистрацию?')
+                        ->modalDescription('Участники будут отменены')
+                        ->action(function ($records) {
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if ($record->status !== 'cancelled') {
+                                    $record->update(['status' => 'cancelled']);
+                                    $count++;
+                                }
+                            }
+                            Notification::make()->title("Отменено регистраций: {$count}")->success()->send();
+                        }),
+                ])->label('Действия')->icon('heroicon-o-bars-3'),
             ])
             ->actions([
                 \Filament\Actions\ActionGroup::make([
