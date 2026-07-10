@@ -64,6 +64,11 @@ class AnonParticipantsTable
                     ->label('Участник')
                     ->size(TextSize::Small)
                     ->toggleable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('event', function ($q) use ($search) {
+                            $q->where('title', 'like', "%{$search}%");
+                        })->orWhere('answer_id', 'like', "%{$search}%");
+                    })
                     ->state(function (AnonParticipant $record): ?string {
                         $data = static::getCachedAnswerData($record);
                         if (!$data) {
@@ -147,6 +152,43 @@ class AnonParticipantsTable
                     ->toggleable(),
             ])
             ->filters([
+                \Filament\Tables\Filters\Filter::make('search_name')
+                    ->label('Поиск по ФИО')
+                    ->form([
+                        \Filament\Forms\Components\TextInput::make('name')
+                            ->label('ФИО участника')
+                            ->placeholder('Введите имя...'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['name'])) {
+                            return $query;
+                        }
+
+                        $search = mb_strtolower($data['name']);
+
+                        return $query->where(function ($q) use ($search) {
+                            $participantIds = [];
+                            $participants = $q->get()->take(100);
+
+                            foreach ($participants as $participant) {
+                                $answerData = static::getCachedAnswerData($participant);
+                                if (!$answerData) {
+                                    continue;
+                                }
+
+                                $name = static::extractField($answerData, ['фио участника', 'фамилия имя отчество', 'имя', 'name']);
+                                if ($name && mb_strpos(mb_strtolower($name), $search) !== false) {
+                                    $participantIds[] = $participant->id;
+                                }
+                            }
+
+                            if (!empty($participantIds)) {
+                                $q->whereIn('id', $participantIds);
+                            } else {
+                                $q->whereRaw('1 = 0');
+                            }
+                        });
+                    }),
                 SelectFilter::make('event_id')
                     ->label('Мероприятие')
                     ->relationship('event', 'title')
