@@ -74,7 +74,7 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(event.request.url);
 
-    const ignoredPaths = ['/favicon.ico', '/sw.js', '/health'];
+    const ignoredPaths = ['/sw.js', '/health'];
     if (ignoredPaths.some(path => url.pathname === path)) {
         return;
     }
