@@ -34,13 +34,24 @@ class FaviconController extends Controller
             $sourcePath = storage_path('app/public/' . $event->poster_image);
 
             if (file_exists($sourcePath)) {
-                $manager = ImageManager::usingDriver(Driver::class);
-                $image = $manager->decodePath($sourcePath)->resize($size, $size);
-                $encoded = $image->encodeUsingMediaType('image/png');
+                try {
+                    $manager = ImageManager::usingDriver(Driver::class);
+                    $image = $manager->decodePath($sourcePath)->resize($size, $size);
+                    $encoded = $image->encodeUsingMediaType('image/png');
 
-                return response($encoded->toString())
-                    ->header('Content-Type', 'image/png')
-                    ->header('Cache-Control', 'public, max-age=86400');
+                    $dir = dirname($cachedPath);
+                    if (!is_dir($dir)) {
+                        mkdir($dir, 0755, true);
+                    }
+                    file_put_contents($cachedPath, $encoded->toString());
+
+                    return response()->file($cachedPath, [
+                        'Content-Type' => 'image/png',
+                        'Cache-Control' => 'public, max-age=86400',
+                    ]);
+                } catch (\Throwable $e) {
+                    // fall through to fallback
+                }
             }
         }
 
