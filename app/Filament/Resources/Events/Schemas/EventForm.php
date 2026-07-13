@@ -655,6 +655,7 @@ class EventForm
                                 TextInput::make('title')->label('Название документа')->columnSpanFull(),
                                 FileUpload::make('file_path')
                                     ->label('Файл')
+                                    ->required()
                                     ->disk('public')
                                     ->visibility('public')
                                     ->directory('events/documents')
