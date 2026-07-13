@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fifth-event-v7';
+const CACHE_NAME = 'fifth-event-v8';
 
 const OFFLINE_PAGE = '/offline';
 
@@ -138,7 +138,15 @@ self.addEventListener('fetch', (event) => {
                 if (cachedResponse) {
                     return cachedResponse;
                 }
-                return fetch(event.request).catch(() => {
+                return fetch(event.request).then((response) => {
+                    if (response.ok) {
+                        const responseClone = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, responseClone);
+                        });
+                    }
+                    return response;
+                }).catch(() => {
                     return new Response('', { status: 503, statusText: 'Service Unavailable' });
                 });
             })
