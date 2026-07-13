@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        .offline-container {
+        .error-container {
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -15,7 +15,7 @@
             padding: 2rem;
         }
 
-        .offline-card {
+        .error-card {
             border: 1px solid var(--color-border);
             border-radius: var(--radius-card);
             background: var(--color-surface);
@@ -28,18 +28,20 @@
             min-width: 0;
         }
 
-        .offline-icon {
-            margin-bottom: 1.5rem;
+        .error-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
         }
 
-        .offline-title {
+        .error-title {
             font-size: 1.5rem;
             font-weight: 700;
             margin: 1rem 0;
             color: var(--color-text);
         }
 
-        .offline-message {
+        .error-message {
             font-size: 1rem;
             color: var(--color-text-secondary);
             line-height: 1.6;
@@ -50,11 +52,37 @@
             max-width: 100%;
         }
 
-        .offline-actions {
+        .error-actions {
             display: flex;
             gap: 1rem;
             justify-content: center;
             flex-wrap: wrap;
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-btn);
+            background: var(--color-background);
+            color: var(--color-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         .btn-primary {
@@ -103,59 +131,33 @@
             color: var(--color-primary);
         }
 
-        .connection-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius-btn);
-            background: var(--color-background);
-            color: var(--color-muted);
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--color-primary);
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
         @media (max-width: 640px) {
-            .offline-card {
+            .error-card {
                 padding: 2rem 1.5rem;
             }
         }
     </style>
 </head>
 <body class="bg-surface text-text">
-    <div class="offline-container">
-        <div class="offline-card">
-            <div class="offline-icon">
+    <div class="error-container">
+        <div class="error-card">
+            <div class="error-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-20 w-20 text-[var(--color-primary)]">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
                 </svg>
             </div>
-            
+
             <div class="connection-status">
                 <span class="status-dot"></span>
                 Нет подключения к интернету
             </div>
 
-            <h1 class="offline-title">Похоже, вы офлайн</h1>
-            <p class="offline-message">
+            <h1 class="error-title">Похоже, вы офлайн</h1>
+            <p class="error-message">
                 Проверьте подключение к сети и попробуйте снова. Мы обновим страницу автоматически, когда соединение будет восстановлено.
             </p>
 
-            <div class="offline-actions">
+            <div class="error-actions">
                 <button onclick="window.location.reload()" class="btn-primary">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -173,39 +175,28 @@
     </div>
 
     <script>
-        // Отслеживание статуса подключения
         function updateOnlineStatus() {
             if (navigator.onLine) {
-                // Подключение восстановлено - перезагружаем страницу
                 window.location.reload();
             }
         }
 
         window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', () => {
-            // Если мы уже на офлайн странице, ничего не делаем
-            if (!document.body.classList.contains('offline-mode')) {
-                // Можно добавить визуальное уведомление
-                console.log('Подключение потеряно');
-            }
-        });
 
-        // Пинг для проверки подключения (опционально)
         async function checkConnection() {
             try {
-                const response = await fetch('/health', { 
-                    method: 'HEAD', 
-                    cache: 'no-cache' 
+                const response = await fetch('/health', {
+                    method: 'HEAD',
+                    cache: 'no-cache'
                 });
                 if (response.ok && navigator.onLine) {
-                    console.log('Подключение активно');
+                    window.location.reload();
                 }
             } catch (e) {
-                console.log('Нет подключения к серверу');
+                // no connection
             }
         }
 
-        // Проверяем подключение каждые 30 секунд
         setInterval(checkConnection, 30000);
     </script>
 </body>
