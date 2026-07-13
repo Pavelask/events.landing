@@ -51,7 +51,7 @@
                 @endphp
                 <button
                     type="button"
-                    wire:click="selectDay({{ $day->id }})" x-on:click="$nextTick(() => { const panel = document.querySelector('[role="tabpanel"]'); if(panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); })"
+                    wire:click="selectDay({{ $day->id }})" x-on:click="$nextTick(() => { const panel = document.querySelector('[role=&quot;tabpanel&quot;]'); if(panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); })"
                     role="tab"
                     aria-selected="{{ $isActive ? 'true' : 'false' }}"
                     style="{{ $isActive ? 'background-color: var(--color-primary); color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);' : 'background-color: var(--color-background); color: var(--color-text);' }}{{ ($isPast && !$isActive) ? ' opacity: 0.6;' : '' }}"
