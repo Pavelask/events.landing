@@ -139,7 +139,7 @@ self.addEventListener('fetch', (event) => {
                     return cachedResponse;
                 }
                 return fetch(event.request).catch(() => {
-                    return null;
+                    return new Response('', { status: 503, statusText: 'Service Unavailable' });
                 });
             })
     );
