@@ -129,29 +129,6 @@
     });
 })();
 
-// Пасхалка Ferengi — 5 кликов по фото «Приветствие»
-(function () {
-    let clicks = 0;
-    let lastClickTime = 0;
-
-    document.addEventListener('click', function (e) {
-        const img = e.target.closest('#media .media-photo');
-        if (!img) return;
-
-        const now = Date.now();
-        if (now - lastClickTime > 2000) clicks = 0;
-        lastClickTime = now;
-        clicks++;
-
-        if (clicks >= 5) {
-            clicks = 0;
-            const original = img.src;
-            img.src = '/images/ferengi.jpg';
-            setTimeout(() => { img.src = original; }, 3000);
-        }
-    });
-})();
-
 // Регистрация Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
