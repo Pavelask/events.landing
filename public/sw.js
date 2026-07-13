@@ -2,6 +2,12 @@ const CACHE_NAME = 'fifth-event-v7';
 
 const OFFLINE_PAGE = '/offline';
 
+const STATIC_ASSETS = [
+    '/',
+    '/offline',
+    '/favicon.ico',
+];
+
 const OFFLINE_FALLBACK = `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -40,16 +46,25 @@ const OFFLINE_FALLBACK = `<!DOCTYPE html>
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.add(OFFLINE_PAGE).catch(() => {
-                return cache.put(OFFLINE_PAGE, new Response(OFFLINE_FALLBACK, {
-                    headers: { 'Content-Type': 'text/html; charset=utf-8' }
-                }));
-            });
-        }).then(() => {
-            return self.skipWaiting();
-        })
+        caches.open(CACHE_NAME)
+            .then((cache) => {
+                return cache.addAll(STATIC_ASSETS).catch(() => {
+                    return Promise.all(
+                        STATIC_ASSETS.map((url) => cache.add(url).catch(() => {}))
+                    );
+                });
+            })
+            .then(() => {
+                return caches.open(CACHE_NAME).then((cache) => {
+                    return cache.add(OFFLINE_PAGE).catch(() => {
+                        return cache.put(OFFLINE_PAGE, new Response(OFFLINE_FALLBACK, {
+                            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+                        }));
+                    });
+                });
+            })
     );
+    self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -128,4 +143,10 @@ self.addEventListener('fetch', (event) => {
                 });
             })
     );
+});
+
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
