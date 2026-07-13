@@ -108,6 +108,7 @@ class EventDayForm
                                 FileUpload::make('icon_image')
                                     ->label('Иконка (фото)')
                                     ->image()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'])
                                     ->disk('public')
                                     ->visibility('public')
                                     ->directory('events/schedule-icons')

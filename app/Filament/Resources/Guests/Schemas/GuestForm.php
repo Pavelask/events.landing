@@ -18,6 +18,7 @@ class GuestForm
             FileUpload::make('photo')
                 ->label('Фото')
                 ->image()
+                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'])
                 ->disk('public')
                 ->visibility('public')
                 ->directory('guests')

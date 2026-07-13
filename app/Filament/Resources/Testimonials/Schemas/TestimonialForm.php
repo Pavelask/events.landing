@@ -47,6 +47,7 @@ class TestimonialForm
                 ->disk('public')
                 ->directory('testimonials')
                 ->image()
+                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'])
                 ->imageEditor()
                 ->imageResizeMode('cover')
                 ->imageCropAspectRatio('1:1')
