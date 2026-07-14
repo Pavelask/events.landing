@@ -16,10 +16,15 @@
     <div id="ckeditor-wrapper-{{ $id }}"></div>
 </div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-classic@35.4.0/build/ckeditor.css">
-<script src="https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-classic@35.4.0/build/ckeditor.js" onload="initCKEditorOnLoad('{{ $id }}')"></script>
+<script src="{{ asset('js/ckeditor.js') }}"></script>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            initCKEditorOnLoad('{{ $id }}');
+        }, 100);
+    });
+
     function initCKEditorOnLoad(id) {
         const textarea = document.getElementById('ckeditor-' + id);
         const wrapper = document.getElementById('ckeditor-wrapper-' + id);
@@ -28,7 +33,7 @@
         if (!textarea || !wrapper) return;
 
         if (typeof ClassicEditor === 'undefined') {
-            if (loading) loading.innerHTML = '<span style="color:red;">CKEditor не загружен</span>';
+            if (loading) loading.innerHTML = '<span style="color:red;">CKEditor не загружен. Проверьте файл js/ckeditor.js</span>';
             return;
         }
 
