@@ -58,8 +58,7 @@ class EditDocumentTemplate extends EditRecord
                 ->label('Предпросмотр PDF')
                 ->icon('heroicon-o-eye')
                 ->color('info')
-                ->url(fn () => route('document-templates.preview', $this->record))
-                ->openInNewTab()
+                ->url(fn () => route('document-templates.preview', $this->record), shouldOpenInNewTab: true)
                 ->requiresConfirmation(false),
         ];
     }
