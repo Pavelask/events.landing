@@ -32,8 +32,8 @@ class DocumentTemplatesTable
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                \Filament\Tables\Actions\EditAction::make(),
-                \Filament\Tables\Actions\DeleteAction::make(),
+                \Filament\Actions\EditAction::make()->label('')->icon('heroicon-o-pencil')->iconSize('md'),
+                \Filament\Actions\DeleteAction::make()->label('')->icon('heroicon-o-trash')->iconSize('md'),
             ])
             ->bulkActions([
                 \Filament\Tables\Actions\BulkActionGroup::make([
