@@ -5,6 +5,7 @@ namespace App\Filament\Resources\DocumentTemplates\Schemas;
 use App\Services\DocxConverterService;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -44,15 +45,37 @@ class DocumentTemplateForm
                     ->label('Содержимое шаблона')
                     ->default('<p></p>')
                     ->columnSpanFull()
+                    ->fileAttachmentsDisk('public')
+                    ->fileAttachmentsDirectory('document-templates/attachments')
                     ->toolbarButtons([
-                        'bold', 'italic', 'underline', 'strike',
-                        'link', 'blockquote',
-                        'bulletList', 'orderedList',
-                        'h2', 'h3',
                         'attachFiles',
-                        'undo', 'redo',
+                        'blockquote',
+                        'bold',
+                        'bulletList',
+                        'codeBlock',
+                        'h2',
+                        'h3',
+                        'italic',
+                        'link',
+                        'orderedList',
+                        'redo',
+                        'strike',
+                        'underline',
+                        'undo',
                     ])
                     ->helperText('Используйте {{ variable_name }} для плейсхолдеров. Доступные: {{ full_name }}, {{ passport_series }}, {{ passport_number }}, {{ passport_issued_by }}, {{ registration_address }}, {{ phone }}, {{ email }}, {{ event_title }}, {{ event_date }}, {{ current_date }}, {{ organization_name }}, {{ organization_inn }}'),
+
+                Textarea::make('raw_html')
+                    ->label('Или вставьте HTML напрямую')
+                    ->placeholder('<p>Текст согласия...</p>')
+                    ->rows(10)
+                    ->columnSpanFull()
+                    ->dehydrated(false)
+                    ->afterStateUpdated(function ($state, $set, $get) {
+                        if (!empty($state)) {
+                            $set('content', $state);
+                        }
+                    }),
 
                 KeyValue::make('variables')
                     ->label('Переменные')
