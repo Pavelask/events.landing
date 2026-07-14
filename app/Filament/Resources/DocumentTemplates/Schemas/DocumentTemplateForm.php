@@ -38,20 +38,45 @@ class DocumentTemplateForm
                     ->disk('public')
                     ->visibility('public')
                     ->getUploadedFileNameForStorageUsing(fn (\Illuminate\Http\UploadedFile $file): string => $file->getClientOriginalName())
-                    ->live()
-                    ->afterStateUpdated(function ($state, $set) {
-                        if (empty($state)) return;
+                    ->helperText('Загрузите .docx файл как образец. Скопируйте текст в редактор ниже.'),
 
-                        $converter = app(DocxConverterService::class);
+                \Filament\Forms\Components\Actions\Action::make('convertDocx')
+                    ->label('Конвертировать .docx → HTML')
+                    ->icon('heroicon-o-document-arrow')
+                    ->color('secondary')
+                    ->requiresConfirmation()
+                    ->modalHeading('Конвертировать файл?')
+                    ->modalDescription('Текущий текст в редакторе будет заменён на содержимое .docx файла')
+                    ->action(function ($get, $set) {
+                        $file = $get('docx_file');
+                        if (empty($file)) {
+                            \Filament\Notifications\Notification::make()
+                                ->warning()
+                                ->title('Сначала загрузите .docx файл')
+                                ->send();
+                            return;
+                        }
 
                         $disk = \Illuminate\Support\Facades\Storage::disk('public');
-                        if (!$disk->exists($state)) return;
+                        if (!$disk->exists($file)) {
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Файл не найден на диске')
+                                ->send();
+                            return;
+                        }
 
-                        $fullPath = $disk->path($state);
+                        $converter = app(DocxConverterService::class);
+                        $fullPath = $disk->path($file);
                         $html = $converter->convertToHtml($fullPath);
                         $html = $converter->applyPlaceholders($html);
 
-                        $set('content', $html);
+                        $set('content', $html ?: '<p></p>');
+
+                        \Filament\Notifications\Notification::make()
+                            ->success()
+                            ->title('Файл конвертирован')
+                            ->send();
                     }),
 
                 RichEditor::make('content')
