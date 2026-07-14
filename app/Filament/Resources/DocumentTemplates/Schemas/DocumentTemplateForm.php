@@ -40,7 +40,7 @@ class DocumentTemplateForm
                     ->getUploadedFileNameForStorageUsing(fn (\Illuminate\Http\UploadedFile $file): string => $file->getClientOriginalName())
                     ->helperText('Загрузите .docx файл как образец. Скопируйте текст в редактор ниже.'),
 
-                \Filament\Forms\Components\Actions\Action::make('convertDocx')
+                \Filament\Actions\Action::make('convertDocx')
                     ->label('Конвертировать .docx → HTML')
                     ->icon('heroicon-o-document-arrow')
                     ->color('secondary')
