@@ -43,7 +43,6 @@ class DocumentTemplateForm
                 CodeEditor::make('content')
                     ->label('HTML-шаблон')
                     ->language(Language::Html)
-                    ->theme('github')
                     ->columnSpanFull()
                     ->rows(25)
                     ->default('<p></p>')
