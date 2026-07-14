@@ -14,7 +14,7 @@ class PdfGeneratorService
         $variables = $this->extractVariables($participant);
         $html = $this->renderTemplate($template, $variables);
 
-        $pdf = app('mpdf');
+        $pdf = app('laravel-mpdf');
         $pdf->AddPage();
 
         $header = $this->buildHeader($template);
@@ -69,7 +69,7 @@ class PdfGeneratorService
 
         $html = $this->renderTemplate($template, $testData);
 
-        $pdf = app('mpdf');
+        $pdf = app('laravel-mpdf');
         $pdf->AddPage();
 
         $header = $this->buildHeader($template);
