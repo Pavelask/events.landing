@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\DocumentTemplate;
 use App\Models\Participant;
 use Illuminate\Support\Facades\Storage;
-use Mccarlosen\LaravelMpdf\LaravelMpdfWrapper;
 
 class PdfGeneratorService
 {
@@ -23,7 +22,8 @@ class PdfGeneratorService
             mkdir($dir, 0755, true);
         }
 
-        $mpdf = LaravelMpdfWrapper::loadHTML($html)->save($fullPath, ['T' => 15, 'L' => 15, 'R' => 15, 'B' => 15]);
+        $pdf = app('laravel-mpdf')->loadHTML($html);
+        $pdf->save($fullPath);
 
         return $path;
     }
@@ -58,10 +58,10 @@ class PdfGeneratorService
         ];
 
         $html = $this->buildFullHtml($template, $testData);
-
         $tempFile = tempnam(sys_get_temp_dir(), 'pdf_preview_') . '.pdf';
 
-        LaravelMpdfWrapper::loadHTML($html)->save($tempFile, ['T' => 15, 'L' => 15, 'R' => 15, 'B' => 15]);
+        $pdf = app('laravel-mpdf')->loadHTML($html);
+        $pdf->save($tempFile);
 
         return $tempFile;
     }
@@ -69,8 +69,6 @@ class PdfGeneratorService
     private function buildFullHtml(DocumentTemplate $template, array $variables): string
     {
         $content = $this->renderTemplate($template, $variables);
-        $header = $this->buildHeader($template);
-        $footer = $this->buildFooter();
 
         return <<<HTML
 <!DOCTYPE html>
@@ -107,15 +105,5 @@ HTML;
             'organization_name' => config('app.organization_name', ''),
             'organization_inn' => config('app.organization_inn', ''),
         ];
-    }
-
-    private function buildHeader(DocumentTemplate $template): string
-    {
-        return '<div style="font-size: 9pt; color: #666;">' . e($template->name) . '</div>';
-    }
-
-    private function buildFooter(): string
-    {
-        return '<div style="text-align: right; font-size: 9pt; color: #666;">Страница {PAGENO} из {nbpg}</div>';
     }
 }
