@@ -8,18 +8,43 @@
     x-data="{
         mode: 'split',
         content: @entangle($statePath),
+        editor: null,
         get previewHtml() {
             return this.content || '';
         }
     }"
-    class="fi-fo-code-editor"
+    x-init="$nextTick(() => {
+        if (typeof CodeMirror !== 'undefined' && $refs.codeTextarea) {
+            this.editor = CodeMirror.fromTextArea($refs.codeTextarea, {
+                mode: 'htmlmixed',
+                theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dracula' : 'default',
+                lineNumbers: true,
+                lineWrapping: true,
+                tabSize: 4,
+                indentWithTabs: false,
+                matchBrackets: true,
+                autoCloseTags: true,
+                autoCloseBrackets: true,
+                extraKeys: { 'Tab': (cm) => cm.replaceSelection('    ', 'end') }
+            });
+            this.editor.on('change', () => {
+                this.content = this.editor.getValue();
+            });
+            this.$watch('content', (val) => {
+                if (this.editor && this.editor.getValue() !== val) {
+                    this.editor.setValue(val || '');
+                }
+            });
+        }
+    })"
+    class="fi-fo-code-editor w-full"
 >
     {{-- Mode Tabs --}}
     @if($showPreview)
         <div class="mb-2 flex items-center gap-2">
             <button
                 type="button"
-                @click="mode = 'code'"
+                @click="mode = 'code'; if (editor) editor.refresh()"
                 :class="mode === 'code' ? 'bg-primary-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
                 class="rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
             >
@@ -35,7 +60,7 @@
             </button>
             <button
                 type="button"
-                @click="mode = 'split'"
+                @click="mode = 'split'; $nextTick(() => { if (editor) editor.refresh() })"
                 :class="mode === 'split' ? 'bg-primary-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
                 class="rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
             >
@@ -45,7 +70,7 @@
     @endif
 
     {{-- Editor Container --}}
-    <div class="flex gap-2" style="min-height: 500px;">
+    <div class="flex gap-2 w-full" style="min-height: 600px;">
         {{-- Code Editor --}}
         <div
             x-show="mode === 'code' || mode === 'split'"
@@ -53,12 +78,12 @@
             class="flex flex-col"
         >
             <textarea
-                x-model="content"
+                x-ref="codeTextarea"
                 wire:model="{{ $statePath }}"
-                class="w-full h-full min-h-[500px] rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-4 font-mono text-sm text-gray-900 dark:text-gray-100 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 resize-y"
+                class="w-full h-full min-h-[600px] rounded-lg border border-gray-300 dark:border-gray-600"
                 style="tab-size: 4;"
                 spellcheck="false"
-            ></textarea>
+            >{!! e($getState() ?? '') !!}</textarea>
         </div>
 
         {{-- Preview --}}
@@ -71,11 +96,35 @@
                 <iframe
                     x-ref="previewFrame"
                     class="w-full h-full border-0"
-                    style="min-height: 500px;"
+                    style="min-height: 600px;"
                     sandbox="allow-same-origin"
                     :srcdoc="previewHtml"
                 ></iframe>
             </div>
         @endif
     </div>
+
+    {{-- CodeMirror CSS --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.css">
+
+    {{-- CodeMirror JS --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+
+    <style>
+        .CodeMirror {
+            min-height: 600px;
+            border-radius: 0.5rem;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
 </div>
