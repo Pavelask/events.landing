@@ -42,7 +42,7 @@ class DocumentTemplateForm
 
                 \Filament\Actions\Action::make('convertDocx')
                     ->label('Конвертировать .docx → HTML')
-                    ->icon('heroicon-o-document-arrow')
+                    ->icon('heroicon-o-arrow-path')
                     ->color('secondary')
                     ->requiresConfirmation()
                     ->modalHeading('Конвертировать файл?')
