@@ -1,35 +1,24 @@
 @php
     $statePath = $getStatePath();
+    $value = $getState() ?? '';
 @endphp
 
-<div wire:ignore>
-    <div x-data="{
-        content: @entangle($statePath),
-        ckeditor: null,
-        initialized: false
-    }" x-init="$nextTick(() => { if (!this.initialized) initCKEditor.call(this) })">
-        <div x-ref="container" style="min-height: 500px;"></div>
-    </div>
+<div>
+    <textarea
+        id="ckeditor-{{ $getId() }}"
+        wire:model="{{ $statePath }}"
+    >{{ $value }}</textarea>
 </div>
 
 <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/41.4.2/ckeditor5.css">
 <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/ckeditor5.umd.min.js"></script>
 
 <script>
-    function initCKEditor() {
-        const self = this;
-        const container = self.$refs.container;
-        if (!container || self.initialized) return;
+    document.addEventListener('DOMContentLoaded', function() {
+        const textarea = document.getElementById('ckeditor-{{ $getId() }}');
+        if (!textarea) return;
 
-        if (typeof ClassicEditor === 'undefined') {
-            container.innerHTML = '<div style="padding:2rem;color:red;text-align:center;">CKEditor не загружен. Проверьте подключение к интернету.</div>';
-            return;
-        }
-
-        const data = self.content || '';
-
-        ClassicEditor.create(container, {
-            initialData: data,
+        ClassicEditor.create(textarea, {
             toolbar: [
                 'heading', '|',
                 'bold', 'italic', 'underline', 'strikethrough', '|',
@@ -53,16 +42,14 @@
                 contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
             },
         }).then(editor => {
-            self.ckeditor = editor;
-            self.initialized = true;
-
             editor.model.document.on('change:data', () => {
-                self.content = editor.getData();
+                textarea.value = editor.getData();
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
             });
         }).catch(err => {
             console.error('CKEditor error:', err);
         });
-    }
+    });
 </script>
 
 <style>
