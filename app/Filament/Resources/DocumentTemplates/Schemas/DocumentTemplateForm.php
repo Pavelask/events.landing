@@ -37,15 +37,17 @@ class DocumentTemplateForm
                     ->directory('document-templates')
                     ->disk('public')
                     ->visibility('public')
+                    ->getUploadedFileNameForStorageUsing(fn (\Illuminate\Http\UploadedFile $file): string => $file->getClientOriginalName())
                     ->live()
                     ->afterStateUpdated(function ($state, $set) {
                         if (empty($state)) return;
 
                         $converter = app(DocxConverterService::class);
-                        $fullPath = storage_path('app/public/' . $state);
 
-                        if (!file_exists($fullPath)) return;
+                        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+                        if (!$disk->exists($state)) return;
 
+                        $fullPath = $disk->path($state);
                         $html = $converter->convertToHtml($fullPath);
                         $html = $converter->applyPlaceholders($html);
 
