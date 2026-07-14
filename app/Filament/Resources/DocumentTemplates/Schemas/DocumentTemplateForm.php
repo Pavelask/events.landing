@@ -2,8 +2,7 @@
 
 namespace App\Filament\Resources\DocumentTemplates\Schemas;
 
-use Filament\Forms\Components\CodeEditor;
-use Filament\Forms\Components\CodeEditor\Enums\Language;
+use App\Forms\Components\MonacoEditor;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\FileUpload;
@@ -40,13 +39,12 @@ class DocumentTemplateForm
                     ->getUploadedFileNameForStorageUsing(fn (\Illuminate\Http\UploadedFile $file): string => $file->getClientOriginalName())
                     ->helperText('Загрузите .docx файл, затем нажмите «Конвертировать .docx» в шапке страницы.'),
 
-                CodeEditor::make('content')
+                MonacoEditor::make('content')
                     ->label('HTML-шаблон')
-                    ->language(Language::Html)
-                    ->wrap()
+                    ->language('html')
+                    ->showPreview()
                     ->columnSpanFull()
                     ->default('<p></p>')
-                    ->helperText('Используйте {{ variable_name }} для плейсхолдеров.')
                     ->helperText('Используйте {{ variable_name }} для плейсхолдеров. Доступные: {{ full_name }}, {{ passport_series }}, {{ passport_number }}, {{ passport_issued_by }}, {{ registration_address }}, {{ phone }}, {{ email }}, {{ event_title }}, {{ event_date }}, {{ current_date }}, {{ organization_name }}, {{ organization_inn }}'),
 
                 KeyValue::make('variables')
