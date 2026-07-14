@@ -5,24 +5,14 @@ namespace App\Services;
 use App\Models\DocumentTemplate;
 use App\Models\Participant;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\View;
+use Mccarlosen\LaravelMpdf\LaravelMpdfWrapper;
 
 class PdfGeneratorService
 {
     public function generate(Participant $participant, DocumentTemplate $template): string
     {
         $variables = $this->extractVariables($participant);
-        $html = $this->renderTemplate($template, $variables);
-
-        $pdf = app('laravel-mpdf');
-        $pdf->AddPage();
-
-        $header = $this->buildHeader($template);
-        $footer = $this->buildFooter();
-        $pdf->SetHTMLHeader($header);
-        $pdf->SetHTMLFooter($footer);
-
-        $pdf->WriteHTML($html);
+        $html = $this->buildFullHtml($template, $variables);
 
         $filename = "{$participant->id}_" . time() . ".pdf";
         $path = "consents/{$filename}";
@@ -33,7 +23,7 @@ class PdfGeneratorService
             mkdir($dir, 0755, true);
         }
 
-        $pdf->Output($fullPath, 'F');
+        $mpdf = LaravelMpdfWrapper::loadHTML($html)->save($fullPath, ['T' => 15, 'L' => 15, 'R' => 15, 'B' => 15]);
 
         return $path;
     }
@@ -67,22 +57,35 @@ class PdfGeneratorService
             'organization_inn' => '1234567890',
         ];
 
-        $html = $this->renderTemplate($template, $testData);
-
-        $pdf = app('laravel-mpdf');
-        $pdf->AddPage();
-
-        $header = $this->buildHeader($template);
-        $footer = $this->buildFooter();
-        $pdf->SetHTMLHeader($header);
-        $pdf->SetHTMLFooter($footer);
-
-        $pdf->WriteHTML($html);
+        $html = $this->buildFullHtml($template, $testData);
 
         $tempFile = tempnam(sys_get_temp_dir(), 'pdf_preview_') . '.pdf';
-        $pdf->Output($tempFile, 'F');
+
+        LaravelMpdfWrapper::loadHTML($html)->save($tempFile, ['T' => 15, 'L' => 15, 'R' => 15, 'B' => 15]);
 
         return $tempFile;
+    }
+
+    private function buildFullHtml(DocumentTemplate $template, array $variables): string
+    {
+        $content = $this->renderTemplate($template, $variables);
+        $header = $this->buildHeader($template);
+        $footer = $this->buildFooter();
+
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: sans-serif; font-size: 12pt; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    {$content}
+</body>
+</html>
+HTML;
     }
 
     private function extractVariables(Participant $participant): array
