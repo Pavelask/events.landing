@@ -44,7 +44,6 @@ class DocumentTemplateForm
                     ->label('HTML-шаблон')
                     ->language(Language::Html)
                     ->columnSpanFull()
-                    ->rows(25)
                     ->default('<p></p>')
                     ->helperText('Используйте {{ variable_name }} для плейсхолдеров. Доступные: {{ full_name }}, {{ passport_series }}, {{ passport_number }}, {{ passport_issued_by }}, {{ registration_address }}, {{ phone }}, {{ email }}, {{ event_title }}, {{ event_date }}, {{ current_date }}, {{ organization_name }}, {{ organization_inn }}'),
 
