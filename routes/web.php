@@ -149,6 +149,19 @@ Route::get('/consents/{participant}/download', function (\App\Models\Participant
     ]);
 })->name('consent.download')->middleware('auth');
 
+// Document template preview
+Route::get('/document-templates/{documentTemplate}/preview', function (\App\Models\DocumentTemplate $documentTemplate) {
+    abort_unless(auth()->check(), 403);
+
+    $service = app(\App\Services\PdfGeneratorService::class);
+    $tempFile = $service->getPreview($documentTemplate);
+
+    return response()->file($tempFile, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'inline; filename="preview_' . $documentTemplate->slug . '.pdf"',
+    ])->deleteFileAfterSend(true);
+})->name('document-templates.preview')->middleware('auth');
+
 // Redirect login to Filament admin
 Route::get('/login', fn () => redirect('/admin/login'))->name('login');
 

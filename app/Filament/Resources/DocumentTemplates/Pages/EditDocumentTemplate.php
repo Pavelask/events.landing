@@ -58,15 +58,8 @@ class EditDocumentTemplate extends EditRecord
                 ->label('Предпросмотр PDF')
                 ->icon('heroicon-o-eye')
                 ->color('info')
-                ->action(function () {
-                    $template = $this->record;
-                    $service = app(PdfGeneratorService::class);
-                    $tempFile = $service->getPreview($template);
-
-                    response()->download($tempFile, 'preview_' . $template->slug . '.pdf', [
-                        'Content-Type' => 'application/pdf',
-                    ])->deleteFileAfterSend(true)->send();
-                })
+                ->url(fn () => route('document-templates.preview', $this->record))
+                ->openInNewTab()
                 ->requiresConfirmation(false),
         ];
     }
