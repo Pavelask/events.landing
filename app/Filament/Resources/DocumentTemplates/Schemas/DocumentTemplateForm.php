@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\DocumentTemplates\Schemas;
 
 use Filament\Forms\Components\CodeEditor;
+use Filament\Forms\Components\CodeEditor\Enums\Language;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\FileUpload;
@@ -41,7 +42,7 @@ class DocumentTemplateForm
 
                 CodeEditor::make('content')
                     ->label('HTML-шаблон')
-                    ->language('html')
+                    ->language(Language::Html)
                     ->theme('github')
                     ->columnSpanFull()
                     ->rows(25)
