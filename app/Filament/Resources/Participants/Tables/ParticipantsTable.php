@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use App\Jobs\GenerateConsentsBatch;
 
 class ParticipantsTable
 {
@@ -63,6 +64,24 @@ class ParticipantsTable
                     ->label('Чек-ин')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
+                    ->toggleable(),
+                TextColumn::make('consent_status')
+                    ->label('Согласие')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'pending' => 'Ожидает',
+                        'generating' => 'Генерируется',
+                        'completed' => 'Готово',
+                        'failed' => 'Ошибка',
+                        default => '—',
+                    })
+                    ->color(fn (?string $state): string => match ($state) {
+                        'pending' => 'gray',
+                        'generating' => 'info',
+                        'completed' => 'success',
+                        'failed' => 'danger',
+                        default => 'gray',
+                    })
                     ->toggleable(),
             ])
             ->filters([
@@ -187,6 +206,46 @@ class ParticipantsTable
                     }),
             ])
             ->bulkActions([
+                BulkAction::make('generateConsents')
+                    ->label('Сгенерировать согласия')
+                    ->icon('heroicon-o-document-text')
+                    ->form([
+                        Select::make('template_id')
+                            ->label('Шаблон')
+                            ->options(fn () => \App\Models\DocumentTemplate::active()->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                    ])
+                    ->action(function ($records, array $data) {
+                        $templateId = $data['template_id'];
+                        $generatedBy = auth()->id();
+
+                        $batch = \Illuminate\Support\Facades\Bus::batch(
+                            $records->map(fn ($record) => new GenerateConsentsBatch($record->id, $templateId, $generatedBy))
+                        )->then(function ($batch) {
+                            \Filament\Notifications\Notification::make()
+                                ->success()
+                                ->title('Генерация согласий завершена')
+                                ->body("Успешно: {$batch->totalJobs()}")
+                                ->send();
+                        })->catch(function ($batch, $e) {
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Ошибка генерации согласий')
+                                ->body($e->getMessage())
+                                ->send();
+                        })->name('generate-consents-' . now()->timestamp)
+                          ->onConnection('redis')
+                          ->onQueue('consents')
+                          ->dispatch();
+
+                        \Filament\Notifications\Notification::make()
+                            ->info()
+                            ->title('Генерация согласий запущена')
+                            ->body("Обработка {$records->count()} участников")
+                            ->send();
+                    }),
                 BulkAction::make('sendTickets')
                     ->label('Отправить билеты')
                     ->icon('heroicon-o-envelope')
@@ -272,6 +331,14 @@ class ParticipantsTable
                     ->icon('heroicon-o-pencil')
                     ->iconSize('md')
                     ->color('info'),
+                \Filament\Actions\Action::make('downloadConsent')
+                    ->label('')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->iconSize('md')
+                    ->color('success')
+                    ->url(fn (Participant $record) => route('consent.download', $record))
+                    ->openInNewTab()
+                    ->visible(fn (Participant $record) => $record->consent_status === 'completed' && $record->consent_pdf_path),
             ]);
     }
 }

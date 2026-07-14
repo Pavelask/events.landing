@@ -130,6 +130,25 @@ Route::get('/exports/{filename}', function (string $filename) {
     return response()->download($path)->deleteFileAfterSend(true);
 })->name('export.download')->middleware('auth');
 
+// Consent PDF download
+Route::get('/consents/{participant}/download', function (\App\Models\Participant $participant) {
+    abort_unless(auth()->check(), 403);
+
+    if (!$participant->consent_pdf_path) {
+        abort(404);
+    }
+
+    $path = storage_path('app/private/' . $participant->consent_pdf_path);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->download($path, "consent_{$participant->id}.pdf", [
+        'Content-Type' => 'application/pdf',
+    ]);
+})->name('consent.download')->middleware('auth');
+
 // Redirect login to Filament admin
 Route::get('/login', fn () => redirect('/admin/login'))->name('login');
 

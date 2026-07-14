@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Participant extends Model
@@ -24,6 +25,10 @@ class Participant extends Model
         'email_verified_at',
         'source',
         'utm_tags',
+        'consent_status',
+        'consent_error',
+        'consent_generated_at',
+        'consent_pdf_path',
     ];
 
     protected $attributes = [
@@ -37,11 +42,25 @@ class Participant extends Model
         'ticket_sent_at' => 'datetime',
         'verification_code_sent_at' => 'datetime',
         'email_verified_at' => 'datetime',
+        'consent_generated_at' => 'datetime',
     ];
 
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function consentLogs(): HasMany
+    {
+        return $this->hasMany(ConsentGenerationLog::class);
+    }
+
+    public function deleteConsentPdf(): void
+    {
+        if ($this->consent_pdf_path && \Storage::disk('private')->exists($this->consent_pdf_path)) {
+            \Storage::disk('private')->delete($this->consent_pdf_path);
+        }
+        $this->update(['consent_pdf_path' => null, 'consent_status' => 'pending']);
     }
 
     public function generateCheckinToken(): string
@@ -79,6 +98,28 @@ class Participant extends Model
             'verified' => 'blue',
             'arrived' => 'green',
             'cancelled' => 'red',
+            default => 'gray',
+        };
+    }
+
+    public function getConsentStatusLabelAttribute(): string
+    {
+        return match ($this->consent_status) {
+            'pending' => 'Ожидает',
+            'generating' => 'Генерируется',
+            'completed' => 'Готово',
+            'failed' => 'Ошибка',
+            default => $this->consent_status,
+        };
+    }
+
+    public function getConsentStatusColorAttribute(): string
+    {
+        return match ($this->consent_status) {
+            'pending' => 'gray',
+            'generating' => 'info',
+            'completed' => 'success',
+            'failed' => 'danger',
             default => 'gray',
         };
     }
