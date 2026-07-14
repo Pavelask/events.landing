@@ -336,8 +336,7 @@ class ParticipantsTable
                     ->icon('heroicon-o-arrow-down-tray')
                     ->iconSize('md')
                     ->color('success')
-                    ->url(fn (Participant $record) => route('consent.download', $record))
-                    ->openInNewTab()
+                    ->url(fn (Participant $record) => route('consent.download', $record), shouldOpenInNewTab: true)
                     ->visible(fn (Participant $record) => $record->consent_status === 'completed' && $record->consent_pdf_path),
             ]);
     }
