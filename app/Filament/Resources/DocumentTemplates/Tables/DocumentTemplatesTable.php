@@ -36,8 +36,8 @@ class DocumentTemplatesTable
                 \Filament\Actions\DeleteAction::make()->label('')->icon('heroicon-o-trash')->iconSize('md'),
             ])
             ->bulkActions([
-                \Filament\Tables\Actions\BulkActionGroup::make([
-                    \Filament\Tables\Actions\DeleteBulkAction::make(),
+                \Filament\Actions\BulkActionGroup::make([
+                    \Filament\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
