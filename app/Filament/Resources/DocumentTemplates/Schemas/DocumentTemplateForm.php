@@ -58,9 +58,9 @@ class DocumentTemplateForm
                     ->toolbarButtons([
                         'bold', 'italic', 'underline', 'strike',
                         'link', 'blockquote',
-                        'ul', 'ol',
-                        'align-left', 'align-center', 'align-right',
-                        'table',
+                        'bulletList', 'orderedList',
+                        'h2', 'h3',
+                        'attachFiles',
                         'undo', 'redo',
                     ])
                     ->helperText('Используйте {{ variable_name }} для плейсхолдеров. Доступные: {{ full_name }}, {{ passport_series }}, {{ passport_number }}, {{ passport_issued_by }}, {{ registration_address }}, {{ phone }}, {{ email }}, {{ event_title }}, {{ event_date }}, {{ current_date }}, {{ organization_name }}, {{ organization_inn }}'),
