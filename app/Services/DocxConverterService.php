@@ -34,6 +34,11 @@ class DocxConverterService
             $html .= $this->convertSection($section);
         }
 
+        // Sanitize: remove invalid UTF-8 characters and control characters
+        $html = mb_convert_encoding($html, 'UTF-8', 'UTF-8');
+        $html = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $html);
+        $html = preg_replace('/\p{C}+/u', '', $html);
+
         return $html;
     }
 
@@ -139,6 +144,10 @@ class DocxConverterService
         foreach ($mapping as $pattern => $placeholder) {
             $html = preg_replace($pattern, "{{ {$placeholder} }}", $html);
         }
+
+        // Final sanitization
+        $html = mb_convert_encoding($html, 'UTF-8', 'UTF-8');
+        $html = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $html);
 
         return $html;
     }
