@@ -9,7 +9,8 @@
         mode: 'split',
         content: @entangle($statePath),
         editor: null,
-        grapesjsEditor: null,
+        ckeditor: null,
+        sourceMode: false,
         initialized: false,
         get previewHtml() {
             return this.content || '';
@@ -38,7 +39,7 @@
     class="fi-fo-code-editor w-full"
 >
     {{-- Mode Tabs --}}
-    <div class="mb-2 flex items-center gap-2">
+    <div class="mb-2 flex items-center gap-2 flex-wrap">
         <button
             type="button"
             @click="mode = 'code'; if (editor) editor.refresh()"
@@ -67,12 +68,36 @@
         @endif
         <button
             type="button"
-            @click="mode = 'constructor'; initGrapesJS()"
+            @click="mode = 'constructor'; $nextTick(() => initCKEditor())"
             :class="mode === 'constructor' ? 'bg-primary-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
             class="rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
         >
             Конструктор
         </button>
+        @if($showPreview)
+            <div class="ml-auto flex items-center gap-2">
+                <label class="text-sm text-gray-600 dark:text-gray-400">Плейсхолдер:</label>
+                <select
+                    x-ref="placeholderSelect"
+                    @change="insertPlaceholder($event.target.value); $event.target.value = ''"
+                    class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm"
+                >
+                    <option value="">Выберите...</option>
+                    <option value="{{ full_name }}">ФИО</option>
+                    <option value="{{ passport_series }}">Серия паспорта</option>
+                    <option value="{{ passport_number }}">Номер паспорта</option>
+                    <option value="{{ passport_issued_by }}">Кем выдан</option>
+                    <option value="{{ registration_address }}">Адрес</option>
+                    <option value="{{ phone }}">Телефон</option>
+                    <option value="{{ email }}">Email</option>
+                    <option value="{{ event_title }}">Мероприятие</option>
+                    <option value="{{ event_date }}">Дата мероприятия</option>
+                    <option value="{{ current_date }}">Текущая дата</option>
+                    <option value="{{ organization_name }}">Организация</option>
+                    <option value="{{ organization_inn }}">ИНН</option>
+                </select>
+            </div>
+        @endif
     </div>
 
     {{-- Code + Preview --}}
@@ -107,13 +132,13 @@
         @endif
     </div>
 
-    {{-- GrapesJS Constructor --}}
+    {{-- CKEditor Constructor --}}
     <div x-show="mode === 'constructor'" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-        <div x-ref="grapesjsContainer" style="height: 700px;"></div>
+        <div x-ref="ckeditorContainer" style="min-height: 500px;"></div>
         <div class="p-2 bg-gray-100 dark:bg-gray-800 flex gap-2">
             <button
                 type="button"
-                @click="if (grapesjsEditor) { content = grapesjsEditor.getHtml(); mode = 'code'; $nextTick(() => { if (editor) { editor.setValue(content); editor.refresh(); } }) }"
+                @click="applyFromCKEditor()"
                 class="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 transition-colors"
             >
                 Применить к коду
@@ -134,9 +159,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.css">
 
-    {{-- GrapesJS CSS --}}
-    <link rel="stylesheet" href="https://unpkg.com/grapesjs@0.21.10/dist/css/grapes.min.css">
-
     {{-- CodeMirror JS --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
@@ -146,123 +168,103 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
 
-    {{-- GrapesJS JS --}}
-    <script src="https://unpkg.com/grapesjs@0.21.10/dist/grapes.min.js"></script>
+    {{-- CKEditor 5 CDN --}}
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/ckeditor5.umd.min.js"></script>
 
     <script>
-        function initGrapesJS() {
-            const container = document.querySelector('[x-ref="grapesjsContainer"]');
-            if (!container || this.grapesjsEditor) return;
+        function initCKEditor() {
+            const container = this.$refs.ckeditorContainer;
+            if (!container || this.ckeditor) return;
 
             const currentContent = this.content || '';
+            const placeholderOptions = [
+                { title: 'ФИО', value: '{{ full_name }}' },
+                { title: 'Серия паспорта', value: '{{ passport_series }}' },
+                { title: 'Номер паспорта', value: '{{ passport_number }}' },
+                { title: 'Кем выдан', value: '{{ passport_issued_by }}' },
+                { title: 'Адрес', value: '{{ registration_address }}' },
+                { title: 'Телефон', value: '{{ phone }}' },
+                { title: 'Email', value: '{{ email }}' },
+                { title: 'Мероприятие', value: '{{ event_title }}' },
+                { title: 'Дата мероприятия', value: '{{ event_date }}' },
+                { title: 'Текущая дата', value: '{{ current_date }}' },
+                { title: 'Организация', value: '{{ organization_name }}' },
+                { title: 'ИНН', value: '{{ organization_inn }}' },
+            ];
 
-            this.grapesjsEditor = grapesjs.init({
-                container: container,
-                height: '100%',
-                fromElement: false,
-                storageManager: false,
-                plugins: [],
-                blockManager: {
-                    appendTo: '',
+            const ClassicEditor = window.ClassicEditor;
+
+            this.ckeditor = ClassicEditor.create(container, {
+                initialData: currentContent,
+                toolbar: [
+                    'heading', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'bulletedList', 'numberedList', '|',
+                    'indent', 'outdent', '|',
+                    'insertTable', '|',
+                    'link', 'blockQuote', '|',
+                    'undo', 'redo', '|',
+                    'sourceEditing'
+                ],
+                heading: {
+                    options: [
+                        { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                        { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                        { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' },
+                        { model: 'heading4', view: 'h4', title: 'Heading 4', class: 'ck-heading_heading4' },
+                    ]
                 },
+                table: {
+                    contentToolbar: [
+                        'tableColumn', 'tableRow', 'mergeTableCells',
+                        'tableProperties', 'tableCellProperties'
+                    ]
+                },
+                sourceEditing: {
+                    allowContentNames: true
+                },
+            }).then(editor => {
+                // Sync CKEditor changes to Livewire state
+                editor.model.document.on('change:data', () => {
+                    this.content = editor.getData();
+                });
+
+                // Handle source editing toggle
+                editor.plugins.get('SourceEditing').on('change:isEnabled', () => {
+                    this.sourceMode = editor.plugins.get('SourceEditing').isEnabled;
+                });
+            }).catch(error => {
+                console.error('CKEditor init error:', error);
             });
+        }
 
-            // Add custom blocks
-            const bm = this.grapesjsEditor.BlockManager;
-
-            bm.add('heading', {
-                label: 'Заголовок',
-                category: 'Базовые',
-                content: '<h2>Заголовок</h2>',
+        function applyFromCKEditor() {
+            if (this.ckeditor) {
+                this.content = this.ckeditor.getData();
+            }
+            this.mode = 'code';
+            this.$nextTick(() => {
+                if (this.editor) {
+                    this.editor.setValue(this.content || '');
+                    this.editor.refresh();
+                }
             });
+        }
 
-            bm.add('paragraph', {
-                label: 'Параграф',
-                category: 'Базовые',
-                content: '<p>Текст параграфа</p>',
-            });
+        function insertPlaceholder(value) {
+            if (!value) return;
 
-            bm.add('placeholder', {
-                label: 'Плейсхолдер',
-                category: 'Данные',
-                content: '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; border: 1px dashed #ffc107;">@{{ full_name }}</span>',
-            });
-
-            bm.add('passport', {
-                label: 'Паспорт',
-                category: 'Данные',
-                content: '<p>Паспорт: серия @{{ passport_series }} номер @{{ passport_number }}</p>',
-            });
-
-            bm.add('address', {
-                label: 'Адрес',
-                category: 'Данные',
-                content: '<p>Адрес: @{{ registration_address }}</p>',
-            });
-
-            bm.add('table-2x2', {
-                label: 'Таблица 2×2',
-                category: 'Таблицы',
-                content: `
-                    <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
-                        <tr>
-                            <td style="border: 1px solid #ccc; padding: 8px;">Ячейка 1</td>
-                            <td style="border: 1px solid #ccc; padding: 8px;">Ячейка 2</td>
-                        </tr>
-                        <tr>
-                            <td style="border: 1px solid #ccc; padding: 8px;">Ячейка 3</td>
-                            <td style="border: 1px solid #ccc; padding: 8px;">Ячейка 4</td>
-                        </tr>
-                    </table>
-                `,
-            });
-
-            bm.add('table-3x6', {
-                label: 'Таблица категорий ПД',
-                category: 'Таблицы',
-                content: `
-                    <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
-                        <thead>
-                            <tr style="background: #f5f5f5;">
-                                <th style="border: 1px solid #ccc; padding: 8px;">№</th>
-                                <th style="border: 1px solid #ccc; padding: 8px;">Категория</th>
-                                <th style="border: 1px solid #ccc; padding: 8px;">ДА</th>
-                                <th style="border: 1px solid #ccc; padding: 8px;">НЕТ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="border: 1px solid #ccc; padding: 8px;">1</td>
-                                <td style="border: 1px solid #ccc; padding: 8px;">ФИО</td>
-                                <td style="border: 1px solid #ccc; padding: 8px;">☐</td>
-                                <td style="border: 1px solid #ccc; padding: 8px;">☐</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `,
-            });
-
-            bm.add('date-line', {
-                label: 'Дата и подпись',
-                category: 'Базовые',
-                content: '<p>«____» __________ 2026 г.</p><p>________________________ / ___________________________________________________</p>',
-            });
-
-            bm.add('spacer', {
-                label: 'Отступ',
-                category: 'Базовые',
-                content: '<div style="height: 20px;"></div>',
-            });
-
-            bm.add('divider', {
-                label: 'Разделитель',
-                category: 'Базовые',
-                content: '<hr style="border: none; border-top: 1px solid #ccc; margin: 15px 0;">',
-            });
-
-            // Load current content
-            if (currentContent) {
-                this.grapesjsEditor.DomComponents.getWrapper().set('content', currentContent);
+            if (this.mode === 'constructor' && this.ckeditor) {
+                const editor = this.ckeditor;
+                const selection = editor.model.document.selection;
+                editor.model.change(writer => {
+                    const insertPosition = selection.getFirstPosition();
+                    writer.insertText(value, insertPosition);
+                });
+            } else if (this.editor) {
+                const cursor = this.editor.getCursor();
+                this.editor.replaceRange(value, cursor, cursor);
+                this.editor.focus();
             }
         }
     </script>
@@ -273,6 +275,9 @@
             border-radius: 0.5rem;
             font-size: 14px;
             line-height: 1.5;
+        }
+        .ck-editor__editable {
+            min-height: 500px !important;
         }
     </style>
 </div>
