@@ -83,18 +83,18 @@
                     class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm"
                 >
                     <option value="">Выберите...</option>
-                    <option value="{{ full_name }}">ФИО</option>
-                    <option value="{{ passport_series }}">Серия паспорта</option>
-                    <option value="{{ passport_number }}">Номер паспорта</option>
-                    <option value="{{ passport_issued_by }}">Кем выдан</option>
-                    <option value="{{ registration_address }}">Адрес</option>
-                    <option value="{{ phone }}">Телефон</option>
-                    <option value="{{ email }}">Email</option>
-                    <option value="{{ event_title }}">Мероприятие</option>
-                    <option value="{{ event_date }}">Дата мероприятия</option>
-                    <option value="{{ current_date }}">Текущая дата</option>
-                    <option value="{{ organization_name }}">Организация</option>
-                    <option value="{{ organization_inn }}">ИНН</option>
+                    <option value="@{{ full_name }}">ФИО</option>
+                    <option value="@{{ passport_series }}">Серия паспорта</option>
+                    <option value="@{{ passport_number }}">Номер паспорта</option>
+                    <option value="@{{ passport_issued_by }}">Кем выдан</option>
+                    <option value="@{{ registration_address }}">Адрес</option>
+                    <option value="@{{ phone }}">Телефон</option>
+                    <option value="@{{ email }}">Email</option>
+                    <option value="@{{ event_title }}">Мероприятие</option>
+                    <option value="@{{ event_date }}">Дата мероприятия</option>
+                    <option value="@{{ current_date }}">Текущая дата</option>
+                    <option value="@{{ organization_name }}">Организация</option>
+                    <option value="@{{ organization_inn }}">ИНН</option>
                 </select>
             </div>
         @endif
