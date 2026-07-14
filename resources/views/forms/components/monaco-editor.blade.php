@@ -2,6 +2,20 @@
     $statePath = $getStatePath();
     $showPreview = $getShowPreview();
     $id = $getId();
+    $placeholders = [
+        ['title' => 'ФИО', 'value' => '{{ full_name }}'],
+        ['title' => 'Серия паспорта', 'value' => '{{ passport_series }}'],
+        ['title' => 'Номер паспорта', 'value' => '{{ passport_number }}'],
+        ['title' => 'Кем выдан', 'value' => '{{ passport_issued_by }}'],
+        ['title' => 'Адрес регистрации', 'value' => '{{ registration_address }}'],
+        ['title' => 'Телефон', 'value' => '{{ phone }}'],
+        ['title' => 'Email', 'value' => '{{ email }}'],
+        ['title' => 'Мероприятие', 'value' => '{{ event_title }}'],
+        ['title' => 'Дата мероприятия', 'value' => '{{ event_date }}'],
+        ['title' => 'Текущая дата', 'value' => '{{ current_date }}'],
+        ['title' => 'Организация', 'value' => '{{ organization_name }}'],
+        ['title' => 'ИНН', 'value' => '{{ organization_inn }}'],
+    ];
 @endphp
 
 <div
@@ -83,18 +97,9 @@
                     class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm"
                 >
                     <option value="">Выберите...</option>
-                    <option value="@{{ full_name }}">ФИО</option>
-                    <option value="@{{ passport_series }}">Серия паспорта</option>
-                    <option value="@{{ passport_number }}">Номер паспорта</option>
-                    <option value="@{{ passport_issued_by }}">Кем выдан</option>
-                    <option value="@{{ registration_address }}">Адрес</option>
-                    <option value="@{{ phone }}">Телефон</option>
-                    <option value="@{{ email }}">Email</option>
-                    <option value="@{{ event_title }}">Мероприятие</option>
-                    <option value="@{{ event_date }}">Дата мероприятия</option>
-                    <option value="@{{ current_date }}">Текущая дата</option>
-                    <option value="@{{ organization_name }}">Организация</option>
-                    <option value="@{{ organization_inn }}">ИНН</option>
+                    @foreach($placeholders as $ph)
+                        <option value="{{ $ph['value'] }}">{{ $ph['title'] }}</option>
+                    @endforeach
                 </select>
             </div>
         @endif
@@ -172,29 +177,20 @@
     <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/ckeditor5.umd.min.js"></script>
 
     <script>
+        const PLACEHOLDERS = @json($placeholders);
+
         function initCKEditor() {
             const container = this.$refs.ckeditorContainer;
             if (!container || this.ckeditor) return;
 
+            if (typeof ClassicEditor === 'undefined') {
+                console.error('CKEditor 5 not loaded');
+                return;
+            }
+
             const currentContent = this.content || '';
-            const placeholderOptions = [
-                { title: 'ФИО', value: '@{{ full_name }}' },
-                { title: 'Серия паспорта', value: '@{{ passport_series }}' },
-                { title: 'Номер паспорта', value: '@{{ passport_number }}' },
-                { title: 'Кем выдан', value: '@{{ passport_issued_by }}' },
-                { title: 'Адрес', value: '@{{ registration_address }}' },
-                { title: 'Телефон', value: '@{{ phone }}' },
-                { title: 'Email', value: '@{{ email }}' },
-                { title: 'Мероприятие', value: '@{{ event_title }}' },
-                { title: 'Дата мероприятия', value: '@{{ event_date }}' },
-                { title: 'Текущая дата', value: '@{{ current_date }}' },
-                { title: 'Организация', value: '@{{ organization_name }}' },
-                { title: 'ИНН', value: '@{{ organization_inn }}' },
-            ];
 
-            const ClassicEditor = window.ClassicEditor;
-
-            this.ckeditor = ClassicEditor.create(container, {
+            ClassicEditor.create(container, {
                 initialData: currentContent,
                 toolbar: [
                     'heading', '|',
@@ -224,14 +220,9 @@
                     allowContentNames: true
                 },
             }).then(editor => {
-                // Sync CKEditor changes to Livewire state
+                this.ckeditor = editor;
                 editor.model.document.on('change:data', () => {
                     this.content = editor.getData();
-                });
-
-                // Handle source editing toggle
-                editor.plugins.get('SourceEditing').on('change:isEnabled', () => {
-                    this.sourceMode = editor.plugins.get('SourceEditing').isEnabled;
                 });
             }).catch(error => {
                 console.error('CKEditor init error:', error);
@@ -256,9 +247,8 @@
 
             if (this.mode === 'constructor' && this.ckeditor) {
                 const editor = this.ckeditor;
-                const selection = editor.model.document.selection;
                 editor.model.change(writer => {
-                    const insertPosition = selection.getFirstPosition();
+                    const insertPosition = editor.model.document.selection.getFirstPosition();
                     writer.insertText(value, insertPosition);
                 });
             } else if (this.editor) {
