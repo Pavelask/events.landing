@@ -6,12 +6,29 @@
     <title>Нет подключения к интернету — {{ $event?->title ?? 'Платформа мероприятий' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <style>
+        :root {
+            --color-primary: #ff385c;
+            --color-primary-hover: #e53e5c;
+            --color-text: #1a1a1a;
+            --color-text-secondary: #666;
+            --color-muted: #999;
+            --color-surface: #fff;
+            --color-background: #f7f7f7;
+            --color-border: #e5e5e5;
+            --radius-card: 12px;
+            --radius-btn: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         .error-container {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 2rem;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--color-background);
         }
 
         .error-card {
