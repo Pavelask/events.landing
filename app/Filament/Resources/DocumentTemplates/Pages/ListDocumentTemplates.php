@@ -4,7 +4,7 @@ namespace App\Filament\Resources\DocumentTemplates\Pages;
 
 use App\Filament\Resources\DocumentTemplates\DocumentTemplateResource;
 use Filament\Resources\Pages\ListRecords;
-use Filament\Resources\Components\Tab;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListDocumentTemplates extends ListRecords
