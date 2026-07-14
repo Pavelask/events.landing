@@ -43,8 +43,9 @@
             initialData: textarea.value,
             toolbar: [
                 'heading', '|',
-                'bold', 'italic', 'underline', 'strikethrough', '|',
+                'bold', 'italic', 'underline', 'strikethrough', 'removeFormat', '|',
                 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+                'alignment', '|',
                 'bulletedList', 'numberedList', '|',
                 'indent', 'outdent', '|',
                 'insertTable', '|',
