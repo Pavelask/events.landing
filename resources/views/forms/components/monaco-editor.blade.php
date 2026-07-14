@@ -178,18 +178,18 @@
 
             const currentContent = this.content || '';
             const placeholderOptions = [
-                { title: 'ФИО', value: '{{ full_name }}' },
-                { title: 'Серия паспорта', value: '{{ passport_series }}' },
-                { title: 'Номер паспорта', value: '{{ passport_number }}' },
-                { title: 'Кем выдан', value: '{{ passport_issued_by }}' },
-                { title: 'Адрес', value: '{{ registration_address }}' },
-                { title: 'Телефон', value: '{{ phone }}' },
-                { title: 'Email', value: '{{ email }}' },
-                { title: 'Мероприятие', value: '{{ event_title }}' },
-                { title: 'Дата мероприятия', value: '{{ event_date }}' },
-                { title: 'Текущая дата', value: '{{ current_date }}' },
-                { title: 'Организация', value: '{{ organization_name }}' },
-                { title: 'ИНН', value: '{{ organization_inn }}' },
+                { title: 'ФИО', value: '@{{ full_name }}' },
+                { title: 'Серия паспорта', value: '@{{ passport_series }}' },
+                { title: 'Номер паспорта', value: '@{{ passport_number }}' },
+                { title: 'Кем выдан', value: '@{{ passport_issued_by }}' },
+                { title: 'Адрес', value: '@{{ registration_address }}' },
+                { title: 'Телефон', value: '@{{ phone }}' },
+                { title: 'Email', value: '@{{ email }}' },
+                { title: 'Мероприятие', value: '@{{ event_title }}' },
+                { title: 'Дата мероприятия', value: '@{{ event_date }}' },
+                { title: 'Текущая дата', value: '@{{ current_date }}' },
+                { title: 'Организация', value: '@{{ organization_name }}' },
+                { title: 'ИНН', value: '@{{ organization_inn }}' },
             ];
 
             const ClassicEditor = window.ClassicEditor;
