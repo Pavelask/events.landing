@@ -11,6 +11,13 @@ class ListDocumentTemplates extends ListRecords
 {
     protected static string $resource = DocumentTemplateResource::class;
 
+    protected function getHeaderActions(): array
+    {
+        return [
+            \Filament\Actions\CreateAction::make(),
+        ];
+    }
+
     protected function getHeaderTitle(): string
     {
         return 'Шаблоны документов';

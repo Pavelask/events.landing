@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\DocumentTemplates\Schemas;
 
 use App\Services\DocxConverterService;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Toggle;
@@ -38,12 +37,15 @@ class DocumentTemplateForm
                     ->directory('document-templates')
                     ->disk('public')
                     ->visibility('public')
-                    ->saveFilesToStorage(false)
-                    ->action(function ($state, $set) {
+                    ->live()
+                    ->afterStateUpdated(function ($state, $set) {
                         if (empty($state)) return;
 
                         $converter = app(DocxConverterService::class);
                         $fullPath = storage_path('app/public/' . $state);
+
+                        if (!file_exists($fullPath)) return;
+
                         $html = $converter->convertToHtml($fullPath);
                         $html = $converter->applyPlaceholders($html);
 
