@@ -1,22 +1,23 @@
 @php
     $statePath = $getStatePath();
     $value = $getState() ?? '';
+    $id = $getId();
 @endphp
 
 <div>
     <textarea
-        id="ckeditor-{{ $getId() }}"
+        id="ckeditor-{{ $id }}"
         wire:model="{{ $statePath }}"
         style="display:none;"
     >{{ $value }}</textarea>
-    <div id="ckeditor-loading-{{ $getId() }}" style="padding:2rem;text-align:center;color:#666;">
+    <div id="ckeditor-loading-{{ $id }}" style="padding:2rem;text-align:center;color:#666;">
         Загрузка редактора...
     </div>
-    <div id="ckeditor-wrapper-{{ $getId() }}"></div>
+    <div id="ckeditor-wrapper-{{ $id }}"></div>
 </div>
 
-<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/41.4.2/ckeditor5.css">
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/ckeditor5.umd.min.js" onload="initCKEditorOnLoad('{{ $getId() }}')"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-classic@35.4.0/build/ckeditor.css">
+<script src="https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-classic@35.4.0/build/ckeditor.js" onload="initCKEditorOnLoad('{{ $id }}')"></script>
 
 <script>
     function initCKEditorOnLoad(id) {
@@ -24,8 +25,10 @@
         const wrapper = document.getElementById('ckeditor-wrapper-' + id);
         const loading = document.getElementById('ckeditor-loading-' + id);
 
-        if (!textarea || !wrapper || typeof ClassicEditor === 'undefined') {
-            if (loading) loading.innerHTML = '<span style="color:red;">Ошибка загрузки редактора</span>';
+        if (!textarea || !wrapper) return;
+
+        if (typeof ClassicEditor === 'undefined') {
+            if (loading) loading.innerHTML = '<span style="color:red;">CKEditor не загружен</span>';
             return;
         }
 
@@ -62,14 +65,11 @@
             });
         }).catch(err => {
             console.error('CKEditor error:', err);
-            loading.style.display = 'block';
-            loading.innerHTML = '<span style="color:red;">Ошибка: ' + err.message + '</span>';
+            if (loading) {
+                loading.style.display = 'block';
+                loading.innerHTML = '<span style="color:red;">Ошибка: ' + err.message + '</span>';
+            }
         });
-    }
-
-    // Also try if script loads after DOMContentLoaded
-    if (typeof ClassicEditor !== 'undefined' && document.getElementById('ckeditor-wrapper-{{ $getId() }}')) {
-        initCKEditorOnLoad('{{ $getId() }}');
     }
 </script>
 
