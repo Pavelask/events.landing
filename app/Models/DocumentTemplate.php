@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class DocumentTemplate extends Model
 {
-    protected $fillable = ['name', 'slug', 'content', 'variables', 'is_active'];
+    protected $fillable = ['name', 'slug', 'docx_file', 'content', 'variables', 'is_active'];
 
     protected $casts = [
         'variables' => 'array',
