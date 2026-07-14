@@ -185,19 +185,19 @@
             bm.add('placeholder', {
                 label: 'Плейсхолдер',
                 category: 'Данные',
-                content: '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; border: 1px dashed #ffc107;">{{ full_name }}</span>',
+                content: '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; border: 1px dashed #ffc107;">@{{ full_name }}</span>',
             });
 
             bm.add('passport', {
                 label: 'Паспорт',
                 category: 'Данные',
-                content: '<p>Паспорт: серия {{ passport_series }} номер {{ passport_number }}</p>',
+                content: '<p>Паспорт: серия @{{ passport_series }} номер @{{ passport_number }}</p>',
             });
 
             bm.add('address', {
                 label: 'Адрес',
                 category: 'Данные',
-                content: '<p>Адрес: {{ registration_address }}</p>',
+                content: '<p>Адрес: @{{ registration_address }}</p>',
             });
 
             bm.add('table-2x2', {
