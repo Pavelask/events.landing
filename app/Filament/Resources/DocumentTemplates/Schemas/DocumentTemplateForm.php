@@ -54,6 +54,7 @@ class DocumentTemplateForm
 
                 RichEditor::make('content')
                     ->label('Содержимое шаблона')
+                    ->default('<p></p>')
                     ->columnSpanFull()
                     ->toolbarButtons([
                         'bold', 'italic', 'underline', 'strike',
