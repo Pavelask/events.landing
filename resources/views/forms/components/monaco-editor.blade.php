@@ -7,18 +7,32 @@
     <textarea
         id="ckeditor-{{ $getId() }}"
         wire:model="{{ $statePath }}"
+        style="display:none;"
     >{{ $value }}</textarea>
+    <div id="ckeditor-loading-{{ $getId() }}" style="padding:2rem;text-align:center;color:#666;">
+        Загрузка редактора...
+    </div>
+    <div id="ckeditor-wrapper-{{ $getId() }}"></div>
 </div>
 
 <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/41.4.2/ckeditor5.css">
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/ckeditor5.umd.min.js"></script>
+<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/ckeditor5.umd.min.js" onload="initCKEditorOnLoad('{{ $getId() }}')"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const textarea = document.getElementById('ckeditor-{{ $getId() }}');
-        if (!textarea) return;
+    function initCKEditorOnLoad(id) {
+        const textarea = document.getElementById('ckeditor-' + id);
+        const wrapper = document.getElementById('ckeditor-wrapper-' + id);
+        const loading = document.getElementById('ckeditor-loading-' + id);
 
-        ClassicEditor.create(textarea, {
+        if (!textarea || !wrapper || typeof ClassicEditor === 'undefined') {
+            if (loading) loading.innerHTML = '<span style="color:red;">Ошибка загрузки редактора</span>';
+            return;
+        }
+
+        loading.style.display = 'none';
+
+        ClassicEditor.create(wrapper, {
+            initialData: textarea.value,
             toolbar: [
                 'heading', '|',
                 'bold', 'italic', 'underline', 'strikethrough', '|',
@@ -48,8 +62,15 @@
             });
         }).catch(err => {
             console.error('CKEditor error:', err);
+            loading.style.display = 'block';
+            loading.innerHTML = '<span style="color:red;">Ошибка: ' + err.message + '</span>';
         });
-    });
+    }
+
+    // Also try if script loads after DOMContentLoaded
+    if (typeof ClassicEditor !== 'undefined' && document.getElementById('ckeditor-wrapper-{{ $getId() }}')) {
+        initCKEditorOnLoad('{{ $getId() }}');
+    }
 </script>
 
 <style>
