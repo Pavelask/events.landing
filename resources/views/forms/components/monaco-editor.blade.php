@@ -16,7 +16,7 @@
     <div id="ckeditor-wrapper-{{ $id }}"></div>
 </div>
 
-<script src="{{ asset('js/ckeditor.js') }}"></script>
+<script src="{{ asset('js/ckeditor.js') }}?v={{ time() }}"></script>
 
 <script>
     (function() {
@@ -30,7 +30,8 @@
             if (!textarea || !wrapper) return;
 
             if (typeof ClassicEditor === 'undefined') {
-                if (loading) loading.innerHTML = '<span style="color:red;">CKEditor не загружен</span>';
+                console.error('ClassicEditor is undefined. Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('editor')));
+                if (loading) loading.innerHTML = '<span style="color:red;">CKEditor не загружен. Проверьте консоль (F12).</span>';
                 return;
             }
 
