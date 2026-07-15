@@ -44,12 +44,15 @@
             toolbar: [
                 'heading', '|',
                 'bold', 'italic', 'underline', 'strikethrough', 'removeFormat', '|',
-                'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+                'fontSize', 'fontColor', 'fontBackgroundColor', 'highlight', '|',
                 'alignment', '|',
                 'bulletedList', 'numberedList', '|',
                 'indent', 'outdent', '|',
+                'codeBlock', '|',
                 'insertTable', '|',
                 'link', 'blockQuote', 'horizontalLine', '|',
+                'specialCharacters', '|',
+                'findAndReplace', '|',
                 'undo', 'redo', '|',
                 'sourceEditing'
             ],
