@@ -39,6 +39,10 @@ return [
         'org_id' => env('YANDEX_ORG_ID'),
     ],
 
+    'libreoffice' => [
+        'path' => env('LIBREOFFICE_PATH'),
+    ],
+
     'webhook' => [
         'yandex_secret' => env('YANDEX_WEBHOOK_SECRET'),
     ],

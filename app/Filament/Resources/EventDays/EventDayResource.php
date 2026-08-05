@@ -21,8 +21,14 @@ class EventDayResource extends Resource
     protected static ?string $model = EventDay::class;
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clock';
     protected static ?string $navigationLabel = 'Расписание';
+
+    protected static ?string $modelLabel = 'День мероприятия';
+
+    protected static ?string $pluralModelLabel = 'Дни мероприятия';
+
     protected static string|UnitEnum|null $navigationGroup = 'Мероприятия';
-    protected static ?int $navigationSort = 3;
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

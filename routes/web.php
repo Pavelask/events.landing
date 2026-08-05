@@ -4,6 +4,7 @@ use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\FaviconController;
 use App\Http\Controllers\GalleryViewController;
 use App\Http\Controllers\IcalController;
+use App\Http\Controllers\OnlyOfficeController;
 use App\Http\Controllers\RecoveryController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketPdfController;
@@ -169,3 +170,12 @@ Route::get('/login', fn () => redirect('/admin/login'))->name('login');
 Route::get('/yandex-test', function () {
     return view('yandex-test');
 })->name('yandex-test');
+
+// OnlyOffice — скачивание docx (подписанный URL, запрос idёт от самого Document Server)
+Route::get('/onlyoffice/document/{documentTemplate}', [OnlyOfficeController::class, 'download'])
+    ->name('onlyoffice.document')
+    ->middleware('signed');
+
+// OnlyOffice — callback сохранения документа (server-to-server, без сессии)
+Route::post('/onlyoffice/callback/{documentTemplate}', [OnlyOfficeController::class, 'callback'])
+    ->name('onlyoffice.callback');

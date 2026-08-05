@@ -80,8 +80,8 @@ class FormTemplateForm
                                 TextInput::make('slug')
                                     ->label('Slug')
                                     ->required()
-                                    ->helperText('Уникальный идентификатор вопроса (латиница, дефисы)')
-                                    ->regex('/^[a-z0-9\-]+$/'),
+                                    ->helperText('Уникальный идентификатор вопроса (латиница, цифры, подчёркивания, дефисы)')
+                                    ->regex('/^[a-z0-9_\-]+$/'),
                             ])
                             ->collapsible()
                             ->itemLabel(fn (array $state) => $state['label'] ?? 'Новый вопрос'),

@@ -75,6 +75,7 @@ class TiptapEditor {
 
         this.setupToolbar()
         this.setupToggle()
+        this.setupVariables()
         this.setupSync()
     }
 
@@ -193,6 +194,86 @@ class TiptapEditor {
 
         this.editor.on('selectionUpdate', () => {
             this.updateToolbarState()
+        })
+    }
+
+    setupVariables() {
+        if (!this.toolbar) return
+
+        const btn = this.toolbar.querySelector('[data-action="variable"]')
+        if (!btn) return
+
+        const dropdown = document.createElement('div')
+        dropdown.className = 'tiptap-var-dropdown'
+        dropdown.style.display = 'none'
+        document.body.appendChild(dropdown)
+
+        const readVariables = () => {
+            const dataEl = this.element.querySelector('.tiptap-variables-data')
+            if (!dataEl) return []
+
+            try {
+                const parsed = JSON.parse(dataEl.dataset.tiptapVariables || '[]')
+                return Array.isArray(parsed) ? parsed : []
+            } catch (e) {
+                return []
+            }
+        }
+
+        const render = () => {
+            const variables = readVariables()
+            const groups = {}
+
+            variables.forEach(v => {
+                const group = v.group || 'Переменные'
+                if (!groups[group]) groups[group] = []
+                groups[group].push(v)
+            })
+
+            let html = ''
+            Object.keys(groups).forEach(group => {
+                html += `<div class="tiptap-var-group-title">${group}</div>`
+                groups[group].forEach(v => {
+                    html += `<button type="button" class="tiptap-var-item" data-key="${v.key}">
+                        <span class="tiptap-var-label">${v.label}</span>
+                        <code>{{ ${v.key} }}</code>
+                    </button>`
+                })
+            })
+
+            dropdown.innerHTML = html || '<div class="tiptap-var-empty">Переменных нет</div>'
+        }
+
+        btn.addEventListener('mousedown', (e) => {
+            e.preventDefault()
+            if (this.isSourceMode) return
+
+            if (dropdown.style.display === 'block') {
+                dropdown.style.display = 'none'
+                return
+            }
+
+            render()
+            const rect = btn.getBoundingClientRect()
+            dropdown.style.display = 'block'
+            dropdown.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 400)) + 'px'
+            dropdown.style.top = (rect.bottom + 4) + 'px'
+        })
+
+        dropdown.addEventListener('mousedown', (e) => {
+            const item = e.target.closest('.tiptap-var-item')
+            if (!item) return
+
+            e.preventDefault()
+            const key = item.dataset.key
+            this.editor.chain().focus().insertContent(`{{ ${key} }}`).run()
+            dropdown.style.display = 'none'
+        })
+
+        document.addEventListener('mousedown', (e) => {
+            if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none'
+            }
         })
     }
 

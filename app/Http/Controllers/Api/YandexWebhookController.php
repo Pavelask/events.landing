@@ -113,6 +113,8 @@ class YandexWebhookController extends Controller
             $data['phone'] = $phone;
         }
 
+        $data['answers'] = app(\App\Services\YandexFormsApi::class)->normalizeAnswers($items);
+
         $participant = Participant::create($data);
 
         Log::info('Yandex webhook: created', [

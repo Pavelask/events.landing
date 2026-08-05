@@ -3,7 +3,10 @@
 namespace App\Filament\Resources\DocumentTemplates\Schemas;
 
 use App\Forms\Components\TiptapEditor;
+use App\Models\FormTemplate;
+use App\Services\DocumentTemplateVariableService;
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -39,12 +42,23 @@ class DocumentTemplateForm
                     ->getUploadedFileNameForStorageUsing(fn (\Illuminate\Http\UploadedFile $file): string => $file->getClientOriginalName())
                     ->helperText('Загрузите .docx файл, затем нажмите «Конвертировать .docx» в шапке страницы.'),
 
+                Select::make('form_template_id')
+                    ->label('Форма (источник переменных)')
+                    ->placeholder('Без формы — доступны только системные переменные')
+                    ->options(fn () => FormTemplate::query()->orderBy('name')->pluck('name', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->nullable()
+                    ->helperText('Из вопросов этой формы в шаблон будут доступны переменные для вставки. Участник при генерации заполнит их своими ответами.'),
+
                 TiptapEditor::make('content')
                     ->label('HTML-шаблон')
                     ->placeholder('Введите HTML-шаблон...')
                     ->columnSpanFull()
                     ->default('<p></p>')
-                    ->helperText('Используйте {{ variable_name }} для плейсхолдеров. Доступные: {{ full_name }}, {{ passport_series }}, {{ passport_number }}, {{ passport_issued_by }}, {{ registration_address }}, {{ phone }}, {{ email }}, {{ event_title }}, {{ event_date }}, {{ current_date }}, {{ organization_name }}, {{ organization_inn }}'),
+                    ->variables(fn (callable $get) => DocumentTemplateVariableService::all(FormTemplate::find($get('form_template_id'))))
+                    ->helperText('Вставляйте переменные кнопкой «{}» в тулбаре редактора. Системные: {{ full_name }}, {{ email }}, {{ phone }}, {{ event_title }}, {{ event_date }}, {{ current_date }}, {{ organization_name }}, {{ organization_inn }}. Поля выбранной формы — по кнопке.'),
 
                 KeyValue::make('variables')
                     ->label('Переменные')

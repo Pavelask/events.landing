@@ -14,6 +14,8 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\FontProviders\BunnyFontProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
@@ -35,7 +37,13 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->passwordReset()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Rose,
+            ])
+            ->font('Satoshi', 'https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap', BunnyFontProvider::class)
+            ->assets([
+                Css::make('filament-admin')->html(
+                    '<link href="' . asset('css/filament-admin.css') . '?v=' . filemtime(public_path('css/filament-admin.css')) . '" rel="stylesheet" data-navigate-track />'
+                ),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -53,7 +61,8 @@ class AdminPanelProvider extends PanelProvider
                 DocumentTemplateResource::class,
             ])
             ->plugins([
-                FilamentShieldPlugin::make(),
+                FilamentShieldPlugin::make()
+                    ->navigationGroup('Настройки'),
             ])
             ->middleware([
                 EncryptCookies::class,

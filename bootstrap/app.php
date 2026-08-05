@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Callback от OnlyOffice идёт без сессии/CSRF (server-to-server), проверка — по JWT.
+        $middleware->validateCsrfTokens(except: [
+            'onlyoffice/callback/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
     $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\ServiceUnavailableException $e, \Illuminate\Http\Request $request) {

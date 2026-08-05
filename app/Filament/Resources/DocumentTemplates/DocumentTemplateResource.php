@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\DocumentTemplates;
 
 use App\Filament\Resources\DocumentTemplates\Pages\CreateDocumentTemplate;
+use App\Filament\Resources\DocumentTemplates\Pages\EditDocument;
 use App\Filament\Resources\DocumentTemplates\Pages\EditDocumentTemplate;
 use App\Filament\Resources\DocumentTemplates\Pages\ListDocumentTemplates;
 use App\Filament\Resources\DocumentTemplates\Schemas\DocumentTemplateForm;
@@ -13,12 +14,17 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class DocumentTemplateResource extends Resource
 {
     protected static ?string $model = DocumentTemplate::class;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Настройки';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+
+    protected static ?int $navigationSort = 12;
 
     protected static ?string $navigationLabel = 'Шаблоны документов';
 
@@ -47,6 +53,7 @@ class DocumentTemplateResource extends Resource
             'index' => ListDocumentTemplates::route('/'),
             'create' => CreateDocumentTemplate::route('/create'),
             'edit' => EditDocumentTemplate::route('/{record}/edit'),
+            'edit-doc' => EditDocument::route('/{record}/edit-doc'),
         ];
     }
 }

@@ -24,9 +24,13 @@ class ExportResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-arrow-down';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $navigationLabel = 'Экспорты';
+
+    protected static ?string $modelLabel = 'Экспорт';
+
+    protected static ?string $pluralModelLabel = 'Экспорты';
 
     protected static ?string $slug = 'exports';
 

@@ -20,9 +20,13 @@ class AnonParticipantResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $navigationLabel = 'Участники (API)';
+
+    protected static ?string $modelLabel = 'Участник (API)';
+
+    protected static ?string $pluralModelLabel = 'Участники (API)';
 
     public static function form(Schema $schema): Schema
     {

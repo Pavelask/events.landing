@@ -4,14 +4,20 @@
     $id = $getId();
 @endphp
 
-<div wire:ignore class="tiptap-container" data-tiptap-id="{{ $id }}" data-placeholder="{{ $getPlaceholder() ?? 'Введите текст...' }}">
+<div class="tiptap-container" data-tiptap-id="{{ $id }}" data-placeholder="{{ $getPlaceholder() ?? 'Введите текст...' }}">
     <textarea
         id="tiptap-{{ $id }}"
         wire:model="{{ $statePath }}"
         style="display:none;"
     >{{ $value }}</textarea>
 
-    <div class="tiptap-wrapper">
+    <div
+        class="tiptap-variables-data"
+        data-tiptap-variables="{{ json_encode($getVariables()) }}"
+        style="display:none;"
+    ></div>
+
+    <div wire:ignore class="tiptap-wrapper">
         <div class="tiptap-toolbar">
             <button type="button" class="tiptap-btn tiptap-btn-bold" data-action="bold" title="Bold (Ctrl+B)">B</button>
             <button type="button" class="tiptap-btn tiptap-btn-italic" data-action="italic" title="Italic (Ctrl+I)">I</button>
@@ -47,6 +53,8 @@
             <span class="tiptap-separator"></span>
             <button type="button" class="tiptap-btn" data-action="undo" title="Undo (Ctrl+Z)">&#8617;</button>
             <button type="button" class="tiptap-btn" data-action="redo" title="Redo (Ctrl+Y)">&#8618;</button>
+            <span class="tiptap-separator"></span>
+            <button type="button" class="tiptap-btn tiptap-btn-var" data-action="variable" title="Вставить переменную">&#123;&#125;</button>
             <span class="tiptap-spacer"></span>
             <button type="button" class="tiptap-btn tiptap-toggle-source">HTML</button>
         </div>
@@ -124,6 +132,70 @@
     }
     .tiptap-spacer {
         flex: 1;
+    }
+    .tiptap-btn-var {
+        font-weight: 600;
+        color: #3b82f6;
+        border-color: #dbeafe;
+        background: #eff6ff;
+    }
+    .tiptap-var-dropdown {
+        position: fixed;
+        z-index: 10000;
+        min-width: 280px;
+        max-width: 380px;
+        max-height: 320px;
+        overflow-y: auto;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        padding: 6px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .tiptap-var-group-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748b;
+        padding: 6px 8px 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    .tiptap-var-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        padding: 6px 8px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 13px;
+        text-align: left;
+        color: #1f2937;
+    }
+    .tiptap-var-item:hover {
+        background: #f1f5f9;
+    }
+    .tiptap-var-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .tiptap-var-item code {
+        flex-shrink: 0;
+        background: #f1f5f9;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-size: 11px;
+        color: #3b82f6;
+    }
+    .tiptap-var-empty {
+        padding: 10px 8px;
+        font-size: 12px;
+        color: #94a3b8;
     }
     .tiptap-toggle-source {
         font-size: 11px;

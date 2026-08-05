@@ -23,6 +23,10 @@ class FormTemplateResource extends Resource
 
     protected static ?string $navigationLabel = 'Шаблоны форм';
 
+    protected static ?string $modelLabel = 'Шаблон формы';
+
+    protected static ?string $pluralModelLabel = 'Шаблоны форм';
+
     public static function form(Schema $schema): Schema
     {
         return FormTemplateForm::configure($schema);

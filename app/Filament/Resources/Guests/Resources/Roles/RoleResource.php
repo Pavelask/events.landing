@@ -41,6 +41,10 @@ class RoleResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    protected static ?string $modelLabel = 'Роль';
+
+    protected static ?string $pluralModelLabel = 'Роли';
+
     #[Override]
     public static function form(Schema $schema): Schema
     {

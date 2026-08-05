@@ -13,12 +13,23 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class EventResource extends Resource
 {
     protected static ?string $model = Event::class;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Мероприятия';
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
+
     protected static ?string $navigationLabel = 'Мероприятия';
+
+    protected static ?string $modelLabel = 'Мероприятие';
+
+    protected static ?string $pluralModelLabel = 'Мероприятия';
+
+    protected static ?int $navigationSort = 1;
     
     public static function form(Schema $schema): Schema 
     { 

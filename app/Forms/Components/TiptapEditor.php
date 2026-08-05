@@ -12,6 +12,8 @@ class TiptapEditor extends Field
 
     protected bool | \Closure $showSourceToggle = true;
 
+    protected array | \Closure $variables = [];
+
     public function placeholder(string | \Closure $placeholder): static
     {
         $this->placeholder = $placeholder;
@@ -34,5 +36,17 @@ class TiptapEditor extends Field
     public function getShowSourceToggle(): bool
     {
         return $this->evaluate($this->showSourceToggle);
+    }
+
+    public function variables(array | \Closure $variables): static
+    {
+        $this->variables = $variables;
+
+        return $this;
+    }
+
+    public function getVariables(): array
+    {
+        return $this->evaluate($this->variables);
     }
 }

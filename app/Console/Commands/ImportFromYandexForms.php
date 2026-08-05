@@ -92,6 +92,7 @@ class ImportFromYandexForms extends Command
                     'name' => $name,
                     'email' => $email,
                     'phone' => $phone,
+                    'answers' => app(\App\Services\YandexFormsApi::class)->normalizeAnswers($answer['data'] ?? []),
                     'checkin_token' => Str::random(40),
                     'status' => 'registered',
                 ]);

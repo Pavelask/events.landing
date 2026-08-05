@@ -1,0 +1,46 @@
+/* Filament Admin Panel Custom Styles */
+
+/* White background for sidebar */
+.fi-sidebar {
+    background-color: #ffffff !important;
+}
+
+.fi-sidebar-header {
+    background-color: #ffffff !important;
+}
+
+.fi-sidebar-header.fi-body-has-topbar {
+    background-color: #ffffff !important;
+}
+
+/* Gray topbar / header */
+.fi-topbar {
+    background-color: #f9fafb !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* White content background */
+.fi-main-content {
+    background-color: #ffffff !important;
+}
+
+.fi-main {
+    background-color: #ffffff !important;
+}
+
+/* White card backgrounds */
+.fi-card {
+    background-color: #ffffff !important;
+    border-color: #e5e7eb !important;
+}
+
+/* Sidebar navigation items hover */
+.fi-sidebar-group-dropdown-trigger-btn:hover,
+.fi-sidebar-group-dropdown-trigger-btn:focus {
+    background-color: #f3f4f6 !important;
+}
+
+/* Body background */
+body.fi-body {
+    background-color: #ffffff !important;
+}

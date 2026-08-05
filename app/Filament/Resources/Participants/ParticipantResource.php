@@ -22,9 +22,13 @@ class ParticipantResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $navigationLabel = 'Участники';
+
+    protected static ?string $modelLabel = 'Участник';
+
+    protected static ?string $pluralModelLabel = 'Участники';
 
     public static function form(Schema $schema): Schema
     {

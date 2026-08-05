@@ -18,14 +18,23 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class FaqResource extends Resource
 {
     protected static ?string $model = Faq::class;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Мероприятия';
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-question-mark-circle';
 
+    protected static ?int $navigationSort = 7;
+
     protected static ?string $navigationLabel = 'FAQ (вопросы)';
+
+    protected static ?string $modelLabel = 'Вопрос';
+
+    protected static ?string $pluralModelLabel = 'Вопросы';
 
     public static function form(Schema $schema): Schema
     {

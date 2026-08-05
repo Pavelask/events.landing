@@ -24,4 +24,9 @@ class FormTemplate extends Model
     {
         return $this->hasMany(Event::class);
     }
+
+    public function documentTemplates(): HasMany
+    {
+        return $this->hasMany(DocumentTemplate::class);
+    }
 }

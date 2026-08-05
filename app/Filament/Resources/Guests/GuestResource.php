@@ -18,14 +18,23 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class GuestResource extends Resource
 {
     protected static ?string $model = Guest::class;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Мероприятия';
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
+    protected static ?int $navigationSort = 8;
+
     protected static ?string $navigationLabel = 'Гости';
+
+    protected static ?string $modelLabel = 'Гость';
+
+    protected static ?string $pluralModelLabel = 'Гости';
 
     public static function form(Schema $schema): Schema
     {

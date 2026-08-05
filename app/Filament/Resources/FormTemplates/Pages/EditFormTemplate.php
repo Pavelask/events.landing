@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FormTemplates\Pages;
 
+use App\Filament\Resources\FormTemplates\Actions\ImportYandexFieldsAction;
 use App\Filament\Resources\FormTemplates\FormTemplateResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -13,6 +14,7 @@ class EditFormTemplate extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            ImportYandexFieldsAction::make('importYandexFields'),
             Actions\DeleteAction::make(),
         ];
     }
