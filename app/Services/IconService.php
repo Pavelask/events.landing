@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Collection;
 
@@ -10,32 +11,36 @@ class IconService
     protected string $disk = 'public';
     protected string $directory = 'icons';
 
+    protected const CACHE_KEY = 'icon_service_available_icons';
+
     /**
      * Получить список всех иконок из папки с URL для предпросмотра
      */
     public function getAvailableIcons(): Collection
     {
-        if (!Storage::disk($this->disk)->exists($this->directory)) {
-            return collect();
-        }
+        return Cache::remember(self::CACHE_KEY, now()->addMinutes(10), function () {
+            if (!Storage::disk($this->disk)->exists($this->directory)) {
+                return collect();
+            }
 
-        $files = Storage::disk($this->disk)->files($this->directory);
-        
-        return collect($files)
-            ->filter(fn ($file) => $this->isImageFile($file))
-            ->map(function ($file) {
-                $url = Storage::disk($this->disk)->url($file);
-                $name = pathinfo($file, PATHINFO_FILENAME);
-                
-                return [
-                    'value' => $name,
-                    'label' => $this->formatIconName($name),
-                    'url' => $url,
-                    'path' => $file,
-                    'extension' => pathinfo($file, PATHINFO_EXTENSION),
-                ];
-            })
-            ->sortBy('label');
+            $files = Storage::disk($this->disk)->files($this->directory);
+            
+            return collect($files)
+                ->filter(fn ($file) => $this->isImageFile($file))
+                ->map(function ($file) {
+                    $url = Storage::disk($this->disk)->url($file);
+                    $name = pathinfo($file, PATHINFO_FILENAME);
+                    
+                    return [
+                        'value' => $name,
+                        'label' => $this->formatIconName($name),
+                        'url' => $url,
+                        'path' => $file,
+                        'extension' => pathinfo($file, PATHINFO_EXTENSION),
+                    ];
+                })
+                ->sortBy('label');
+        });
     }
 
     /**
@@ -90,6 +95,8 @@ class IconService
         $destination = $this->directory . '/' . $name . '.' . $extension;
         
         Storage::disk($this->disk)->copy($temporaryPath, $destination);
+
+        Cache::forget(self::CACHE_KEY);
         
         return $name;
     }
@@ -115,6 +122,8 @@ class IconService
                 Storage::disk($this->disk)->delete($path);
             }
         }
+
+        Cache::forget(self::CACHE_KEY);
         
         return true;
     }

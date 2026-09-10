@@ -80,12 +80,20 @@ class EventDayForm
                         ->label('Расписание дня')
                         ->addActionLabel('Добавить событие')
                         ->reorderableWithDragAndDrop()
+                        ->cloneable()
                         ->collapsible()
                         ->collapsed()
                         ->cloneAction(
-                            fn () => \Filament\Actions\Action::make('clone')
+                            fn (\Filament\Actions\Action $action) => $action
                                 ->label('Клонировать')
                                 ->icon('heroicon-o-document-duplicate')
+                                ->iconButton()
+                                ->successNotificationTitle('Событие клонировано')
+                        )
+                        ->deleteAction(
+                            fn (\Filament\Actions\Action $action) => $action
+                                ->requiresConfirmation()
+                                ->successNotificationTitle('Событие удалено')
                         )
                         ->schema([
                             Grid::make(4)->schema([

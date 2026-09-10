@@ -24,6 +24,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 
@@ -42,6 +43,51 @@ class EventForm
         'ok' => 'ok',
         'max' => 'max',
     ];
+
+    private static ?array $speakerNames = null;
+    private static ?array $guestNames = null;
+    private static ?array $testimonialNames = null;
+    private static ?array $faqQuestions = null;
+
+    private static function speakerLabel(?int $id): string
+    {
+        if (! $id) {
+            return 'Новый спикер';
+        }
+        self::$speakerNames ??= Speaker::query()->pluck('name', 'id')->all();
+
+        return self::$speakerNames[$id] ?? 'Новый спикер';
+    }
+
+    private static function guestLabel(?int $id): string
+    {
+        if (! $id) {
+            return 'Новый гость';
+        }
+        self::$guestNames ??= Guest::query()->pluck('name', 'id')->all();
+
+        return self::$guestNames[$id] ?? 'Новый гость';
+    }
+
+    private static function testimonialLabel(?int $id): string
+    {
+        if (! $id) {
+            return 'Новый отзыв';
+        }
+        self::$testimonialNames ??= Testimonial::query()->pluck('author_name', 'id')->all();
+
+        return self::$testimonialNames[$id] ?? 'Новый отзыв';
+    }
+
+    private static function faqLabel(?int $id): string
+    {
+        if (! $id) {
+            return 'Новый вопрос';
+        }
+        self::$faqQuestions ??= Faq::query()->pluck('question', 'id')->all();
+
+        return self::$faqQuestions[$id] ?? 'Новый вопрос';
+    }
 
     public static function configure(Schema $schema): Schema
     {
@@ -125,8 +171,7 @@ class EventForm
                                     'Asia/Magadan' => 'Магадан (UTC+11)',
                                     'Asia/Kamchatka' => 'Камчатка (UTC+12)',
                                 ])
-                                ->default('Europe/Moscow')
-                                ->searchable(),
+                                ->default('Europe/Moscow'),
                             Select::make('status')
                                 ->label('Статус')
                                 ->options([
@@ -236,7 +281,6 @@ class EventForm
                                             'max' => 'MAX',
                                             'custom' => 'Другое',
                                         ])
-                                        ->searchable()
                                         ->required()
                                         ->live()
                                         ->afterStateUpdated(fn ($state, callable $set) => $set('icon', self::$platformIcons[$state] ?? null)),
@@ -392,6 +436,7 @@ class EventForm
                                 $reflection = new \ReflectionMethod($observer, 'generateFavicons');
                                 $reflection->setAccessible(true);
                                 $reflection->invoke($observer, $record);
+                                Cache::forget("event_favicon_{$record->id}");
                             })
                             ->visible(fn (?Event $record) => $record && !self::hasFavicon($record)),
                     ])
@@ -406,8 +451,7 @@ class EventForm
                     ->visibility('public')
                     ->directory('events/posters')
                     ->imagePreviewHeight('200')
-                    ->imageEditor()
-                    ->live(),
+                    ->imageEditor(),
                 FileUpload::make('logo')
                     ->label('Логотип')
                     ->image()
@@ -525,9 +569,7 @@ class EventForm
                                     Select::make('speaker_id')
                                         ->label('Спикер')
                                         ->relationship('speaker', 'name')
-                                        ->searchable()
-                                        ->preload()
-                                        ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                                        ->searchable(),
                                     TextInput::make('sort_order')
                                         ->label('Порядок')
                                         ->numeric()
@@ -542,7 +584,7 @@ class EventForm
                             ])
                             ->orderColumn('sort_order')
                             ->collapsible()
-                            ->itemLabel(fn (array $state): string => Speaker::find($state['speaker_id'] ?? null)?->name ?? 'Новый спикер')
+                            ->itemLabel(fn (array $state): string => self::speakerLabel($state['speaker_id'] ?? null))
                             ->columnSpanFull(),
                     ]),
 
@@ -560,9 +602,7 @@ class EventForm
                                     Select::make('guest_id')
                                         ->label('Гость')
                                         ->relationship('guest', 'name')
-                                        ->searchable()
-                                        ->preload()
-                                        ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                                        ->searchable(),
                                     TextInput::make('sort_order')
                                         ->label('Порядок')
                                         ->numeric()
@@ -577,7 +617,7 @@ class EventForm
                             ])
                             ->orderColumn('sort_order')
                             ->collapsible()
-                            ->itemLabel(fn (array $state): string => Guest::find($state['guest_id'] ?? null)?->name ?? 'Новый гость')
+                            ->itemLabel(fn (array $state): string => self::guestLabel($state['guest_id'] ?? null))
                             ->columnSpanFull(),
                     ]),
 
@@ -595,9 +635,7 @@ class EventForm
                                     Select::make('testimonial_id')
                                         ->label('Отзыв')
                                         ->relationship('testimonial', 'author_name')
-                                        ->searchable()
-                                        ->preload()
-                                        ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                                        ->searchable(),
                                     TextInput::make('sort_order')
                                         ->label('Порядок')
                                         ->numeric()
@@ -609,7 +647,7 @@ class EventForm
                             ])
                             ->orderColumn('sort_order')
                             ->collapsible()
-                            ->itemLabel(fn (array $state): string => Testimonial::find($state['testimonial_id'] ?? null)?->author_name ?? 'Новый отзыв')
+                            ->itemLabel(fn (array $state): string => self::testimonialLabel($state['testimonial_id'] ?? null))
                             ->columnSpanFull(),
                     ]),
             ]);
@@ -634,16 +672,14 @@ class EventForm
                                 Select::make('faq_id')
                                     ->relationship('faq', 'question')
                                     ->label('Вопрос')
-                                    ->searchable()
-                                    ->preload()
-                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                                    ->searchable(),
                                 TextInput::make('sort_order')->label('Порядок')->numeric()->default(0),
                             ])
                             ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): ?array => filled($data['faq_id'] ?? null) ? $data : null)
                             ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): ?array => filled($data['faq_id'] ?? null) ? $data : null)
                             ->orderColumn('sort_order')
                             ->collapsible()
-                            ->itemLabel(fn (array $state): string => Faq::find($state['faq_id'] ?? null)?->question ?? 'Новый вопрос')
+                            ->itemLabel(fn (array $state): string => self::faqLabel($state['faq_id'] ?? null))
                             ->columnSpanFull(),
                     ]),
 
@@ -700,29 +736,12 @@ class EventForm
         if (!$record || !$record->id) {
             return false;
         }
-        return file_exists(storage_path("app/public/events/favicons/{$record->id}-32.png"));
-    }
 
-    private static function getFaviconHtml(?Event $record): string
-    {
-        if (!$record || !$record->id) {
-            return '<span class="text-sm text-gray-400 dark:text-gray-500 italic">Иконка не сгенерирована</span>';
-        }
-
-        $path32 = storage_path("app/public/events/favicons/{$record->id}-32.png");
-
-        if (!file_exists($path32)) {
-            return '<span class="text-sm text-gray-400 dark:text-gray-500 italic">Иконка не сгенерирована</span>';
-        }
-
-        $url32 = asset("storage/events/favicons/{$record->id}-32.png");
-        $url180 = asset("storage/events/favicons/{$record->id}-180.png");
-
-        return '<div class="flex items-center gap-3">'
-            . '<img src="' . $url32 . '" class="rounded border border-gray-200 dark:border-gray-700">'
-            . '<img src="' . $url180 . '" class="rounded border border-gray-200 dark:border-gray-700" style="width:64px;height:64px;">'
-            . '<div class="text-xs text-gray-500 dark:text-gray-400"><div>32×32 favicon</div><div>180×180 apple-touch-icon</div></div>'
-            . '</div>';
+        return Cache::remember(
+            "event_favicon_{$record->id}",
+            now()->addMinutes(30),
+            fn () => file_exists(storage_path("app/public/events/favicons/{$record->id}-32.png"))
+        );
     }
 
 }

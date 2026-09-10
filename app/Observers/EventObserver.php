@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Event;
+use Illuminate\Support\Facades\Cache;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 
@@ -11,12 +12,15 @@ class EventObserver
     public function saved(Event $event): void
     {
         if ($event->isDirty('poster_image')) {
+            Cache::forget("event_favicon_{$event->id}");
             $this->generateFavicons($event);
         }
     }
 
     public function deleted(Event $event): void
     {
+        Cache::forget("event_favicon_{$event->id}");
+
         $dir = storage_path('app/public/events/favicons');
         @unlink($dir . '/' . $event->id . '-32.png');
         @unlink($dir . '/' . $event->id . '-180.png');

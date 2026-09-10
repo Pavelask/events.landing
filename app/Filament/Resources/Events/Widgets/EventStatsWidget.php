@@ -26,13 +26,17 @@ class EventStatsWidget extends StatsOverviewWidget
         }
 
         $daysCount = $event->days()->count();
-        $eventsCount = ScheduleEvent::whereHas('day', fn ($q) => $q->where('event_id', $event->id))->count();
         $speakersCount = $event->speakers()->count();
         $guestsCount = $event->guests()->count();
 
-        $completedEvents = ScheduleEvent::whereHas('day', function ($q) use ($event) {
-            $q->where('event_id', $event->id)->where('date', '<', Carbon::today());
-        })->count();
+        $scheduleStats = ScheduleEvent::query()
+            ->join('event_days as d', 'd.id', '=', 'schedule_events.event_day_id')
+            ->where('d.event_id', $event->id)
+            ->selectRaw('COUNT(*) as total, SUM(CASE WHEN d.date < ? THEN 1 ELSE 0 END) as completed', [Carbon::today()])
+            ->first();
+
+        $eventsCount = (int) ($scheduleStats->total ?? 0);
+        $completedEvents = (int) ($scheduleStats->completed ?? 0);
 
         $progressPercent = $eventsCount > 0 ? round(($completedEvents / $eventsCount) * 100) : 0;
 
@@ -40,9 +44,17 @@ class EventStatsWidget extends StatsOverviewWidget
         $isActive = $event->start_date?->lte($today) && $event->end_date?->gte($today);
         $isPast = $event->end_date?->lt($today);
 
-        $totalParticipants = $event->participants()->count();
-        $arrivedParticipants = $event->participants()->where('status', 'arrived')->count();
-        $registeredParticipants = $event->participants()->where('status', 'registered')->count();
+        $participantStats = $event->participants()
+            ->selectRaw(
+                'COUNT(*) as total, '
+                . "SUM(CASE WHEN status = 'arrived' THEN 1 ELSE 0 END) as arrived, "
+                . "SUM(CASE WHEN status = 'registered' THEN 1 ELSE 0 END) as registered"
+            )
+            ->first();
+
+        $totalParticipants = (int) ($participantStats->total ?? 0);
+        $arrivedParticipants = (int) ($participantStats->arrived ?? 0);
+        $registeredParticipants = (int) ($participantStats->registered ?? 0);
 
         return [
             Stat::make('Дни', $daysCount)

@@ -50,6 +50,18 @@ class EventResource extends Resource
         ]; 
     }
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->with([
+            'heroSlides',
+            'eventSpeakers',
+            'eventGuests',
+            'eventTestimonials',
+            'eventFaqs',
+            'documents',
+        ]);
+    }
+
     /**
      * Автоматическая инвалидация кэша после создания/обновления мероприятия
      */
