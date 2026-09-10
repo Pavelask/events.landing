@@ -76,6 +76,15 @@
         const badge = document.getElementById('easter-egg-badge');
         if (!egg || !backdrop || !img || !badge) return;
 
+        // gsap теперь грузится лениво (app.js); если его нет —
+        // показываем пасхалку без анимации, главное — не ломаться.
+        const gsap = window.gsap;
+        if (!gsap) {
+            egg.style.display = 'flex';
+            egg.style.pointerEvents = 'auto';
+            return;
+        }
+
         playMultipassSound();
 
         egg.style.display = 'flex';

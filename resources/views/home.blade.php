@@ -14,10 +14,11 @@
     @if($activeEvent)
         <meta name="event-slug" content="{{ $activeEvent->slug }}">
     @endif
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
-    @vite(['resources/css/app.css', 'resources/css/home.css', 'resources/js/app.js'])
+    {{-- [x-cloak] объявлен глобально в app.css (пункт 10 оптимизаций) --}}
+    {{-- Оба JS-модуля (app.js и home.js) подключаем вместе в <head>:
+         это type="module", поэтому они выполняются отложенно (defer после
+         парсинга) — переносить в конец body не требуется (пункты 2 и 5). --}}
+    @vite(['resources/css/app.css', 'resources/css/home.css', 'resources/js/app.js', 'resources/js/home.js'])
     @livewireStyles
 </head>
 <body class="bg-surface text-text">
@@ -342,15 +343,8 @@
     </div>
 </footer>
 
-{{-- Офлайн-уведомление --}}
-<div id="offline-notification" class="fixed inset-x-0 bottom-0 z-50 hidden bg-[var(--color-primary)] text-white p-4 text-center font-medium" x-data="{ offline: !navigator.onLine }" x-show="offline" x-transition>
-    <div class="mx-auto max-w-7xl flex items-center justify-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-        </svg>
-        <span>Нет подключения к интернету. Некоторые функции могут быть недоступны.</span>
-    </div>
-</div>
+{{-- Офлайн-уведомление — единый компонент (пункт 11 оптимизаций) --}}
+<x-offline-notification />
 
 <button id="scrollTop" aria-label="Наверх" x-data="{
         visible: false,
@@ -373,7 +367,6 @@
         @click="handleClick()"
         class="fixed bottom-6 right-6 z-50 rounded-[var(--radius-round)] bg-white text-[var(--color-text)] p-4 font-bold shadow-xl border-2 border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white transition-colors w-12 h-12 flex items-center justify-center">↑
 </button>
-@vite(['resources/js/home.js'])
 @livewireScripts
 
 {{-- Баннер о cookie (после Alpine.js инициализации) --}}

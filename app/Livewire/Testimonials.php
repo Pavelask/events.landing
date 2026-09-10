@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Event;
 use App\Models\Testimonial;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Name;
 use Livewire\Component;
 
@@ -12,18 +13,30 @@ class Testimonials extends Component
 {
     public ?Event $event = null;
 
+    public Collection $testimonials;
+
     public function mount(Event|string|null $event = null, ?string $eventSlug = null): void
     {
         $this->event = $this->resolveEvent($event, $eventSlug);
+        // Пункт 9 оптимизаций: запрос отзывов выполняется один раз
+        // при монтировании компонента, а не на каждый render().
+        $this->testimonials = $this->loadTestimonials();
     }
 
     public function render()
     {
+        return view('livewire.testimonials', [
+            'testimonials' => $this->testimonials,
+        ]);
+    }
+
+    private function loadTestimonials(): Collection
+    {
         if (!$this->event) {
-            return view('livewire.testimonials', ['testimonials' => collect()]);
+            return collect();
         }
 
-        $testimonials = $this->event->eventTestimonials()
+        return $this->event->eventTestimonials()
             ->where('is_visible', true)
             ->with(['testimonial' => function ($query) {
                 $query->where('is_active', true);
@@ -32,10 +45,6 @@ class Testimonials extends Component
             ->get()
             ->pluck('testimonial')
             ->filter();
-
-        return view('livewire.testimonials', [
-            'testimonials' => $testimonials,
-        ]);
     }
 
     private function resolveEvent(Event|string|null $event, ?string $eventSlug): ?Event

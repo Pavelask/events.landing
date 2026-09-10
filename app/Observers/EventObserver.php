@@ -11,6 +11,9 @@ class EventObserver
 {
     public function saved(Event $event): void
     {
+        // Инвалидация кэша активного события главной страницы (пункт 3)
+        Cache::forget('resolve_active_event');
+
         if ($event->isDirty('poster_image')) {
             Cache::forget("event_favicon_{$event->id}");
             $this->generateFavicons($event);
@@ -19,6 +22,7 @@ class EventObserver
 
     public function deleted(Event $event): void
     {
+        Cache::forget('resolve_active_event');
         Cache::forget("event_favicon_{$event->id}");
 
         $dir = storage_path('app/public/events/favicons');

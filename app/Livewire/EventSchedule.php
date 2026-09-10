@@ -34,10 +34,16 @@ class EventSchedule extends Component
             return;
         }
 
-        $this->days = $this->event->days()
-            ->with(['events.speaker'])
-            ->orderBy('sort_order')
-            ->get();
+// Пункт 4 оптимизаций: расписание — самый тяжёлый компонент
+// главной (дни + события + спикеры). Кэшируем с eager-load event
+// (для timezone в Blade) и events.speaker. Инвалидацию уже делают
+// EventDayObserver и ScheduleEventObserver.
+$this->days = Cache::remember("event_{$this->event->id}_days", $this->cacheTTL, function () {
+    return $this->event->days()
+        ->with(['events.speaker', 'event'])
+        ->orderBy('sort_order')
+        ->get();
+});
 
         $today = Carbon::today()->toDateString();
         $todayDay = $this->days->first(fn ($day): bool => $day->date->toDateString() === $today);
@@ -62,7 +68,7 @@ class EventSchedule extends Component
         $this->selectedDay = $this->days->find($this->selectedDayId);
 
         if (!$this->selectedDay) {
-            $this->selectedDay = EventDay::with(['events.speaker'])
+            $this->selectedDay = EventDay::with(['events.speaker', 'event'])
                 ->where('event_id', $this->event->id)
                 ->where('id', $this->selectedDayId)
                 ->first();

@@ -1,4 +1,4 @@
-<section id="schedule" class="bg-white py-20 text-[var(--color-text)]">
+<section id="schedule" wire:poll.30s.visible class="bg-white py-20 text-[var(--color-text)]">
     <div class="mx-auto max-w-4xl px-6">
         <div class="mb-12 border-b border-[var(--color-border)] pb-8">
             <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2">Расписание мероприятия</p>
@@ -88,6 +88,13 @@
                         $end = $scheduleEvent->end_time
                             ? \Carbon\Carbon::parse($dateStr . ' ' . $scheduleEvent->end_time->format('H:i:s'), $tz)
                             : $start->copy()->addHour();
+
+                        // Если end_time == 00:00 (например, "14:00 - 00:00"), полночь
+                        // означает КОНЕЦ дня — переносим окончание на следующий день,
+                        // иначе end < start и событие никогда не будет "active".
+                        if ($end->lte($start)) {
+                            $end = $end->addDay();
+                        }
 
                         $now = \Carbon\Carbon::now($tz);
 

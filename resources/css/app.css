@@ -64,7 +64,7 @@ body {
     width: 100%;
     height: auto;
     display: block;
-    transition: none;
+    transition: transform 0.35s ease, filter 0.2s ease;
 }
 
 /* Полноэкранная галерея */
@@ -109,4 +109,11 @@ body {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease 0.2s;
+}
+
+/* [x-cloak] скрывает Alpine-компоненты до гидратации.
+   Раньше этот стиль дублировался инлайном в home.blade.php
+   (пункт 10 оптимизаций) — теперь он живёт в общем app.css. */
+[x-cloak] {
+    display: none !important;
 }

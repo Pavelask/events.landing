@@ -1,16 +1,30 @@
 <?php
 
 use App\Models\Event;
+use Illuminate\Support\Facades\Cache;
 
 if (!function_exists('resolveActiveEvent')) {
+    /**
+     * Возвращает «активное» событие для главной страницы.
+     *
+     * Пункт 3 оптимизаций: до этого функция выполняла до 4 запросов
+     * (published active, upcoming, recentlyCompleted, completed) с
+     * тяжёлым eager-load на КАЖДЫЙ запрос главной страницы. Теперь
+     * результат кэшируется на 10 минут; инвалидация происходит в
+     * EventObserver (saved/deleted), потому что главная строится на
+     * данных Event. Также в eager-load добавлены documents, которые
+     * используются сразу под расписанием (пункт 3).
+     */
     function resolveActiveEvent(): ?Event
     {
-        $with = ['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker'];
+        $with = ['heroSlides', 'faqs', 'speakers', 'keynoteSpeakers', 'days.events.speaker', 'documents'];
 
-        return Event::published()->with($with)->active()->first()
-            ?? Event::published()->with($with)->upcoming()->orderBy('start_date')->first()
-            ?? Event::published()->with($with)->recentlyCompleted()->orderByDesc('end_date')->first()
-            ?? Event::completed()->with($with)->orderByDesc('end_date')->first();
+        return Cache::remember('resolve_active_event', 600, function () use ($with) {
+            return Event::published()->with($with)->active()->first()
+                ?? Event::published()->with($with)->upcoming()->orderBy('start_date')->first()
+                ?? Event::published()->with($with)->recentlyCompleted()->orderByDesc('end_date')->first()
+                ?? Event::completed()->with($with)->orderByDesc('end_date')->first();
+        });
     }
 }
 
