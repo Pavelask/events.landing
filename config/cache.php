@@ -125,6 +125,21 @@ return [
     |
     */
 
-    'serializable_classes' => false,
+    'serializable_classes' => [
+        Illuminate\Support\Collection::class,
+        Illuminate\Database\Eloquent\Collection::class,
+        Illuminate\Database\Eloquent\Relations\Pivot::class,
+        App\Models\Event::class,
+        App\Models\Faq::class,
+        App\Models\Speaker::class,
+        App\Models\EventDay::class,
+        App\Models\ScheduleEvent::class,
+        App\Models\EventDocument::class,
+        App\Models\HeroSlide::class,
+        App\Models\EventSpeaker::class,
+        App\Models\EventGuest::class,
+        App\Models\Guest::class,
+        App\Models\Testimonial::class,
+    ],
 
 ];

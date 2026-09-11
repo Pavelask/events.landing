@@ -3,23 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
-use Illuminate\Http\Response;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FaviconController extends Controller
 {
-    public function show(Event $event): Response
+    public function show(Event $event): BinaryFileResponse
     {
         return $this->serve($event, 32);
     }
 
-    public function appleTouch(Event $event): Response
+    public function appleTouch(Event $event): BinaryFileResponse
     {
         return $this->serve($event, 180);
     }
 
-    private function serve(Event $event, int $size): Response
+    private function serve(Event $event, int $size): BinaryFileResponse
     {
         $cachedPath = storage_path("app/public/events/favicons/{$event->id}-{$size}.png");
 
