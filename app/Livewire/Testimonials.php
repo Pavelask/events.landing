@@ -19,8 +19,8 @@ class Testimonials extends Component
     {
         $this->event = $this->resolveEvent($event, $eventSlug);
         // Пункт 9 оптимизаций: запрос отзывов выполняется один раз
-        // при монтировании компонента, а не на каждый render().
-        $this->testimonials = $this->loadTestimonials();
+        // при монтировании компонента и кэшируется (resolveTestimonials).
+        $this->testimonials = $this->event ? resolveTestimonials($this->event) : collect();
     }
 
     public function render()
@@ -28,23 +28,6 @@ class Testimonials extends Component
         return view('livewire.testimonials', [
             'testimonials' => $this->testimonials,
         ]);
-    }
-
-    private function loadTestimonials(): Collection
-    {
-        if (!$this->event) {
-            return collect();
-        }
-
-        return $this->event->eventTestimonials()
-            ->where('is_visible', true)
-            ->with(['testimonial' => function ($query) {
-                $query->where('is_active', true);
-            }])
-            ->orderBy('sort_order')
-            ->get()
-            ->pluck('testimonial')
-            ->filter();
     }
 
     private function resolveEvent(Event|string|null $event, ?string $eventSlug): ?Event

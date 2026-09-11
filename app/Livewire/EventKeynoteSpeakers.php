@@ -18,11 +18,14 @@ class EventKeynoteSpeakers extends Component
     public function mount(Event|string|null $event = null, ?string $eventSlug = null): void
     {
         $this->event = $this->resolveEvent($event, $eventSlug);
-        $this->guests = $this->event?->eventGuests()
-            ->where('is_visible', true)
-            ->with('guest')
-            ->orderBy('sort_order')
-            ->get() ?? collect();
+
+        if (!$this->event) {
+            $this->guests = collect();
+            return;
+        }
+
+        $content = resolveEventContent($this->event);
+        $this->guests = $content['guests'];
     }
 
     public function render()

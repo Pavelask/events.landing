@@ -28,6 +28,53 @@ if (!function_exists('resolveActiveEvent')) {
     }
 }
 
+if (!function_exists('resolveEventContent')) {
+    /**
+     * Кэширует контентные выборки события (слайды, спикеры, гости),
+     * чтобы не выполнять запросы на каждый рендер главной.
+     * Инвалидация — в App\Observers\EventSlideObserver / EventSpeakerObserver / EventGuestObserver.
+     */
+    function resolveEventContent(Event $event): array
+    {
+        return Cache::remember('event_content_' . $event->id, 600, function () use ($event) {
+            return [
+                'slides' => $event->heroSlides()->where('is_active', true)->get(),
+                'speakers' => $event->eventSpeakers()
+                    ->where('is_visible', true)
+                    ->with('speaker')
+                    ->orderBy('sort_order')
+                    ->get(),
+                'guests' => $event->eventGuests()
+                    ->where('is_visible', true)
+                    ->with('guest')
+                    ->orderBy('sort_order')
+                    ->get(),
+            ];
+        });
+    }
+}
+
+if (!function_exists('resolveTestimonials')) {
+    /**
+     * Кэширует видимые отзывы события.
+     * Инвалидация — в App\Observers\EventTestimonialObserver.
+     */
+    function resolveTestimonials(Event $event): \Illuminate\Support\Collection
+    {
+        return Cache::remember('event_testimonials_' . $event->id, 600, function () use ($event) {
+            return $event->eventTestimonials()
+                ->where('is_visible', true)
+                ->with(['testimonial' => function ($query) {
+                    $query->where('is_active', true);
+                }])
+                ->orderBy('sort_order')
+                ->get()
+                ->pluck('testimonial')
+                ->filter();
+        });
+    }
+}
+
 if (!function_exists('clean_html')) {
     /**
      * Sanitize HTML: strip dangerous tags/attributes, keep safe formatting.

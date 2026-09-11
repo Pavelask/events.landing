@@ -16,7 +16,14 @@ class EventHero extends Component
     public function mount(Event|string|null $event = null): void
     {
         $this->event = $this->resolveEvent($event);
-        $this->slides = $this->event?->heroSlides()->where('is_active', true)->get() ?? collect();
+
+        if (!$this->event) {
+            $this->slides = collect();
+            return;
+        }
+
+        $content = resolveEventContent($this->event);
+        $this->slides = $content['slides'];
     }
 
     public function render()

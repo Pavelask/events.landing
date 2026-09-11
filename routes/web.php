@@ -26,22 +26,10 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/registration', function () {
-    $today = now()->startOfDay();
-    $event = Event::published()
-        ->where('status', 'published')
-        ->where(function ($q) use ($today) {
-            $q->where('start_date', '>=', $today)
-                ->orWhere(function ($q2) use ($today) {
-                    $q2->where('start_date', '<=', $today)
-                        ->where('end_date', '>=', $today);
-                });
-        })
-        ->where('is_registration_open', true)
-        ->orderBy('start_date')
-        ->first();
+    $event = resolveActiveEvent();
 
-    // Если событие не найдено или это недавно завершённое событие - редирект на главную
-    if (!$event || $event->is_recently_completed) {
+    // Если события нет, у него закрыта регистрация, либо оно завершено — на главную.
+    if (!$event || !$event->is_registration_open || $event->is_recently_completed || $event->is_completed) {
         return redirect()->route('home')->with('message', 'Регистрация на это мероприятие закрыта.');
     }
 
