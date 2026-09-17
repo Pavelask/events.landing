@@ -139,3 +139,40 @@ Body: { "event_id": "1", "name": "...", "email": "...", "custom_1": "..." }
 - `27cc382` — fix: publish Livewire config
 - `19c09e7` — test: add server test script for registration system
 - `bd300bd` — fix: restore complete form, fix truncated Blade file
+
+---
+
+## �СЕССИЯ 2026-09-17: починка отправки писем + доступ к серверу
+
+### Контекст
+- Проект: events.elprof.ru (Laravel, локальная копия /Users/pavelklimov/Herd/landing).
+- Письма участникам шли через очередь (QUEUE_CONNECTION=database, TemplateMail implements ShouldQueue), но воркер не был настроен — задания копились в jobs, доставки не было.
+
+### Что сделано (коммиты)
+- 475a13e — feat: индивидуальная отправка писем (тест на себя + по шаблону каждому участнику).
+- 2d12e93 — fix: save-and-close крашился на redirect (getLivewire()->redirect() на null).
+- 9085455 — fix: filament:assets падал на null-path html/Css ассете.
+- c190e03 — docs: supervisor-конфиг воркера + README + launchd-скрипт (deploy/supervisor/).
+
+### Проверка SMTP (работает)
+- nc smtp.yandex.ru 587/465 — OK (порт открыт).
+- Живой тест через tinker: TemplateMail реально уходит (SEND OK) на pavelask@mail.ru (тест на себя) и pavel.a.klimov@elprof.ru (синхронно, в обход очереди).
+
+### Проблемы, найденные в логах
+- failed_jobs: записи с recipient id=0 (тест «на себя», ModelIdentifier не находит модель) — такие retry бессмысленны, чистить, а не ретраить.
+- Ранее в local-логе: Table not found email_templates/form_templates/notifications (ситуация после миграций), Connection refused mysql (старое).
+
+### Сервер события (сервер, Rocky Linux)
+- Сайт жив: curl -sI https://events.elprof.ru → HTTP/1.1 200 OK (443 отвечает, БД доступна).
+- SSH(22): connection refused — sshd/фаервол/fail2ban. Физический сервер, консоли/панели нет, провайдер неизвестен.
+- migrate:status на сервере: все миграции Ran (email_templates, form_templates, participants, jobs, failed_jobs есть в БД).
+
+### Что нужно сделать, когда вернётся доступ (SSH/консоль)
+1. php artisan migrate --force
+2. php artisan queue:work --queue=default,sendnewsletter  (или supervisor-конфиг из deploy/supervisor/)
+3. php artisan queue:retry all (предварительно почистить failed_jobs с recipient id=0)
+4. Настроить персистентный воркер: sudo supervisorctl reread/update
+
+### Заметки
+- Различие локальных и серверных логов важно: local-лог (storage/logs/laravel.log) не отражает состояние сервера.
+- github: Pavelask/events.landing (ветка main).
