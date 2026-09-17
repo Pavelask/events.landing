@@ -37,7 +37,7 @@ class EditEmailTemplate extends EditRecord
             ->color('primary')
             ->action(function (): void {
                 $this->save(shouldRedirect: false);
-            })
-            ->redirect(static::getResource()::getUrl('index'));
+                $this->redirect(static::getResource()::getUrl('index'));
+            });
     }
 }
