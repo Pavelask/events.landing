@@ -8,8 +8,14 @@ use App\Http\Controllers\OnlyOfficeController;
 use App\Http\Controllers\RecoveryController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketPdfController;
+use App\Livewire\AnonRegistration;
 use App\Livewire\EventRegistration;
+use App\Models\DocumentTemplate;
+use App\Models\EmailTemplate;
 use App\Models\Event;
+use App\Models\Participant;
+use App\Services\EmailRenderer;
+use App\Services\PdfGeneratorService;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/favicon/{event:slug}.png', [FaviconController::class, 'show'])->name('event.favicon');
@@ -18,7 +24,7 @@ Route::get('/apple-touch-icon/{event:slug}.png', [FaviconController::class, 'app
 Route::get('/', function () {
     $activeEvent = resolveActiveEvent();
 
-    if (!$activeEvent) {
+    if (! $activeEvent) {
         return view('no-events');
     }
 
@@ -29,23 +35,24 @@ Route::get('/registration', function () {
     $event = resolveActiveEvent();
 
     // Если события нет, у него закрыта регистрация, либо оно завершено — на главную.
-    if (!$event || !$event->is_registration_open || $event->is_recently_completed || $event->is_completed) {
+    if (! $event || ! $event->is_registration_open || $event->is_recently_completed || $event->is_completed) {
         return redirect()->route('home')->with('message', 'Регистрация на это мероприятие закрыта.');
     }
 
     return view('registration', compact('event'));
 })->name('registration');
 
-Route::get('/events/{event:slug}', fn(Event $event) => view('event.show', compact('event')))->name('event.show');
+Route::get('/events/{event:slug}', fn (Event $event) => view('event.show', compact('event')))->name('event.show');
 
 Route::get('/archive', function () {
-    $lastCompletedEvent = \App\Models\Event::archived()->with('heroSlides')->orderByDesc('end_date')->first();
+    $lastCompletedEvent = Event::archived()->with('heroSlides')->orderByDesc('end_date')->first();
+
     return view('archive', compact('lastCompletedEvent'));
 })->name('archive');
 
 Route::get('/events/{event:slug}/register', EventRegistration::class)->name('event.register');
 
-Route::get('/events/{event:slug}/register-anon', \App\Livewire\AnonRegistration::class)->name('event.register.anon');
+Route::get('/events/{event:slug}/register-anon', AnonRegistration::class)->name('event.register.anon');
 
 Route::prefix('ical')->name('ical.')->group(function (): void {
     Route::get('/event/{scheduleEvent}', [IcalController::class, 'singleEvent'])->name('single');
@@ -72,7 +79,7 @@ Route::post('/api/gallery-view', [GalleryViewController::class, 'increment'])->n
 Route::get('/privacy-policy', function () {
     $activeEvent = resolveActiveEvent();
 
-    if (!$activeEvent || !$activeEvent->privacy_policy || !$activeEvent->show_privacy_section) {
+    if (! $activeEvent || ! $activeEvent->privacy_policy || ! $activeEvent->show_privacy_section) {
         abort(404);
     }
 
@@ -82,7 +89,7 @@ Route::get('/privacy-policy', function () {
 Route::get('/personal-data-consent', function () {
     $activeEvent = resolveActiveEvent();
 
-    if (!$activeEvent || !$activeEvent->personal_data_consent || !$activeEvent->show_personal_data_consent) {
+    if (! $activeEvent || ! $activeEvent->personal_data_consent || ! $activeEvent->show_personal_data_consent) {
         abort(404);
     }
 
@@ -92,7 +99,7 @@ Route::get('/personal-data-consent', function () {
 Route::get('/cookie-policy', function () {
     $activeEvent = resolveActiveEvent();
 
-    if (!$activeEvent || !$activeEvent->privacy_cookie_policy || !$activeEvent->show_cookie_banner) {
+    if (! $activeEvent || ! $activeEvent->privacy_cookie_policy || ! $activeEvent->show_cookie_banner) {
         abort(404);
     }
 
@@ -112,7 +119,7 @@ Route::post('/recovery/code', [RecoveryController::class, 'verifyCode'])->name('
 Route::get('/exports/{filename}', function (string $filename) {
     $path = storage_path("app/private/exports/{$filename}");
 
-    if (!file_exists($path)) {
+    if (! file_exists($path)) {
         abort(404);
     }
 
@@ -120,16 +127,16 @@ Route::get('/exports/{filename}', function (string $filename) {
 })->name('export.download')->middleware('auth');
 
 // Consent PDF download
-Route::get('/consents/{participant}/download', function (\App\Models\Participant $participant) {
+Route::get('/consents/{participant}/download', function (Participant $participant) {
     abort_unless(auth()->check(), 403);
 
-    if (!$participant->consent_pdf_path) {
+    if (! $participant->consent_pdf_path) {
         abort(404);
     }
 
-    $path = storage_path('app/private/' . $participant->consent_pdf_path);
+    $path = storage_path('app/private/'.$participant->consent_pdf_path);
 
-    if (!file_exists($path)) {
+    if (! file_exists($path)) {
         abort(404);
     }
 
@@ -139,20 +146,34 @@ Route::get('/consents/{participant}/download', function (\App\Models\Participant
 })->name('consent.download')->middleware('auth');
 
 // Document template preview
-Route::get('/document-templates/{documentTemplate}/preview', function (\App\Models\DocumentTemplate $documentTemplate) {
+Route::get('/document-templates/{documentTemplate}/preview', function (DocumentTemplate $documentTemplate) {
     abort_unless(auth()->check(), 403);
 
-    $service = app(\App\Services\PdfGeneratorService::class);
+    $service = app(PdfGeneratorService::class);
     $tempFile = $service->getPreview($documentTemplate);
 
     return response()->file($tempFile, [
         'Content-Type' => 'application/pdf',
-        'Content-Disposition' => 'inline; filename="preview_' . $documentTemplate->slug . '.pdf"',
+        'Content-Disposition' => 'inline; filename="preview_'.$documentTemplate->slug.'.pdf"',
     ])->deleteFileAfterSend(true);
 })->name('document-templates.preview')->middleware('auth');
 
 // Redirect login to Filament admin
 Route::get('/login', fn () => redirect('/admin/login'))->name('login');
+
+// Email template preview
+Route::get('/email-templates/{emailTemplate}/preview', function (EmailTemplate $emailTemplate) {
+    abort_unless(auth()->check(), 403);
+
+    $preview = app(EmailRenderer::class)->preview($emailTemplate);
+
+    return response(
+        view('emails.wrapper', [
+            'html' => $preview['html'],
+            'heading' => $emailTemplate->name ?: 'Предпросмотр',
+        ])->render()
+    );
+})->name('email-templates.preview')->middleware('auth');
 
 // Yandex Form test page
 Route::get('/yandex-test', function () {

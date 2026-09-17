@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Mail\Concerns\RendersEmailTemplate;
 use App\Models\AnonParticipant;
 use App\Models\Participant;
 use Illuminate\Bus\Queueable;
@@ -14,6 +15,7 @@ use Illuminate\Queue\SerializesModels;
 class TicketMail extends Mailable implements ShouldQueue
 {
     use Queueable;
+    use RendersEmailTemplate;
     use SerializesModels;
 
     public function __construct(
@@ -23,6 +25,12 @@ class TicketMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
+        $template = $this->resolveEmailTemplate('ticket');
+
+        if ($template) {
+            return $this->templateEnvelope($template, $this->eventForRecipient($this->participant), $this->participant);
+        }
+
         return new Envelope(
             subject: "Ваш билет: {$this->participant->event->title}",
         );
@@ -30,6 +38,12 @@ class TicketMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
+        $template = $this->resolveEmailTemplate('ticket');
+
+        if ($template) {
+            return $this->templateContent($template, $this->eventForRecipient($this->participant), $this->participant);
+        }
+
         return new Content(
             view: 'emails.ticket',
         );
