@@ -8,10 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Защита от дублирования: базовый create_participants_table уже содержит
+        // эти колонки. Если колонка существует — пропускаем (кейс свежего БД).
         Schema::table('participants', function (Blueprint $table) {
-            $table->string('name', 255)->nullable()->after('event_id');
-            $table->string('email', 255)->nullable()->after('name');
-            $table->string('phone', 20)->nullable()->after('email');
+            if (!Schema::hasColumn('participants', 'name')) {
+                $table->string('name', 255)->nullable()->after('event_id');
+            }
+            if (!Schema::hasColumn('participants', 'email')) {
+                $table->string('email', 255)->nullable()->after('name');
+            }
+            if (!Schema::hasColumn('participants', 'phone')) {
+                $table->string('phone', 20)->nullable()->after('email');
+            }
         });
     }
 

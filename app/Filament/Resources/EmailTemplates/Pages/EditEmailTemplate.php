@@ -20,4 +20,24 @@ class EditEmailTemplate extends EditRecord
                 ->url(fn () => route('email-templates.preview', $this->record), shouldOpenInNewTab: true),
         ];
     }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveAndCloseFormAction(),
+            $this->getSaveFormAction(),
+            $this->getCancelFormAction(),
+        ];
+    }
+
+    protected function getSaveAndCloseFormAction(): Action
+    {
+        return Action::make('saveAndClose')
+            ->label('Сохранить и закрыть')
+            ->color('primary')
+            ->action(function (): void {
+                $this->save(shouldRedirect: false);
+            })
+            ->redirect(static::getResource()::getUrl('index'));
+    }
 }

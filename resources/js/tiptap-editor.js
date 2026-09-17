@@ -428,9 +428,18 @@ class TiptapEditor {
 }
 
 function initTiptapEditors() {
-    document.querySelectorAll('.tiptap-container:not(.tiptap-initialized)').forEach(container => {
+    document.querySelectorAll('.tiptap-container').forEach(container => {
+        // Инстанс хранится как свойство DOM-узла: Livewire при морфе обновляет
+        // узел на месте (патчит, не заменяет), поэтому свойство переживает морф,
+        // а класс .tiptap-initialized — нет (его нет в серверном HTML). Без этого
+        // после Save/морфа создаётся ВТОРОЙ Tiptap в том же контейнере и контент
+        // дублируется.
+        if (container.__tiptapEditor) {
+            return
+        }
+
         container.classList.add('tiptap-initialized')
-        new TiptapEditor(container, {
+        container.__tiptapEditor = new TiptapEditor(container, {
             placeholder: container.dataset.placeholder || 'Введите текст...',
         })
     })
