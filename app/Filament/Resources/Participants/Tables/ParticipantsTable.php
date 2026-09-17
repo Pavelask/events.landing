@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Participants\Tables;
 
+use App\Mail\TemplateMail;
+use App\Models\EmailTemplate;
 use App\Models\Event;
 use App\Models\Participant;
 use Filament\Actions\BulkAction;
@@ -10,6 +12,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -293,6 +296,51 @@ class ParticipantsTable
                             $label = $isResend ? 'Билет отправлен повторно' : 'Билет отправлен';
                             \Filament\Notifications\Notification::make()->title($label)->success()->send();
                         }
+                    })
+                    ->visible(fn (Participant $record) => (bool) $record->email),
+                \Filament\Actions\Action::make('sendEmail')
+                    ->label('')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->iconSize('md')
+                    ->color('info')
+                    ->tooltip('Отправить письмо по шаблону')
+                    ->form([
+                        Select::make('email_template_id')
+                            ->label('Шаблон письма')
+                            ->options(fn (): array => EmailTemplate::query()
+                                ->where('is_active', true)
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->all())
+                            ->required(),
+                    ])
+                    ->action(function (Participant $record, array $data): void {
+                        $template = EmailTemplate::find($data['email_template_id']);
+
+                        if (! $template || ! $record->email) {
+                            return;
+                        }
+
+                        $event = $record->event ?? resolveActiveEvent();
+
+                        if (! $event instanceof Event) {
+                            Notification::make()
+                                ->warning()
+                                ->title('Не удалось отправить письмо')
+                                ->body('У участника не указано мероприятие')
+                                ->send();
+
+                            return;
+                        }
+
+                        Mail::to($record->email)
+                            ->send(new TemplateMail($template, $event, $record));
+
+                        Notification::make()
+                            ->success()
+                            ->title("Письмо «{$template->name}» отправлено")
+                            ->body($record->email)
+                            ->send();
                     })
                     ->visible(fn (Participant $record) => (bool) $record->email),
                 \Filament\Actions\Action::make('markArrived')

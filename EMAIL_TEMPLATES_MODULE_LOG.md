@@ -92,4 +92,7 @@
   - Newsletter::recipients() → 1 (участник status=registered, с email)
   - SendNewsletterBatch → STATUS=completed, SENT=1 FAILED=0, письмо встало в очередь (QUEUED=1)
   - `queue:work` обработал TemplateMail без ошибок; в письме подставились переменные: тема «Привет, Ivan Testov!», тело «Добро пожаловать на E2E EVENT!» — без остаточных `{{ }}`
-- Осталось: git add/commit + push, на сервере `php artisan migrate --force` (+ при необходимости `php artisan db:seed --class=EmailTemplateSeeder`)
+- Осталось: git add/commit + push, на сервере `php artisan migrate --force` (+ при необходимости `php artisan db:seed --class=EmailTemplateSeeder`)- Индивидуальная отправка писем:
+  - Страница шаблона (EditEmailTemplate): header-кнопка «Отправить тест на мой email» — шлёт TemplateMail текущему администратору (мок-получатель: name/email админа, id=0).
+  - Таблица участников: row-действие «Отправить письмо по шаблону» (иконка самолётика) — модалка с выбором активного email-шаблона, отправка TemplateMail конкретному участнику через его мероприятие (fallback — resolveActiveEvent).
+  - Проверено тестами (tests/Feature/IndividualEmailSendingTest.php): header-action ставит TemplateMail в очередь на email админа; TemplateMail рендерится/шлётся для единичного участника. `php artisan test` — 4/4.
