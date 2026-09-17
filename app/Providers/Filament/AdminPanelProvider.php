@@ -42,7 +42,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->font('Satoshi', 'https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap', BunnyFontProvider::class)
             ->assets([
-                Css::make('filament-admin')->html(
+                // URL-путь обязателен: filament:assets пропускает remote-ассеты,
+                // а с null-путём (html-only) команда падает (copyAsset: null given).
+                Css::make('filament-admin', asset('css/filament-admin.css'))->html(
                     '<link href="' . asset('css/filament-admin.css') . '?v=' . filemtime(public_path('css/filament-admin.css')) . '" rel="stylesheet" data-navigate-track />'
                 ),
             ])
