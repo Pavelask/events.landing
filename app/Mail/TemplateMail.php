@@ -12,25 +12,25 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
-
 class TemplateMail extends Mailable implements ShouldQueue
 {
     use Queueable;
-    use SerializesModels;
 
     public string $renderedHtml;
 
     public string $renderedSubject;
 
+    public string $eventTitle;
+
     public function __construct(
-        public EmailTemplate $template,
-        public Event $event,
-        public Participant|AnonParticipant $recipient,
+        EmailTemplate $template,
+        Event $event,
+        Participant|AnonParticipant $recipient,
     ) {
         $renderer = app(EmailRenderer::class);
         $rendered = $renderer->render($template, $event, $recipient);
 
+        $this->eventTitle = $event->title;
         $this->renderedSubject = $rendered['subject'];
         $this->renderedHtml = $rendered['html'];
     }
@@ -45,7 +45,7 @@ class TemplateMail extends Mailable implements ShouldQueue
         return new Content(
             // Оборачиваем фрагмент из Tiptap в единый каркас письма.
             view: 'emails.wrapper',
-            with: ['html' => $this->renderedHtml, 'heading' => $this->event->title],
+            with: ['html' => $this->renderedHtml, 'heading' => $this->eventTitle],
         );
     }
 
