@@ -7,6 +7,7 @@ use App\Mail\TemplateMail;
 use App\Models\Event;
 use App\Models\Participant;
 use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Mail;
@@ -19,14 +20,22 @@ class EditEmailTemplate extends EditRecord
     {
         return [
             Action::make('sendTest')
-                ->label('Отправить тест на мой email')
+                ->label('Отправить тест на email')
                 ->icon('heroicon-o-paper-airplane')
                 ->color('success')
                 ->visible(fn (): bool => (bool) auth()->user()?->email)
-                ->action(function (): void {
+                ->form([
+                    TextInput::make('recipient_email')
+                        ->label('Адрес получателя')
+                        ->helperText('По умолчанию — ваш email. Можно указать любой (mail.ru, yandex и т.п.), чтобы проверить доставку.')
+                        ->email()
+                        ->required()
+                        ->default(fn (): ?string => auth()->user()?->email),
+                ])
+                ->action(function (array $data): void {
                     $recipient = new Participant([
                         'name' => auth()->user()?->name ?? 'Администратор',
-                        'email' => auth()->user()?->email,
+                        'email' => $data['recipient_email'] ?? auth()->user()?->email,
                     ]);
                     $recipient->id = 0;
 
