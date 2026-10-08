@@ -190,16 +190,43 @@
     @livewire(\App\Livewire\Testimonials::class, ['event' => $activeEvent])
 @endif
 
-@if($activeEvent && $activeEvent->gallery && is_array($activeEvent->gallery) && count(array_filter($activeEvent->gallery)) > 0)
+@if($activeEvent && (
+    ($activeEvent->gallery && is_array($activeEvent->gallery) && count(array_filter($activeEvent->gallery)) > 0)
+    || $activeEvent->has_external_gallery
+))
     @php
-        $galleryImages = array_values(array_filter(array_map(fn($img) => $img ? asset('storage/'.$img) : null, $activeEvent->gallery)));
+        $galleryImages = $activeEvent->gallery && is_array($activeEvent->gallery)
+            ? array_values(array_filter(array_map(fn($img) => $img ? asset('storage/'.$img) : null, $activeEvent->gallery)))
+            : [];
     @endphp
     <section id="gallery" class="bg-[#f0f0f0] py-20 text-[var(--color-text)]"
              x-data="{ open: false, index: 0, images: {{ json_encode($galleryImages) }}, next() { this.index = (this.index + 1) % this.images.length }, prev() { this.index = (this.index - 1 + this.images.length) % this.images.length }, close() { this.open = false } }">
         <div class="mx-auto max-w-7xl px-6">
             <p class="font-semibold uppercase tracking-wide text-[var(--color-muted)] text-xs mb-2 text-center">Фотографии с предыдущих мероприятий</p>
             <!-- <h2 class="mt-3 text-center text-4xl font-bold text-[var(--color-text)]">Фотогалерея</h2> -->
-            
+
+            @if($activeEvent->has_external_gallery)
+                <div class="mx-auto mt-8 max-w-2xl text-center">
+                    @if(filled($activeEvent->gallery_external_description))
+                        <div class="mb-6 text-[var(--color-text-secondary)] [&_a]:text-[var(--color-primary)] [&_a]:underline [&_p]:mb-3 [&_strong]:text-[var(--color-text)]">
+                            {!! clean_html($activeEvent->gallery_external_description) !!}
+                        </div>
+                    @endif
+                    <a
+                        href="{{ $activeEvent->gallery_external_url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-2 rounded-[var(--radius-btn)] bg-[var(--color-primary)] px-6 py-3 font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[var(--color-primary-hover)] hover:shadow-lg"
+                    >
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                        Смотреть все фото
+                    </a>
+                </div>
+            @endif
+
+            @if(count($galleryImages) > 0)
             <div class="mt-12 columns-2 gap-2 space-y-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6">
                 @foreach($galleryImages as $idx => $image)
                     <div class="break-inside-avoid gallery-item overflow-hidden rounded-[var(--radius-card)]">
@@ -213,6 +240,7 @@
                     </div>
                 @endforeach
             </div>
+            @endif
         </div>
 
         {{-- Lightbox с Swiper для свайпа на мобильных --}}

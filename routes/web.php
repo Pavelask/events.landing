@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\FaviconController;
+use App\Http\Controllers\GalleryQrController;
 use App\Http\Controllers\GalleryViewController;
 use App\Http\Controllers\IcalController;
 use App\Http\Controllers\OnlyOfficeController;
@@ -61,6 +62,9 @@ Route::prefix('ical')->name('ical.')->group(function (): void {
     Route::get('/qr/event/{scheduleEvent}', [IcalController::class, 'qrSingle'])->name('qr.single');
     Route::get('/qr/day/{day}', [IcalController::class, 'qrDay'])->name('qr.day');
 });
+
+// QR-код на внешнюю ссылку галереи мероприятия (?download=1 — скачать файлом)
+Route::get('/qr/gallery/{event:slug}', [GalleryQrController::class, 'show'])->name('gallery.qr');
 
 // Маршрут для офлайн-страницы
 Route::get('/offline', function () {

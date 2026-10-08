@@ -23,6 +23,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -87,6 +88,19 @@ class EventForm
         self::$faqQuestions ??= Faq::query()->pluck('question', 'id')->all();
 
         return self::$faqQuestions[$id] ?? 'Новый вопрос';
+    }
+
+    /**
+     * URL QR-кода на внешнюю галерею. null, пока нет ссылки
+     * или пока у события ещё нет slug (на форме создания).
+     */
+    private static function externalGalleryQrUrl(mixed $slug, mixed $url): ?string
+    {
+        if (blank($slug) || blank($url)) {
+            return null;
+        }
+
+        return route('gallery.qr', $slug);
     }
 
     public static function configure(Schema $schema): Schema
@@ -420,7 +434,7 @@ class EventForm
             ->schema([
                 Section::make('Иконка мероприятия')
                     ->schema([
-                        \Filament\Schemas\Components\View::make('filament.components.favicon-preview'),
+                        View::make('filament.components.favicon-preview'),
                         \Filament\Actions\Action::make('generateFavicon')
                             ->label('Сгенерировать иконку')
                             ->icon('heroicon-o-arrow-path')
@@ -498,6 +512,51 @@ class EventForm
                     ->reorderable()
                     ->panelLayout('grid')
                     ->imageEditor()
+                    ->columnSpanFull(),
+
+                Section::make('Внешняя галерея')
+                    ->schema([
+                        Toggle::make('is_gallery_external_visible')
+                            ->label('Показывать на сайте')
+                            ->helperText('Блок со ссылкой над галереей на странице мероприятия')
+                            ->default(false),
+                        TextInput::make('gallery_external_url')
+                            ->label('Ссылка на внешнюю галерею')
+                            ->url()
+                            ->rules(['url:http,https'])
+                            ->maxLength(2048)
+                            ->live(onBlur: true)
+                            ->placeholder('https://t.me/...')
+                            ->helperText('Например: Telegram, Google Фото, Яндекс Диск. Используется для QR-кода ниже.'),
+                        RichEditor::make('gallery_external_description')
+                            ->label('Описание')
+                            ->fileAttachmentsDisk('public')
+                            ->fileAttachmentsDirectory('events/media/content')
+                            ->extraInputAttributes(['style' => 'min-height: 175px;'])
+                            ->columnSpanFull(),
+                        View::make('filament.components.gallery-qr-preview')
+                            ->visible(fn (callable $get): bool => filled($get('gallery_external_url')))
+                            ->columnSpanFull(),
+                        Grid::make(2)
+                            ->schema([
+                                Action::make('openGalleryQr')
+                                    ->label('Открыть QR')
+                                    ->icon('heroicon-o-eye')
+                                    ->color('gray')
+                                    ->url(fn (callable $get): ?string => self::externalGalleryQrUrl($get('slug'), $get('gallery_external_url')))
+                                    ->openUrlInNewTab()
+                                    ->visible(fn (callable $get): bool => self::externalGalleryQrUrl($get('slug'), $get('gallery_external_url')) !== null),
+                                Action::make('downloadGalleryQr')
+                                    ->label('Скачать QR')
+                                    ->icon('heroicon-o-arrow-down-tray')
+                                    ->color('primary')
+                                    ->url(fn (callable $get): ?string => ($qr = self::externalGalleryQrUrl($get('slug'), $get('gallery_external_url'))) !== null ? $qr.'?download=1' : null)
+                                    ->visible(fn (callable $get): bool => self::externalGalleryQrUrl($get('slug'), $get('gallery_external_url')) !== null),
+                            ])
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible()
+                    ->collapsed()
                     ->columnSpanFull(),
 
                 Section::make('Hero-слайдер')
