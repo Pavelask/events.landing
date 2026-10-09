@@ -13,6 +13,7 @@ class TicketResource extends JsonResource
         protected ?string $resolvedName = null,
         protected ?string $resolvedEmail = null,
         protected string $type = 'classic',
+        protected ?bool $alreadyCheckedIn = null,
     ) {
         parent::__construct($resource);
     }
@@ -26,6 +27,7 @@ class TicketResource extends JsonResource
             'token' => $token,
             'status' => $this->status,
             'is_checked_in' => $this->checked_in_at !== null,
+            'already_checked_in' => $this->when($this->alreadyCheckedIn !== null, $this->alreadyCheckedIn),
             'checked_in_at' => $this->checked_in_at?->toIso8601String(),
             'participant' => [
                 'id' => $this->id,
