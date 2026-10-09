@@ -119,6 +119,9 @@ Route::post('/recovery', [RecoveryController::class, 'sendCode'])->name('recover
 Route::get('/recovery/code', [RecoveryController::class, 'showCodeForm'])->name('recovery.code.form');
 Route::post('/recovery/code', [RecoveryController::class, 'verifyCode'])->name('recovery.code.verify');
 
+// API docs
+Route::view('/docs/api', 'api-docs')->name('api.docs');
+
 // Export download
 Route::get('/exports/{filename}', function (string $filename) {
     $path = storage_path("app/private/exports/{$filename}");

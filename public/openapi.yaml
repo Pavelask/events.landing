@@ -1,0 +1,763 @@
+openapi: 3.0.3
+info:
+  title: Events API
+  description: |
+    Публичный read-only API v1 для мобильного приложения поверх админки мероприятий,
+    плюс авторизация (Sanctum) и чек-ин.
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: Текущий хост
+tags:
+  - name: Auth
+  - name: Events
+  - name: Tickets
+  - name: Check-in
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Вход по email и паролю
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                device_name:
+                  type: string
+                  maxLength: 255
+      responses:
+        '200':
+          description: Токен доступа
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      token_type:
+                        type: string
+                        example: Bearer
+                      user:
+                        $ref: '#/components/schemas/User'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Выход (отзыв текущего токена)
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logged out
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /me:
+    get:
+      tags: [Auth]
+      summary: Профиль текущего пользователя
+      responses:
+        '200':
+          description: Профиль
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /events:
+    get:
+      tags: [Events]
+      summary: Список мероприятий
+      security: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, active, completed, archived, cancelled]
+        - name: upcoming
+          in: query
+          schema:
+            type: boolean
+        - name: active
+          in: query
+          schema:
+            type: boolean
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Постранично
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+                  links:
+                    type: object
+                  meta:
+                    type: object
+  /events/{slug}:
+    get:
+      tags: [Events]
+      summary: Мероприятие по slug (с днями, спикерами, гостями, отзывами, FAQ, документами)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Мероприятие
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Event'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /events/{slug}/schedule:
+    get:
+      tags: [Events]
+      summary: Расписание по дням
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Дни с событиями
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventDay'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /events/{slug}/speakers:
+    get:
+      tags: [Events]
+      summary: Спикеры мероприятия
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Спикеры
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Speaker'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /events/{slug}/guests:
+    get:
+      tags: [Events]
+      summary: Гости мероприятия
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Гости
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Guest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /events/{slug}/faq:
+    get:
+      tags: [Events]
+      summary: FAQ мероприятия
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: FAQ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Faq'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /events/{slug}/documents:
+    get:
+      tags: [Events]
+      summary: Документы мероприятия
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Документы
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EventDocument'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /events/{slug}/gallery:
+    get:
+      tags: [Events]
+      summary: Галерея (мозаика + внешняя галерея с QR)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: Галерея
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Gallery'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /testimonials:
+    get:
+      tags: [Events]
+      summary: Глобальный список активных отзывов
+      security: []
+      responses:
+        '200':
+          description: Отзывы
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Testimonial'
+  /ticket/{token}:
+    get:
+      tags: [Tickets]
+      summary: Данные билета по checkin-токену
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Token'
+      responses:
+        '200':
+          description: Билет
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Ticket'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /ticket/{token}/qr:
+    get:
+      tags: [Tickets]
+      summary: PNG QR-код чек-ина (400x400)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Token'
+      responses:
+        '200':
+          description: PNG изображение
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /checkin/by-token:
+    post:
+      tags: [Check-in]
+      summary: Отметить участника по checkin-токену (идемпотентно)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                  maxLength: 64
+      responses:
+        '200':
+          description: Результат чек-ина
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Ticket'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+  parameters:
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    Token:
+      name: token
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    NotFound:
+      description: Не найдено
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ValidationError:
+      description: Ошибка валидации
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        roles:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        error:
+          type: string
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        status:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        daily_start_time:
+          type: string
+          nullable: true
+        daily_end_time:
+          type: string
+          nullable: true
+        venue_name:
+          type: string
+          nullable: true
+        venue_address:
+          type: string
+          nullable: true
+        poster_image:
+          type: string
+          nullable: true
+        logo:
+          type: string
+          nullable: true
+        video_url:
+          type: string
+          nullable: true
+        is_registration_open:
+          type: boolean
+        registration_type:
+          type: string
+          nullable: true
+        registration_url:
+          type: string
+          nullable: true
+        yandex_form_id:
+          type: string
+          nullable: true
+        media_image:
+          type: string
+          nullable: true
+        media_description:
+          type: string
+          nullable: true
+        is_media_visible:
+          type: boolean
+        gallery:
+          type: array
+          items:
+            type: string
+        gallery_external_url:
+          type: string
+          nullable: true
+        gallery_external_description:
+          type: string
+          nullable: true
+        is_gallery_external_visible:
+          type: boolean
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventDay'
+        speakers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Speaker'
+        guests:
+          type: array
+          items:
+            $ref: '#/components/schemas/Guest'
+        testimonials:
+          type: array
+          items:
+            $ref: '#/components/schemas/Testimonial'
+        faqs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Faq'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventDocument'
+    EventDay:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        label:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        sort_order:
+          type: integer
+          nullable: true
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduleEvent'
+    ScheduleEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        start_time:
+          type: string
+          nullable: true
+        end_time:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        is_break:
+          type: boolean
+        speaker:
+          nullable: true
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            position:
+              type: string
+              nullable: true
+            photo:
+              type: string
+              nullable: true
+    Speaker:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        position:
+          type: string
+          nullable: true
+        organization:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        photo:
+          type: string
+          nullable: true
+    Guest:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        position:
+          type: string
+          nullable: true
+        organization:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        photo:
+          type: string
+          nullable: true
+    Testimonial:
+      type: object
+      properties:
+        id:
+          type: integer
+        author_name:
+          type: string
+          nullable: true
+        content:
+          type: string
+          nullable: true
+        photo:
+          type: string
+          nullable: true
+    Faq:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+        answer:
+          type: string
+          nullable: true
+    EventDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        file_path:
+          type: string
+          nullable: true
+        file_type:
+          type: string
+          nullable: true
+    Gallery:
+      type: object
+      properties:
+        slug:
+          type: string
+        gallery:
+          type: array
+          items:
+            type: string
+        media_image:
+          type: string
+          nullable: true
+        media_description:
+          type: string
+          nullable: true
+        is_media_visible:
+          type: boolean
+        external:
+          type: object
+          properties:
+            url:
+              type: string
+              nullable: true
+            description:
+              type: string
+              nullable: true
+            is_visible:
+              type: boolean
+            has_external_gallery:
+              type: boolean
+            qr_url:
+              type: string
+              nullable: true
+    Ticket:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [classic, anon]
+        token:
+          type: string
+        status:
+          type: string
+        is_checked_in:
+          type: boolean
+        already_checked_in:
+          type: boolean
+        checked_in_at:
+          type: string
+          format: date-time
+          nullable: true
+        participant:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+              nullable: true
+            email:
+              type: string
+              nullable: true
+        event:
+          type: object
+          properties:
+            slug:
+              type: string
+            title:
+              type: string
+            start_date:
+              type: string
+              format: date
+            end_date:
+              type: string
+              format: date
+            venue_name:
+              type: string
+              nullable: true
+            venue_address:
+              type: string
+              nullable: true
+            poster_image:
+              type: string
+              nullable: true
+        checkin_url:
+          type: string
+          nullable: true
+        qr_url:
+          type: string
+          nullable: true
+        ticket_url:
+          type: string
+          nullable: true
+        attributes:
+          type: object
+          nullable: true
+          properties:
+            souvenir_given:
+              type: boolean
+            documentation_given:
+              type: boolean
+            clothing_given:
+              type: boolean
