@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\GuestsController;
 use App\Http\Controllers\Api\V1\ScheduleController;
 use App\Http\Controllers\Api\V1\SpeakersController;
 use App\Http\Controllers\Api\V1\TestimonialsController;
+use App\Http\Controllers\Api\V1\TicketController;
 use App\Http\Controllers\Api\YandexWebhookController;
 use App\Http\Controllers\GalleryViewController;
 use Illuminate\Support\Facades\Route;
@@ -33,4 +34,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/events/{event:slug}/gallery', [GalleryController::class, 'index']);
     Route::get('/events/{slug}', [EventsController::class, 'show']);
     Route::get('/testimonials', [TestimonialsController::class, 'index']);
+
+    Route::get('/ticket/{token}', [TicketController::class, 'show']);
+    Route::get('/ticket/{token}/qr', [TicketController::class, 'qr']);
 });
