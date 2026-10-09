@@ -12,12 +12,29 @@ Flutter 3.47+, Riverpod, Dio, GoRouter, Freezed/json_serializable, flutter_secur
 ## Настройка
 1. Скопируйте `.env.example` в `.env` и укажите базовый URL API:
    - Web/macOS (Herd): `API_BASE_URL=http://landing.test/api/v1`
-   - Android-эмулятор: замените хост на LAN IP машины, напр. `http://192.168.1.10/api/v1` (или настройте `adb reverse`).
 2. Установите зависимости и сгенерируйте код:
    ```bash
    flutter pub get
    dart run build_runner build
    ```
+
+## Android-эмулятор
+Herd-домен `*.test` не резолвится из эмулятора, поэтому для него API поднимают
+отдельно и хост подставляется автоматически:
+```bash
+# в корне Laravel-проекта
+php artisan serve --host=0.0.0.0 --port=8080
+```
+В `Env` для Android адрес `landing.test/localhost/127.0.0.1` автоматически
+переписывается на `http://10.0.2.2:8080`. Медиа-ссылки (относительные
+`/storage/...` и абсолютные) нормализуются к тому же origin через
+`lib/core/utils/url_utils.dart`.
+
+Ручной запуск на конкретном устройстве:
+```bash
+flutter run -d emulator-5554
+```
+Адрес можно переопределить: `flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080/api/v1`.
 
 ## Запуск
 ```bash

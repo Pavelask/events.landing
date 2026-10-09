@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/url_utils.dart';
 
 class RemoteImage extends StatelessWidget {
   const RemoteImage({
@@ -39,7 +40,7 @@ class RemoteImage extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: CachedNetworkImage(
-        imageUrl: url!,
+        imageUrl: mediaUrl(url),
         width: width,
         height: height,
         fit: fit,

@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/html_utils.dart';
+import '../../core/utils/url_utils.dart';
 import '../../data/models/event.dart';
 import '../../data/models/event_document.dart';
 import '../../data/models/faq.dart';
@@ -523,7 +524,7 @@ class _Empty extends StatelessWidget {
 }
 
 Future<void> openExternal(String url) async {
-  final uri = Uri.tryParse(url);
+  final uri = Uri.tryParse(mediaUrl(url));
   if (uri == null) return;
   await launchUrl(uri, mode: LaunchMode.externalApplication);
 }
