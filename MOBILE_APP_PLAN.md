@@ -10,18 +10,18 @@
 - OpenAPI-спек: `public/openapi.yaml`, Swagger UI: `GET /docs/api`
 - Sanctum установлен, HasApiTokens в User, config/cors.php готов
 - Тесты: 26 Feature-тестов API v1 (`tests/Feature/Api/V1`)
-- flutter_app/ пустой; Flutter SDK ещё не установлен
+- flutter_app/events_mobile: каркас готов (Flutter 3.47.7, Riverpod/Dio/GoRouter/Freezed; сборка web проходит)
 
 ## Этап 0. Анализ и приоритизация
 - [x] Уточнить стек: **Flutter** (Riverpod + Dio + GoRouter + Freezed)
 - [x] Решить: read-only для посетителей + чек-ин + билет при авторизации; **личный кабинет не нужен**, анонимная регистрация не нужна (только участники мероприятия)
 - [x] Определить минимальный MVP (список событий, расписание, спикеры, галерея, FAQ, документы)
 
-## Этап 1. Подготовка окружения (потом)
-- [ ] Установить Flutter SDK (stable)
-- [ ] Установить Android Studio (или настроить Android SDK + VS Code)
+## Этап 1. Подготовка окружения
+- [x] Установить Flutter SDK (stable) — 3.47.7
+- [ ] Установить Android Studio (в процессе у пользователя)
 - [ ] Настроить эмулятор Android / физическое устройство
-- [ ] Проверить flutter doctor
+- [x] flutter doctor (запущен; ожидается Android SDK)
 
 ## Этап 2. Laravel API (реализовать в этом проекте)
 ### 2.1 Sanctum + конфиг
@@ -68,34 +68,34 @@
 
 ## Этап 3. Flutter-приложение
 ### 3.1 Инициализация
-- [ ] Создать flutter_app/events_mobile (или в flutter_app/)
-- [ ] Настроить pubspec.yaml (dio, flutter_riverpod/riverpod, go_router, freezed/json_serializable, flutter_secure_storage, url_launcher, cached_network_image)
-- [ ] Конфиг .env / flutter_dotenv для API_BASE_URL
+- [x] Создать flutter_app/events_mobile (org ru.eventapp, platforms android/ios/web)
+- [x] Настроить pubspec.yaml (dio, flutter_riverpod, go_router, freezed/json_serializable, flutter_secure_storage, url_launcher, cached_network_image, intl, flutter_dotenv)
+- [x] Конфиг .env / flutter_dotenv для API_BASE_URL
 
 ### 3.2 Архитектура
-- [ ] data/datasources/remote (API client + interceptors)
-- [ ] data/models (DTO, freezed)
-- [ ] data/repositories
+- [x] data/datasources/remote (ApiClient + auth interceptor)
+- [x] data/models (DTO, freezed)
+- [x] data/repositories (events, auth, ticket)
 - [ ] domain/entities/usecases (опц.)
-- [ ] presentation/screens (home, event_detail, schedule, speakers...)
-- [ ] presentation/widgets + theme
-- [ ] core/constants, core/network, core/router
+- [x] presentation/screens (home, event_detail, login, ticket)
+- [x] presentation/widgets + theme (app_theme, app_colors, remote_image, event_card, async_value_view)
+- [x] core/constants, core/network, core/router
 
 ### 3.3 Экраны MVP
-- [ ] Главная / Список событий
-- [ ] Деталка события (описание, даты, место)
-- [ ] Расписание по дням (табы)
-- [ ] Спикеры/Гости
-- [ ] Галерея (светлая/мозаика + lightbox)
-- [ ] FAQ
-- [ ] Документы
-- [ ] Билет/QR (при авторизации)
+- [x] Главная / Список событий
+- [x] Деталка события (описание, даты, место)
+- [x] Расписание по дням (таб)
+- [x] Спикеры/Гости (таб)
+- [x] Галерея (таб, сетка)
+- [x] FAQ (таб)
+- [x] Документы (таб)
+- [x] Билет/QR + вход сотрудника
 
 ### 3.4 Интеграция
-- [ ] Подключение к Laravel API
-- [ ] Обработка состояний (loading/error/empty)
-- [ ] Pull-to-refresh
-- [ ] Кэш изображений
+- [x] Подключение к Laravel API
+- [x] Обработка состояний (loading/error/empty)
+- [x] Pull-to-refresh
+- [x] Кэш изображений
 - [ ] Deep links (опц.)
 
 ## Этап 4. Тестирование и сборка
@@ -107,7 +107,7 @@
 ## Этап 5. Документация
 - [x] API.md (эндпоинты + примеры)
 - [x] public/openapi.yaml + Swagger UI (/docs/api)
-- [ ] flutter_app/README.md (как запустить)
+- [x] flutter_app/README.md (как запустить)
 - [ ] Обновить ADMIN_ANALYSIS.md при изменениях
 
 ## Приоритет MVP
