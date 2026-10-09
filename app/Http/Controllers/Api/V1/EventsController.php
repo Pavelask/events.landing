@@ -13,7 +13,7 @@ class EventsController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection|JsonResponse
     {
-        $query = Event::query()->with(['heroSlides', 'eventDays']);
+        $query = Event::query()->with(['heroSlides', 'days']);
 
         $status = $request->query('status');
         if ($status) {
@@ -42,11 +42,11 @@ class EventsController extends Controller
     {
         $event = Event::with([
             'heroSlides',
-            'eventDays.events.speaker',
-            'eventSpeakers.speaker',
-            'eventGuests.guest',
-            'eventTestimonials.testimonial',
-            'eventFaqs.faq',
+            'days.events.speaker',
+            'speakers',
+            'guests',
+            'testimonials',
+            'faqs',
             'documents',
         ])->where('slug', $slug)->first();
 

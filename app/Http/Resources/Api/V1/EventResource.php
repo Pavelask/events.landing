@@ -36,11 +36,11 @@ class EventResource extends JsonResource
             'gallery_external_url' => $this->gallery_external_url,
             'gallery_external_description' => $this->gallery_external_description,
             'is_gallery_external_visible' => $this->is_gallery_external_visible,
-            'days' => EventDayResource::collection($this->whenLoaded('eventDays')),
-            'speakers' => SpeakerResource::collection($this->whenLoaded('eventSpeakers')),
-            'guests' => GuestResource::collection($this->whenLoaded('eventGuests')),
-            'testimonials' => TestimonialResource::collection($this->whenLoaded('eventTestimonials')),
-            'faqs' => FaqResource::collection($this->whenLoaded('eventFaqs')),
+            'days' => EventDayResource::collection($this->whenLoaded('days')),
+            'speakers' => SpeakerResource::collection($this->whenLoaded('speakers')),
+            'guests' => GuestResource::collection($this->whenLoaded('guests')),
+            'testimonials' => TestimonialResource::collection($this->whenLoaded('testimonials')),
+            'faqs' => FaqResource::collection($this->whenLoaded('faqs')),
             'documents' => EventDocumentResource::collection($this->whenLoaded('documents')),
         ];
     }
